@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Glz Radio</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&family=Segoe+UI+Mono&family=DotGothic16&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Custom Styles & Theming */
+        :root {
+            /* Default: Dark Theme */
+            --bg-color: #1a1a1a;
+            --text-color: #ffffff;
+            --text-muted-color: #b0b0b0;
+            --text-faint-color: #555555;
+            --surface-color: rgba(43, 43, 43, 0.85);
+            --border-color: rgba(74, 74, 74, 0.5);
+            --modal-bg: #1a1a1a;
+            --play-button-bg: #00a3e0;
+            --play-button-text: #ffffff;
+            --accent-color: #00a3e0;
+        }
+        .theme-light {
+             /* Light Theme */
+            --bg-color: #F7F2FA;
+            --text-color: #1D1B20;
+            --text-muted-color: #48464C;
+            --text-faint-color: #79767D;
+            --surface-color: rgba(231, 222, 237, 0.85);
+            --border-color: rgba(202, 196, 208, 0.5);
+            --modal-bg: #F7F2FA;
+            --play-button-bg: #00a3e0; /* Aqua color */
+            --play-button-text: #ffffff;
+            --accent-color: #00a3e0; /* Aqua color */
+        }
+        .theme-oled {
+             /* OLED "Super Dark" Theme */
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --text-muted-color: #a0a0a0;
+            --text-faint-color: #444444;
+            --surface-color: rgba(20, 20, 20, 0.85);
+            --border-color: rgba(50, 50, 50, 0.5);
+            --modal-bg: #000000;
+            --play-button-bg: #00a3e0;
+            --play-button-text: #ffffff;
+            --accent-color: #00a3e0;
+        }
+
+        body, .font-segoe {
+            font-family: 'Segoe UI', 'Inter', sans-serif;
+        }
+        .font-segoe-mono {
+            font-family: 'Segoe UI Mono', monospace;
+        }
+        .station-list-scrollbar::-webkit-scrollbar { width: 8px; }
+        .station-list-scrollbar::-webkit-scrollbar-track { background: var(--surface-color); }
+        .station-list-scrollbar::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
+        #stream-status-icon {
+            transition: opacity 0.2s ease-in-out;
+        }
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 25px -5px var(--accent-color);
+            }
+            50% {
+                box-shadow: 0 0 40px 5px var(--accent-color);
+            }
+        }
+        /* Windows 7 Aero Style */
+        #player-display {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), 0 0 15px -5px var(--accent-color);
+            transition: box-shadow 0.4s ease-in-out, background-color 0.2s ease-in-out, border-color 0.4s ease-in-out;
+        }
+        #player-display.is-glowing {
+            animation: pulse-glow 4s ease-in-out infinite;
+        }
+        #player-display.cursor-pointer:hover {
+             background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+        }
+        #station-list-in-options {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        #station-list-in-options.expanded {
+            max-height: 250px; /* Adjust as needed */
+            overflow-y: auto;
+        }
+        .station-item:hover, .station-item.selected {
+             background-color: var(--accent-color) !important;
+             color: var(--play-button-text) !important;
+        }
+        .station-item:hover p, .station-item.selected p {
+            color: var(--play-button-text) !important;
+        }
+
+        /* Tuner Styles */
+        #tuner-container {
+            max-height: 48px; /* H-12 */
+            transition: max-height 0.4s ease-out;
+        }
+        #tuner-container.is-hidden {
+             max-height: 0;
+             overflow: hidden;
+        }
+        #tuner-panel {
+            transition: opacity 0.4s ease-out;
+        }
+        #tuner-container.is-hidden #tuner-panel {
+            opacity: 0;
+        }
+        #tuner-needle {
+            background: linear-gradient(to right, #e53e3e, #c53030);
+            box-shadow: 1px 0 3px rgba(0,0,0,0.5);
+        }
+
+        @keyframes web-dot-travel {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(60px); opacity: 0; }
+        }
+         @keyframes web-dot-travel-reverse {
+            from { transform: translateX(60px); opacity: 1; }
+            to { transform: translateX(0); opacity: 0; }
+        }
+        .web-dot.is-animating {
+            animation: web-dot-travel 1.5s linear infinite;
+        }
+        .web-dot.is-animating-reverse {
+            animation: web-dot-travel-reverse 1.5s linear infinite;
+        }
+
+        @keyframes flash-icon {
+            50% { transform: scale(1.2); filter: brightness(1.5); }
+        }
+        .icon-flash {
+            animation: flash-icon 0.8s ease-in-out;
+        }
+
+
+        /* Options Panel Styles */
+        #options-modal {
+            transition: visibility 0.3s;
+        }
+        #options-modal.hidden {
+            visibility: hidden;
+        }
+        #options-backdrop {
+            transition: opacity 0.3s ease-in-out;
+        }
+        #options-panel {
+            transition: transform 0.3s ease-in-out;
+        }
+        #options-modal.is-open #options-backdrop {
+            opacity: 1;
+        }
+        #options-modal.is-open #options-panel {
+            transform: translateX(0);
+        }
+
+        /* Fade-in for Player Info */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .player-info-fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="w-full h-full flex justify-center items-center">
+    
+    <div id="app-container" class="w-full max-w-sm h-full flex flex-col bg-[var(--bg-color)] shadow-2xl transition-colors duration-300 relative overflow-hidden">
+        <!-- Status Bar -->
+        <header id="top-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-md flex-shrink-0">
+            <div id="status-left" class="w-1/3 text-left flex items-center h-full"></div>
+            <div id="status-center" class="w-1/3 text-center font-bold text-sm"></div>
+            <div id="status-right" class="w-1/3 flex justify-end"></div>
+        </header>
+
+        <!-- Tuner Panel Container -->
+        <div id="tuner-container" class="w-full flex-shrink-0">
+            <div id="tuner-panel" class="w-full h-12 flex items-center p-2 relative">
+                <!-- Glz Power On/Off Animation -->
+                <div id="power-animation" class="absolute inset-0 bg-[var(--bg-color)] z-30 flex items-center justify-center transition-opacity duration-300"></div>
+
+                <!-- Actual Tuner -->
+                <div id="tuner-content" class="w-full h-full flex items-center z-10 opacity-0 transition-opacity duration-300">
+                    <span id="tuner-band-indicator" class="w-10 text-center font-bold text-lg text-[var(--text-color)] opacity-75"></span>
+                    <div class="relative flex-grow h-full bg-black/20 border-y border-black/30 overflow-hidden">
+                        <div id="tuner-needle" class="absolute top-0 bottom-0 w-0.5" style="left: -10px;"></div>
+                        <!-- AM Tuner -->
+                        <div id="am-tuner" class="w-full h-full hidden">
+                            <div class="relative w-full h-full flex justify-between items-end px-2 text-xs text-[var(--text-muted-color)] pb-1">
+                                <span>530</span><span></span><span>800</span><span></span><span>1100</span><span></span><span>1600</span>
+                            </div>
+                            <div class="absolute inset-x-4 top-1/2 h-px bg-[var(--text-muted-color)] opacity-50"></div>
+                        </div>
+                        <!-- FM Tuner -->
+                        <div id="fm-tuner" class="w-full h-full hidden">
+                           <div class="relative w-full h-full flex justify-between items-end px-2 text-xs text-[var(--text-muted-color)] pb-1">
+                                <span>88</span><span>92</span><span>96</span><span>100</span><span>104</span><span>108</span>
+                            </div>
+                            <div class="absolute inset-x-4 top-1/2 h-px bg-[var(--text-muted-color)] opacity-50"></div>
+                        </div>
+                        <!-- Web Tuner -->
+                        <div id="web-tuner" class="w-full h-full hidden flex items-center justify-center space-x-4 text-[var(--text-muted-color)]">
+                            <i data-lucide="smartphone" class="text-xl"></i>
+                            <svg width="80" height="20" class="overflow-visible">
+                                <circle class="web-dot" cx="10" cy="10" r="3" fill="var(--accent-color)"/>
+                                <circle class="web-dot is-animating-reverse" cx="10" cy="10" r="3" fill="var(--accent-color)" style="animation-delay: 0.5s;"/>
+                                <circle class="web-dot" cx="10" cy="10" r="3" fill="var(--accent-color)" style="animation-delay: 0.75s;"/>
+                            </svg>
+                            <i data-lucide="globe" class="text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="z-10 w-full px-4 flex flex-col items-center space-y-4 flex-grow justify-center">
+            <!-- Player Display -->
+            <div id="player-display" class="w-full h-36 rounded-xl flex items-center flex-shrink-0">
+                <!-- Default state -->
+                <p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>
+            </div>
+
+            <!-- Controls -->
+            <div id="controls-container" class="w-full flex items-center justify-center space-x-4 flex-shrink-0">
+                <button id="options-button" class="bg-[var(--surface-color)] p-4 rounded-full text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 border border-[var(--border-color)]" aria-label="Open options">
+                    <i data-lucide="settings-2" class="w-7 h-7"></i>
+                </button>
+                <button id="play-button" class="bg-[var(--play-button-bg)] text-[var(--play-button-text)] p-5 rounded-full shadow-lg hover:opacity-90 transform hover:scale-105 transition-all duration-200" aria-label="Play">
+                    <i data-lucide="play" class="w-10 h-10 fill-current ml-1"></i>
+                </button>
+                 <button id="stop-button" class="hidden bg-red-600 text-white p-5 rounded-full shadow-lg hover:bg-red-700 transform hover:scale-105 transition-all duration-200" aria-label="Stop player">
+                    <i data-lucide="square" class="w-10 h-10 fill-current"></i>
+                </button>
+            </div>
+        </main>
+        
+        <!-- Bottom Bar -->
+        <footer id="bottom-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-[-2px_0_10px_black] flex-shrink-0">
+            <span id="bottom-bar-station-name" class="font-bold text-sm h-5 truncate"></span>
+            <div id="network-speed-container" class="flex items-center space-x-1 text-xs text-[var(--text-muted-color)]"></div>
+        </footer>
+
+        <!-- Modals Container -->
+        <div id="modals-container">
+             <!-- Options Modal -->
+            <div id="options-modal" class="hidden fixed inset-0 z-50">
+                <!-- Backdrop -->
+                <div id="options-backdrop" class="absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-0"></div>
+                <!-- Panel -->
+                <div id="options-panel" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[var(--modal-bg)] flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
+                    <header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
+                        <h2 class="text-xl font-bold text-[var(--text-color)]">Options</h2>
+                        <button id="close-options-button" class="p-2 rounded-full hover:bg-[var(--border-color)] text-[var(--text-color)]">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </header>
+                    <div id="options-container" class="p-4 space-y-3 text-[var(--text-color)] flex-grow overflow-y-auto">
+                         <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-lg">
+                            <span id="options-date"></span>
+                            <span id="options-clock" class="font-mono"></span>
+                        </div>
+                         <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-lg">
+                            <div id="weather-display-options" class="flex items-center space-x-2">
+                                <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
+                                <span>Loading Weather...</span>
+                            </div>
+                            <div id="temp-toggle" class="flex items-center space-x-1 text-sm cursor-pointer">
+                                <span id="temp-c" class="opacity-50">°C</span>
+                                <span>/</span>
+                                <span id="temp-f" class="font-bold">°F</span>
+                            </div>
+                        </div>
+                        <button id="theme-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
+                            <span>Toggle Theme</span>
+                            <span id="theme-icon-container">
+                               <i data-lucide="moon" class="w-5 h-5"></i>
+                            </span>
+                        </button>
+                        <button id="toggle-station-list-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
+                            <span>Station List</span>
+                            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform"></i>
+                        </button>
+                        <div id="station-list-in-options" class="station-list-scrollbar space-y-2 pr-2">
+                             <!-- Station list will be injected here -->
+                        </div>
+                        <button id="random-station-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
+                            <span>Random Station</span>
+                            <i data-lucide="dice-5" class="w-5 h-5"></i>
+                        </button>
+                        <div class="w-full grid grid-cols-3 gap-2 items-center p-3 bg-[var(--surface-color)] rounded-lg text-sm">
+                            <span class="text-left">Stream Time</span>
+                            <span id="options-rds-display" class="font-bold truncate text-center"></span>
+                            <span id="stopwatch-display" class="font-mono text-right">00:00</span>
+                        </div>
+                    </div>
+                     <div id="version-footer" class="text-center text-[var(--text-faint-color)] text-xs p-4 border-t border-[var(--border-color)] flex-shrink-0"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <audio id="radio-player" preload="none" playsinline></audio>
+    <audio id="primer-audio" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSUNSAAAACgAAADIZMDI1AQ==" class="hidden"></audio>
+    <canvas id="color-thief-canvas" class="hidden"></canvas>
+
+    <!-- App Logic -->
+    <script>
+        // --- Configuration ---
+        const RADIO_STATIONS = {
+            "WKAQ 580": { "logo": "https://i.iheart.com/v3/re/assets/images/77d5680e-688b-4488-8c56-9b4963cb0813.png", "streamUrl": "https://tunein.cdnstream1.com/4851_128.mp3", "frequency": "AM: 580 Khz", "callSign": "WKAQ AM", "rdsText": [ "WKAQ 580", "WKAQ AM", "580 AM", "San Juan, PR"] },
+            "NOTIUNO 630": { "logo": "https://www.unoradio.com/logos/logos/notiuno/notiuno630.png", "streamUrl": "https://server20.servistreaming.com:9022/stream", "frequency": "AM: 630 Khz", "callSign": "WUNO AM", "rdsText": [ "NotiUno 630", "WUNO AM", "630 AM", "San Juan, PR"] },
+            "Radio Once": { "logo": "https://www.radioonce.com/templates/rt_galatea/custom/images/demo/home/header/logo-radio11.png", "streamUrl": "http://49.13.212.200:14167/stream?type=http&nocache=21", "frequency": "AM: 1120 Khz", "callSign": "WMSW AM", "rdsText": [ "Radio Once", "WMSW AM", "1120 AM", "Hatillo, PR"] },
+            "Radio Isla": { "logo": "https://radioIsla.tv/wp-content/uploads/2019/06/Logo-Radio-Isla.png", "streamUrl": "https://server7.servistreaming.com/proxy/radioisla?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "AM: 1320 Khz", "callSign": "WSKN AM", "rdsText": ["Radio Isla", "WSKN AM", "1320 AM",  "San Juan, PR"] },
+            "Radio Tiempo": { "logo": "https://radiotiempo.net/wp-content/uploads/2022/08/tiempo-172x128.png", "streamUrl": "https://server7.servistreaming.com/proxy/tiempo?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "AM: 1430 Khz", "callSign": "WNLE AM", "rdsText": [ "Radio Tiempo", "WNLE AM", "1430 AM", "Caguas, PR"] },
+            "Radio Cumbre": { "logo": "https://i.ibb.co/5g2402Cc/wkum-png.png", "streamUrl": "https://sp.unoredcdn.net/8158/stream/1/", "frequency": "AM: 1470 Khz", "callSign": "WKUM AM", "rdsText": [ "Radio Cumbre", "WKUM AM", "1470 AM", "Orocovis, PR"] },
+            "Radio Oro": { "logo": "https://cdn-profiles.tunein.com/s21791/images/logod.png?t=637238626060000000", "streamUrl": "https://us2.internet-radio.com/proxy/woro?mp=/stream", "frequency": "FM: 92.5 Mhz", "callSign": "WORO FM", "rdsText": [ "Radio Oro", "WORO FM", "92.5 FM", "Corozal, PR"] },
+            "Z 93": { "logo": "https://i.ibb.co/23BMsKBY/wznt-png.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WZNT_icy", "frequency": "FM: 93.7 Mhz", "callSign": "WZNT FM", "rdsText": [ "Z 93", "La Emisora", "Nacional", "De La Salsa", "WZNT FM", "93.7 FM", "San Juan", "Puerto Rico"] },
+            "La Nueva 94": { "logo": "https://i.ibb.co/sv1RBc08/wodalogo.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WODA_icy", "frequency": "FM: 94.7 Mhz", "callSign": "WODA FM", "rdsText": [ "La Nueva 94", "Los #1", "En Joda", "WODA FM", "94.7 FM", "San Juan", "Puerto Rico"] },
+            "Fidelity": { "logo": "https://fidelitypr.com/wp-content/uploads/2022/01/cropped-Redisen%CC%83o-Logo-Fidelity-3-15-2048x677.png", "streamUrl": "https://server7.servistreaming.com/proxy/fidelity?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "FM: 95.7 Mhz", "callSign": "WFID FM", "rdsText": [ "Fidelity", "Tu Vida", "En Música", "WFID FM", "95.7 FM", "Rio Piedras", "Puerto Rico"] },
+            "Estereotempo": { "logo": "https://i.ibb.co/F4GM0W81/wrxr.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WRXD_icy", "frequency": "FM: 96.5 Mhz", "callSign": "WRXD FM", "rdsText": [ "Estereotempo", "WRXD FM", "96.5 FM", "San Juan", "Puerto Rico"] },
+            "Magic 97.3": { "logo": "https://i.ibb.co/Z6WqXPzV/woye.png", "streamUrl": "https://stream.eleden.com:8210/magic.aac", "frequency": "FM: 97.3 Mhz", "callSign": "WOYE FM", "rdsText": [ "Magic 97.3", "WOYE FM", "97.3 FM", "Rio Grande", "Puerto Rico"] },
+            "SalSoul": { "logo": "https://salsoul.com/wp-content/uploads/2020/12/cropped-salsoul-2.png", "streamUrl": "https://server20.servistreaming.com:9023/stream?type=.mp3&_=1", "frequency": "FM: 99.1 Mhz", "callSign": "WPRM FM", "rdsText": [ "SalSoul", "WPRM FM", "99.1 FM", "San Juan", "Puerto Rico"] },
+            "La X": { "logo": "https://i.ibb.co/zWDcRnBw/laxpng.png", "streamUrl": "http://stream.eleden.com:8235/lax.ogg", "frequency": "FM: 100.7 Mhz", "callSign": "WXYX FM", "rdsText": [ "La X", "Para", "Los Que Llevan", "La Musica", "Por Dentro", "WXYX FM", "100.7 FM",  "Bayamón", "Puerto Rico"] },
+            "Hot102": { "logo": "https://hot102pr.com/wp-content/uploads/2023/10/Artboard-4.png", "streamUrl": "https://server7.servistreaming.com/proxy/hot?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "FM: 102.5 Mhz", "callSign": "WTOK FM", "rdsText": [ "HOT 102", "WTOK FM", "102.5 FM", "San Juan", "Puerto Rico"] },
+            "KQ105": { "logo": "https://upload.wikimedia.org/wikipedia/en/8/80/KQ_105_WKAQ-FM_2014_logo.png", "streamUrl": "https://televicentro.streamguys1.com/wkaqfm-icy?key=e018260d508e5b04e91a4d9a30f7ceea9b71bd86e2bfdb6fcc3bbd4928525c00", "frequency": "FM: 104.7 Mhz", "callSign": "WKAQ FM", "rdsText": [ "KQ 105", "La Primera", "WKAQ FM", "104.7 FM", "San Juan", "Puerto Rico"] },
+            "La Mega 106.9": { "logo": "https://i.ibb.co/Xrp2nhpQ/WMEG-PNG.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WMEG_icy", "frequency": "FM: 106.9 Mhz", "callSign": "WMEG FM", "rdsText": [ "La Mega 106.9", "WMEG FM", "106.9 FM", "San Juan", "Puerto Rico"] },
+            "Latino 99": { "logo": "https://mm.aiircdn.com/371/5928f28889f51.png", "streamUrl": "https://lmmradiocast.com/latino99fm", "frequency": "Satellite Radio", "callSign": null, "rdsText": [ "Latino 99","¡Pura", "Salsa!", "Kissimmee,", "Florida"] },
+            "Salseo": { "logo": "https://static.wixstatic.com/media/8dfec0_3e265a2f0fb5417c90c55be4e4e7d3cf~mv2.png/v1/fill/w_276,h_120,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/LOGOSALSEORADIO_clipped_rev_2_v2%20(1).png", "streamUrl": "https://listen.radioking.com/radio/399811/stream/452110", "frequency": "Satellite Radio", "callSign": null, "rdsText": [ "Salseo Radio", "Ponte Al", "Día En", "La Salsa!", "Quebradillas", "Puerto Rico"] },
+            "La Vieja Z": { "logo": "https://i.ibb.co/d4VZVjj2/LVZ8-removebg-preview.png", "streamUrl": "https://s3.free-shoutcast.com/stream/18094", "frequency": "Satellite Radio", "callSign": null, "rdsText": [ "La Vieja Z", "Central Florida", "Salsa!" ] }
+        };
+        const STATIONS_ORDER = Object.keys(RADIO_STATIONS);
+
+        // --- DOM & State ---
+        const dom = {
+            appContainer: document.getElementById('app-container'),
+            body: document.body,
+            topBar: document.getElementById('top-bar'),
+            statusLeft: document.getElementById('status-left'),
+            statusCenter: document.getElementById('status-center'),
+            statusRight: document.getElementById('status-right'),
+            tunerContainer: document.getElementById('tuner-container'),
+            powerOnAnimation: document.getElementById('power-animation'),
+            tunerPanel: document.getElementById('tuner-panel'),
+            tunerContent: document.getElementById('tuner-content'),
+            tunerNeedle: document.getElementById('tuner-needle'),
+            tunerBandIndicator: document.getElementById('tuner-band-indicator'),
+            amTuner: document.getElementById('am-tuner'),
+            fmTuner: document.getElementById('fm-tuner'),
+            webTuner: document.getElementById('web-tuner'),
+            weatherDisplaySettings: document.getElementById('weather-display-options'),
+            tempToggle: document.getElementById('temp-toggle'),
+            tempC: document.getElementById('temp-c'),
+            tempF: document.getElementById('temp-f'),
+            optionsClock: document.getElementById('options-clock'),
+            optionsDate: document.getElementById('options-date'),
+            versionFooter: document.getElementById('version-footer'),
+            playerDisplay: document.getElementById('player-display'),
+            playButton: document.getElementById('play-button'),
+            stopButton: document.getElementById('stop-button'),
+            optionsButton: document.getElementById('options-button'),
+            optionsModal: document.getElementById('options-modal'),
+            optionsBackdrop: document.getElementById('options-backdrop'),
+            optionsPanel: document.getElementById('options-panel'),
+            optionsContainer: document.getElementById('options-container'),
+            optionsRdsDisplay: document.getElementById('options-rds-display'),
+            closeOptionsButton: document.getElementById('close-options-button'),
+            themeToggleButton: document.getElementById('theme-toggle-button'),
+            themeIconContainer: document.getElementById('theme-icon-container'),
+            toggleStationListButton: document.getElementById('toggle-station-list-button'),
+            stationListInOptions: document.getElementById('station-list-in-options'),
+            randomStationButton: document.getElementById('random-station-button'),
+            stopwatchDisplay: document.getElementById('stopwatch-display'),
+            networkSpeedContainer: document.getElementById('network-speed-container'),
+            audioPlayer: document.getElementById('radio-player'),
+            primerAudio: document.getElementById('primer-audio'),
+            bottomBar: document.getElementById('bottom-bar'),
+            bottomBarStationName: document.getElementById('bottom-bar-station-name'),
+            colorThiefCanvas: document.getElementById('color-thief-canvas')
+        };
+        let state = { currentStationName: null, isPlaying: false, isFirstPlay: true, elapsedTime: 0, rdsInterval: null, rdsObserverInterval: null, stopwatchInterval: null, flickerInterval: null, networkSpeedInterval: null, isCelsius: false, weatherData: null, isPrimed: false };
+
+        // --- UI Update Functions ---
+        const updatePlayerDisplay = () => {
+            if (!state.currentStationName) {
+                dom.playerDisplay.classList.add('cursor-pointer', 'justify-center');
+                dom.playerDisplay.classList.remove('p-4');
+                dom.playerDisplay.innerHTML = `<p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>`;
+                dom.appContainer.style.setProperty('--accent-color', 'var(--play-button-bg)');
+                dom.playButton.style.backgroundColor = 'var(--play-button-bg)';
+
+            } else {
+                dom.playerDisplay.classList.remove('cursor-pointer', 'justify-center');
+                dom.playerDisplay.classList.add('p-4');
+                const station = RADIO_STATIONS[state.currentStationName];
+                
+                let stationInfoBlock;
+                if (station.callSign) {
+                    stationInfoBlock = `
+                        <span class="font-segoe text-xs text-[var(--text-muted-color)]">${station.callSign}</span>
+                        <span class="font-segoe text-xs text-[var(--text-muted-color)] mx-1">|</span>
+                        <span class="font-segoe text-xs text-[var(--text-muted-color)]">${station.frequency}</span>
+                    `;
+                } else {
+                    stationInfoBlock = `<p class="font-segoe text-xs text-[var(--text-muted-color)]">Online Stream</p>`;
+                }
+
+                dom.playerDisplay.innerHTML = `
+                    <div class="flex items-center w-full h-full space-x-4 player-info-fade-in">
+                        <img src="${station.logo}" alt="${state.currentStationName} Logo" class="w-24 h-24 object-contain bg-black/10 p-1 rounded-md flex-shrink-0" onerror="this.onerror=null; this.src='https://placehold.co/96x96/000000/f59e0b?text=Logo';">
+                        <div class="flex flex-col justify-center h-full flex-grow truncate text-left">
+                            <div id="rds-text-display" class="font-segoe-mono text-xl text-[var(--text-color)] h-8 truncate w-full"></div>
+                            <p class="font-segoe font-bold text-lg text-[var(--text-color)] truncate w-full mt-1">${state.currentStationName}</p>
+                            <div class="flex items-center mt-1">
+                                ${stationInfoBlock}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                if(state.isPlaying) {
+                     startRdsRotation();
+                }
+            }
+        };
+        const updateControlButtons = () => {
+             if (state.isPlaying) {
+                dom.playButton.classList.add('hidden');
+                dom.stopButton.classList.remove('hidden');
+            } else {
+                dom.playButton.classList.remove('hidden');
+                dom.stopButton.classList.add('hidden');
+            }
+             lucide.createIcons();
+        };
+        const updateStopwatch = () => {
+            const h = Math.floor(state.elapsedTime / 3600);
+            const m = Math.floor((state.elapsedTime % 3600) / 60);
+            const s = state.elapsedTime % 60;
+            const pad = (num) => String(num).padStart(2, '0');
+            dom.stopwatchDisplay.textContent = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+        };
+        const updateClocks = () => {
+            const now = new Date();
+            const timeOptions = { hour: '2-digit', minute: '2-digit' };
+            if(dom.optionsClock) dom.optionsClock.textContent = now.toLocaleTimeString([], timeOptions);
+
+            if(dom.optionsDate) {
+                const day = String(now.getDate()).padStart(2, '0');
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const year = String(now.getFullYear()).slice(-2);
+                dom.optionsDate.textContent = `${day}/${month}/${year}`;
+            }
+        };
+        
+        const updateStatusBar = () => {
+            const now = new Date();
+            const timeOptions = { hour: '2-digit', minute: '2-digit' };
+            const timeString = now.toLocaleTimeString([], timeOptions);
+
+            if (state.isPlaying) {
+                dom.statusLeft.innerHTML = `<span class="font-bold text-sm">${timeString}</span>`;
+                
+                if (state.weatherData) {
+                    const temp = state.isCelsius ? temperature : (state.weatherData.temperature * 9/5 + 32);
+                    const icon = getWeatherIcon(state.weatherData.weathercode);
+                    dom.statusCenter.innerHTML = `<div class="flex items-center justify-center space-x-1"><i data-lucide="${icon}" class="w-5 h-5"></i><span>${Math.round(temp)}°</span></div>`;
+                } else {
+                    dom.statusCenter.innerHTML = ``;
+                }
+
+                dom.statusRight.innerHTML = `<div id="stream-status-icon"><i data-lucide="radio-tower" class="w-5 h-5"></i></div>`;
+            } else {
+                dom.statusLeft.innerHTML = `<span id="carrier-text" class="font-bold text-sm">GLZ RADIO</span>`;
+                dom.statusCenter.innerHTML = timeString;
+                dom.statusRight.innerHTML = `<div id="stream-status-icon"><i data-lucide="${navigator.onLine ? 'wifi' : 'wifi-off'}" class="w-5 h-5 ${!navigator.onLine ? 'text-red-500' : ''}"></i></div>`;
+            }
+            lucide.createIcons();
+        }
+
+        // --- Tuner, Color & Weather Logic ---
+       const runPowerOnAnimation = async (station, callback) => {
+            if (!station) {
+                if(callback) callback();
+                return;
+            }
+            dom.tunerContainer.classList.remove('is-hidden');
+            const animationEl = dom.powerOnAnimation;
+            dom.tunerContent.style.opacity = 0;
+            animationEl.classList.remove('hidden');
+            animationEl.style.opacity = 1;
+            
+            animationEl.innerHTML = `<div class="flex items-center space-x-2 text-lg font-bold text-[var(--text-color)] opacity-0 transition-opacity duration-500" id="glz-poweron-stage1">
+                <span>Glz Radio</span>
+            </div>`;
+            await new Promise(res => requestAnimationFrame(() => setTimeout(res, 100)));
+            animationEl.querySelector('#glz-poweron-stage1').style.opacity = 1;
+            
+            await new Promise(res => setTimeout(res, 500));
+            
+            const freqString = station.frequency;
+            let activeBandIcon = 'globe';
+            if (freqString.includes('AM')) activeBandIcon = 'radio-tower';
+            if (freqString.includes('FM')) activeBandIcon = 'satellite';
+
+            animationEl.innerHTML = `<div class="flex items-center space-x-2 text-lg font-bold text-[var(--text-color)]">
+                <span>Glz Radio</span>
+                <span class="icon-wrapper" data-band-icon="radio-tower"><i data-lucide="radio-tower" class="w-5 h-5 transition-all duration-300"></i></span>
+                <span class="icon-wrapper" data-band-icon="satellite"><i data-lucide="satellite" class="w-5 h-5 transition-all duration-300"></i></span>
+                <span class="icon-wrapper" data-band-icon="globe"><i data-lucide="globe" class="w-5 h-5 transition-all duration-300"></i></span>
+            </div>`;
+            lucide.createIcons();
+
+            await new Promise(res => setTimeout(res, 800));
+
+            const wrappers = animationEl.querySelectorAll('.icon-wrapper');
+            wrappers.forEach(wrapper => {
+                if (wrapper.dataset.bandIcon === activeBandIcon) {
+                   wrapper.classList.add('icon-flash');
+                } else {
+                    wrapper.style.opacity = 0;
+                    wrapper.style.transform = 'scale(0)';
+                }
+            });
+            
+            await new Promise(res => setTimeout(res, 800));
+
+            animationEl.style.opacity = 0;
+            await new Promise(res => setTimeout(res, 300));
+
+            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Loading...</span>`;
+            animationEl.style.opacity = 1;
+            
+            await new Promise(res => setTimeout(res, 1000));
+            
+            animationEl.style.opacity = 0;
+            setTimeout(() => animationEl.classList.add('hidden'), 300);
+            if(callback) callback();
+        };
+
+        const runShutdownAnimation = async (station, callback) => {
+            if (!station) {
+                if (callback) callback();
+                return;
+            }
+            
+            const animationEl = dom.powerOnAnimation;
+            dom.tunerContent.style.opacity = 0;
+            animationEl.classList.remove('hidden');
+            animationEl.style.opacity = 1;
+
+            const freqString = station.frequency;
+            let activeBandIcon = 'globe';
+            if (freqString.includes('AM')) activeBandIcon = 'radio-tower';
+            if (freqString.includes('FM')) activeBandIcon = 'satellite';
+
+            animationEl.innerHTML = `<div class="flex items-center space-x-2 text-lg font-bold text-[var(--text-color)] transition-opacity duration-300">
+                <span>Glz Radio</span>
+                <i data-lucide="${activeBandIcon}" class="w-5 h-5"></i>
+            </div>`;
+            lucide.createIcons();
+            
+            await new Promise(res => setTimeout(res, 1000));
+            animationEl.style.opacity = 0;
+
+            await new Promise(res => setTimeout(res, 300));
+
+            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Good bye</span>`;
+            animationEl.style.opacity = 1;
+
+            await new Promise(res => setTimeout(res, 1000));
+            
+            if (callback) callback();
+        };
+
+        const updateTunerDisplay = (isPowerOn = false) => {
+            const station = RADIO_STATIONS[state.currentStationName];
+            const bandIndicator = dom.tunerBandIndicator;
+
+            if (!station || !state.isPlaying) {
+                runShutdownAnimation(station, () => {
+                    state.isFirstPlay = true;
+                    dom.tunerContainer.classList.add('is-hidden');
+                });
+                return;
+            }
+
+            const showTuner = () => {
+                dom.tunerContent.style.opacity = 1;
+                dom.amTuner.classList.add('hidden');
+                dom.fmTuner.classList.add('hidden');
+                dom.webTuner.classList.add('hidden');
+                bandIndicator.textContent = '';
+                dom.webTuner.querySelectorAll('.web-dot').forEach(d => d.classList.remove('is-animating', 'is-animating-reverse'));
+
+                const freqString = station.frequency;
+                let targetNeedlePos = -10;
+
+                if (freqString.includes('AM')) {
+                    dom.amTuner.classList.remove('hidden');
+                    bandIndicator.textContent = 'AM';
+                    const freq = parseFloat(freqString.match(/(\d+)/)[0]);
+                    targetNeedlePos = 5 + ((freq - 530) / (1600 - 530)) * 90;
+                } else if (freqString.includes('FM')) {
+                    dom.fmTuner.classList.remove('hidden');
+                    bandIndicator.textContent = 'FM';
+                    const freq = parseFloat(freqString.match(/(\d+\.\d+)/)[0]);
+                    targetNeedlePos = 5 + ((freq - 88) / (108 - 88)) * 90;
+                } else {
+                    dom.webTuner.classList.remove('hidden');
+                    bandIndicator.textContent = 'SAT';
+                    if (state.isPlaying) {
+                       dom.webTuner.querySelectorAll('.web-dot').forEach((d, i) => {
+                           d.classList.add(i % 2 === 0 ? 'is-animating' : 'is-animating-reverse');
+                       });
+                    }
+                }
+
+                const needle = dom.tunerNeedle;
+                if (state.isPlaying && targetNeedlePos > -10) {
+                    needle.style.transition = 'left 0.3s ease-in-out';
+                    needle.style.left = `${targetNeedlePos + 5}%`;
+                    setTimeout(() => {
+                        needle.style.left = `${targetNeedlePos - 4}%`;
+                    }, 300);
+                     setTimeout(() => {
+                        needle.style.left = `${targetNeedlePos + 2}%`;
+                    }, 600);
+                    setTimeout(() => {
+                        needle.style.transition = 'left 0.4s ease-out';
+                        needle.style.left = `${targetNeedlePos}%`;
+                    }, 800);
+                } else {
+                    needle.style.transition = 'left 0.5s ease-out';
+                    needle.style.left = `-10px`;
+                }
+            };
+            
+            if (isPowerOn) {
+                runPowerOnAnimation(station, showTuner);
+            } else {
+                dom.tunerContainer.classList.remove('is-hidden');
+                showTuner();
+            }
+        };
+
+        const getDominantColor = (imageUrl, callback) => {
+            const img = new Image();
+            img.crossOrigin = "Anonymous";
+            img.src = imageUrl;
+            img.onload = () => {
+                const canvas = dom.colorThiefCanvas;
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+
+                const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+                const colorCounts = {};
+                let maxCount = 0;
+                let dominantColor = null;
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    if ((r > 240 && g > 240 && b > 240) || (r < 15 && g < 15 && b < 15)) {
+                        continue;
+                    }
+                    const rgb = `rgb(${r},${g},${b})`;
+                    colorCounts[rgb] = (colorCounts[rgb] || 0) + 1;
+                    if (colorCounts[rgb] > maxCount) {
+                        maxCount = colorCounts[rgb];
+                        dominantColor = rgb;
+                    }
+                }
+                callback(dominantColor);
+            };
+            img.onerror = () => {
+                console.warn(`Could not load image for color extraction (likely a CORS issue): ${imageUrl}. Using default accent color.`);
+                callback(null);
+            };
+        };
+
+        const getWeatherIcon = (code) => {
+            switch (code) {
+                case 0: return 'sun'; case 1: case 2: case 3: return 'cloud-sun'; case 45: case 48: return 'cloud-fog';
+                case 51: case 53: case 55: return 'cloud-drizzle'; case 61: case 63: case 65: return 'cloud-rain'; case 66: case 67: return 'cloud-snow';
+                case 71: case 73: case 75: return 'snowflake'; case 80: case 81: case 82: return 'cloud-rain'; case 85: case 86: return 'cloud-snow';
+                case 95: case 96: case 99: return 'cloud-lightning'; default: return 'cloud';
+            }
+        };
+
+        const updateWeatherDisplay = () => {
+            if (!state.weatherData) return;
+            const { temperature, weathercode } = state.weatherData;
+            const temp = state.isCelsius ? temperature : (state.weatherData.temperature * 9/5 + 32);
+            const icon = getWeatherIcon(weathercode);
+            const weatherHTML = `<i data-lucide="${icon}" class="w-5 h-5"></i><span>${Math.round(temp)}°${state.isCelsius ? 'C' : 'F'}</span>`;
+            
+            dom.weatherDisplaySettings.innerHTML = weatherHTML;
+            updateStatusBar();
+            
+            dom.tempC.classList.toggle('font-bold', state.isCelsius);
+            dom.tempC.classList.toggle('opacity-50', !state.isCelsius);
+            dom.tempF.classList.toggle('font-bold', !state.isCelsius);
+            dom.tempF.classList.toggle('opacity-50', state.isCelsius);
+        };
+
+        const getIPLocationAndWeather = async () => {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const locationData = await response.json();
+                fetchWeather(locationData.latitude, locationData.longitude);
+            } catch (error) {
+                console.error("IP Geolocation failed:", error);
+                fetchWeather(28.11, -81.62); // Fallback
+            }
+        };
+        
+        const fetchWeather = async (lat, lon) => {
+            try {
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                const data = await response.json();
+                state.weatherData = data.current_weather;
+                updateWeatherDisplay();
+            } catch (error) {
+                console.error("Failed to fetch weather:", error);
+                dom.weatherDisplaySettings.innerHTML = `<span>Weather N/A</span>`;
+            }
+        };
+
+        // --- RDS, Network, and Flicker Logic ---
+        const startFlicker = () => { stopFlicker(); state.flickerInterval = setInterval(() => { const iconEl = document.querySelector('#status-right #stream-status-icon'); if (state.isPlaying && iconEl) { iconEl.style.opacity = (Math.random() * 0.5 + 0.5).toFixed(2); } }, 300); };
+        const stopFlicker = () => { clearInterval(state.flickerInterval); const iconEl = document.querySelector('#status-right #stream-status-icon'); if (iconEl) iconEl.style.opacity = 1; };
+        const startRdsRotation = () => {
+            clearInterval(state.rdsInterval);
+            clearInterval(state.rdsObserverInterval);
+            
+            if (!state.currentStationName) return;
+            const rdsTexts = RADIO_STATIONS[state.currentStationName].rdsText;
+            const rdsElement = document.getElementById('rds-text-display');
+            
+            if (!rdsTexts || rdsTexts.length === 0 || !rdsElement) { 
+                if(rdsElement) rdsElement.textContent = ''; 
+                if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = '';
+                return; 
+            }
+            
+            let rdsIndex = 0;
+            rdsElement.textContent = rdsTexts[rdsIndex];
+            
+            state.rdsInterval = setInterval(() => { 
+                rdsIndex = (rdsIndex + 1) % rdsTexts.length; 
+                rdsElement.textContent = rdsTexts[rdsIndex]; 
+            }, 4000);
+            
+            state.rdsObserverInterval = setInterval(() => {
+                if(dom.optionsRdsDisplay && rdsElement) {
+                    dom.optionsRdsDisplay.textContent = rdsElement.textContent;
+                }
+            }, 500);
+        };
+        const stopRdsRotation = () => { 
+            clearInterval(state.rdsInterval);
+            clearInterval(state.rdsObserverInterval);
+            const rdsElement = document.getElementById('rds-text-display'); 
+            if (rdsElement) rdsElement.textContent = ""; 
+            if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = "";
+        };
+
+        const updateNetworkSpeed = () => {
+            if (state.isPlaying) {
+                const speed = (Math.random() * (128 - 48) + 48).toFixed(1);
+                dom.networkSpeedContainer.innerHTML = `<i data-lucide="arrow-down-up" class="w-3 h-3"></i><span>${speed} kb/s</span>`;
+                lucide.createIcons();
+            } else {
+                dom.networkSpeedContainer.innerHTML = '';
+            }
+        };
+
+        // --- Core Player Logic ---
+        const selectStation = (stationName) => {
+            state.currentStationName = stationName;
+            document.querySelectorAll('.station-item').forEach(item => {
+                item.classList.remove('selected');
+                if (item.dataset.stationName === stationName) {
+                    item.classList.add('selected');
+                }
+            });
+            const station = RADIO_STATIONS[stationName];
+            getDominantColor(station.logo, (color) => {
+                const newAccentColor = color || (dom.body.classList.contains('theme-light') ? '#00a3e0' : 'var(--play-button-bg)');
+                dom.appContainer.style.setProperty('--accent-color', newAccentColor);
+                dom.playButton.style.backgroundColor = newAccentColor;
+            });
+            dom.audioPlayer.src = station.streamUrl;
+            dom.audioPlayer.load();
+            dom.audioPlayer.play().catch(e => {
+                console.error("Play error:", e);
+                const rdsElement = document.getElementById('rds-text-display');
+                if(rdsElement) rdsElement.textContent = "Stream Error";
+                state.isPlaying = false; updateControlButtons(); updateStatusBar();
+            });
+            
+            closeOptions();
+        };
+
+        const togglePlay = () => {
+            if (!state.currentStationName) { 
+                openOptions();
+                const list = dom.stationListInOptions;
+                if (!list.classList.contains('expanded')) {
+                    list.classList.add('expanded');
+                    const icon = dom.toggleStationListButton.querySelector('svg');
+                    if (icon) icon.classList.add('rotate-180');
+                }
+                return; 
+            }
+            if (!state.isPrimed) {
+                dom.primerAudio.play().then(() => {
+                    state.isPrimed = true;
+                    dom.audioPlayer.play();
+                }).catch(e => {
+                    console.warn("Primer audio failed, attempting main play anyway.", e);
+                    dom.audioPlayer.play();
+                });
+            } else {
+                state.isPlaying ? dom.audioPlayer.pause() : dom.audioPlayer.play();
+            }
+        };
+        
+        const updateMediaSession = () => {
+            if ('mediaSession' in navigator && state.currentStationName) {
+                const station = RADIO_STATIONS[state.currentStationName];
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: state.currentStationName,
+                    artist: 'Glz Radio',
+                    album: station.frequency,
+                    artwork: [{ src: station.logo, sizes: '512x512', type: 'image/png' }]
+                });
+            }
+        };
+        
+        const stopPlayer = () => {
+            const lastStation = RADIO_STATIONS[state.currentStationName];
+            dom.audioPlayer.pause();
+            dom.audioPlayer.removeAttribute('src'); 
+            dom.audioPlayer.load();
+            state.currentStationName = null;
+            state.isPlaying = false;
+            
+            updatePlayerDisplay(); 
+            updateControlButtons(); 
+            runShutdownAnimation(lastStation, () => {
+                state.isFirstPlay = true;
+                dom.tunerContainer.classList.add('is-hidden')
+            });
+            stopRdsRotation();
+            stopFlicker();
+            dom.playerDisplay.classList.remove('is-glowing');
+            if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = '';
+            
+            clearInterval(state.stopwatchInterval);
+            clearInterval(state.networkSpeedInterval);
+            state.networkSpeedInterval = null;
+            updateNetworkSpeed();
+
+            state.elapsedTime = 0;
+            updateStopwatch();
+            updateStatusBar();
+            dom.bottomBarStationName.textContent = "Standby";
+
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "none";
+                navigator.mediaSession.metadata = null;
+            }
+            document.querySelectorAll('.station-item').forEach(item => item.classList.remove('selected'));
+        };
+
+        const setupMediaSessionHandlers = () => {
+             if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('play', togglePlay);
+                navigator.mediaSession.setActionHandler('pause', togglePlay);
+                navigator.mediaSession.setActionHandler('stop', stopPlayer);
+            }
+        }
+        
+        dom.audioPlayer.onplay = () => { 
+            state.isPlaying = true;
+            updatePlayerDisplay();
+            updateControlButtons(); 
+            updateStatusBar();
+            updateTunerDisplay(state.isFirstPlay); 
+            state.isFirstPlay = false;
+            startFlicker();
+            dom.playerDisplay.classList.add('is-glowing');
+            
+            clearInterval(state.stopwatchInterval);
+            clearInterval(state.networkSpeedInterval);
+            state.elapsedTime = 0; 
+            updateStopwatch();
+            updateNetworkSpeed();
+            state.stopwatchInterval = setInterval(() => { state.elapsedTime++; updateStopwatch(); }, 1000);
+            state.networkSpeedInterval = setInterval(updateNetworkSpeed, 2000);
+
+            updateMediaSession();
+            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
+            dom.bottomBar.classList.remove('hidden');
+            dom.bottomBarStationName.textContent = "Now Playing: " + state.currentStationName;
+        };
+        dom.audioPlayer.onpause = () => { 
+            if (!state.currentStationName) return;
+            state.isPlaying = false; 
+            stopRdsRotation(); 
+            updateStatusBar(); 
+            updateControlButtons(); 
+            updateTunerDisplay();
+            stopFlicker();
+            dom.playerDisplay.classList.remove('is-glowing');
+            clearInterval(state.stopwatchInterval);
+            clearInterval(state.networkSpeedInterval);
+            state.networkSpeedInterval = null;
+            updateNetworkSpeed();
+
+            if ('mediaSession' in navigator) {
+                 navigator.mediaSession.playbackState = "paused";
+            }
+            dom.bottomBarStationName.textContent = "Standby";
+        };
+        
+        // --- Modals, Theming, and Event Listeners ---
+        const openOptions = () => {
+            dom.optionsModal.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                dom.optionsModal.classList.add('is-open');
+            });
+        };
+
+        const closeOptions = () => {
+            dom.optionsModal.classList.remove('is-open');
+             const list = dom.stationListInOptions;
+            if (list.classList.contains('expanded')) {
+                list.classList.remove('expanded');
+                const icon = dom.toggleStationListButton.querySelector('svg');
+                if (icon) icon.classList.remove('rotate-180');
+            }
+        };
+
+        const setupEventListeners = () => {
+            dom.optionsButton.onclick = openOptions;
+            dom.closeOptionsButton.onclick = closeOptions;
+            dom.optionsBackdrop.onclick = closeOptions;
+            dom.optionsPanel.addEventListener('transitionend', () => {
+                if (!dom.optionsModal.classList.contains('is-open')) {
+                    dom.optionsModal.classList.add('hidden');
+                }
+            });
+
+            dom.stopButton.onclick = stopPlayer;
+            dom.toggleStationListButton.onclick = () => {
+                const list = dom.stationListInOptions;
+                const icon = dom.toggleStationListButton.querySelector('svg');
+                list.classList.toggle('expanded');
+                if (icon) {
+                    icon.classList.toggle('rotate-180');
+                }
+            };
+            dom.randomStationButton.onclick = () => {
+                const randomIndex = Math.floor(Math.random() * STATIONS_ORDER.length);
+                const randomStationName = STATIONS_ORDER[randomIndex];
+                selectStation(randomStationName);
+            };
+            dom.playerDisplay.onclick = () => { 
+                if (!state.currentStationName) {
+                    togglePlay();
+                }
+            };
+            dom.playButton.onclick = togglePlay;
+            dom.tempToggle.onclick = () => {
+                state.isCelsius = !state.isCelsius;
+                localStorage.setItem('glz-radio-temp-unit', state.isCelsius ? 'C' : 'F');
+                updateWeatherDisplay();
+            };
+        };
+
+        const setupTheming = () => {
+            const themes = ['light', 'dark', 'oled'];
+            let currentThemeIndex = 1; // Default to dark
+
+            const savedTheme = localStorage.getItem('glz-radio-theme');
+            if (savedTheme && themes.includes(savedTheme)) {
+                currentThemeIndex = themes.indexOf(savedTheme);
+            }
+
+            const applyTheme = (themeName) => {
+                dom.body.classList.remove('theme-light', 'theme-dark', 'theme-oled');
+                dom.body.classList.add(`theme-${themeName}`);
+                dom.themeIconContainer.innerHTML = `<i data-lucide="${themeName === 'light' ? 'moon' : 'sun'}" class="w-5 h-5"></i>`;
+                lucide.createIcons();
+                localStorage.setItem('glz-radio-theme', themeName);
+            };
+            
+            applyTheme(themes[currentThemeIndex]);
+
+            dom.themeToggleButton.onclick = () => {
+                currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+                applyTheme(themes[currentThemeIndex]);
+            };
+        };
+        
+        // --- Initialization ---
+        const init = () => {
+            lucide.createIcons();
+            updateClocks();
+            setInterval(updateClocks, 10000); 
+            setInterval(updateStatusBar, 1000);
+            updatePlayerDisplay(); 
+            updateControlButtons(); 
+            setupEventListeners(); 
+            setupTheming();
+            setupMediaSessionHandlers();
+            dom.tunerContainer.classList.add('is-hidden');
+            dom.bottomBarStationName.textContent = "Standby";
+
+            dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 6.4 | Build: 25.06.07.2129</p>`;
+            
+            state.isCelsius = localStorage.getItem('glz-radio-temp-unit') === 'C';
+            getIPLocationAndWeather();
+            setInterval(getIPLocationAndWeather, 1000 * 60 * 15);
+
+            dom.stationListInOptions.innerHTML = STATIONS_ORDER.map(name => {
+                const station = RADIO_STATIONS[name];
+                return `<div data-station-name="${name}" class="station-item flex items-center p-3 space-x-4 cursor-pointer hover:bg-[var(--border-color)] rounded-lg transition-colors duration-200">
+                            <img src="${station.logo}" class="w-10 h-10 object-contain bg-black/10 p-1 rounded-md" onerror="this.onerror=null; this.src='https://placehold.co/40x40/000000/f59e0b?text=Logo';">
+                            <div class="flex-grow truncate"><p class="font-bold text-[var(--text-color)]">${name}</p><p class="text-xs text-[var(--text-muted-color)]">${station.frequency}</p></div>
+                        </div>`;
+            }).join('');
+            dom.stationListInOptions.querySelectorAll('.station-item').forEach(item => {
+                item.onclick = () => selectStation(item.dataset.stationName);
+            });
+        };
+
+        init();
+    </script>
+</body>
+</html>
