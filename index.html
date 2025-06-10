@@ -1,982 +1,802 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Glz Radio</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LittleSprout - Baby Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&family=Segoe+UI+Mono&family=DotGothic16&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator/qrcode.js"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link id="favicon" rel="icon" href="">
+
     <style>
-        /* Custom Styles & Theming */
         :root {
-            /* Default: Dark Theme */
-            --bg-color: #1a1a1a;
-            --text-color: #ffffff;
-            --text-muted-color: #b0b0b0;
-            --text-faint-color: #555555;
-            --surface-color: rgba(43, 43, 43, 0.85);
-            --border-color: rgba(74, 74, 74, 0.5);
-            --modal-bg: #1a1a1a;
-            --play-button-bg: #00a3e0;
-            --play-button-text: #ffffff;
-            --accent-color: #00a3e0;
-        }
-        .theme-light {
-             /* Light Theme */
-            --bg-color: #F7F2FA;
-            --text-color: #1D1B20;
-            --text-muted-color: #48464C;
-            --text-faint-color: #79767D;
-            --surface-color: rgba(231, 222, 237, 0.85);
-            --border-color: rgba(202, 196, 208, 0.5);
-            --modal-bg: #F7F2FA;
-        }
-        .theme-oled {
-             /* OLED "Super Dark" Theme */
-            --bg-color: #000000;
-            --text-color: #ffffff;
-            --text-muted-color: #a0a0a0;
-            --text-faint-color: #444444;
-            --surface-color: rgba(20, 20, 20, 0.85);
-            --border-color: rgba(50, 50, 50, 0.5);
-            --modal-bg: #000000;
+            --bg-primary-val: 240 245 255;
+            --bg-secondary-val: 255 255 255;
+            --bg-panel-val: 255 255 255;
+            --text-primary-val: 30 41 59;
+            --text-secondary-val: 71 85 105;
+            --border-color-val: 226 232 240;
+            --input-bg-val: 241 245 249;
+            --stripe-color: rgba(156, 163, 175, 0.07);
         }
 
-        body, .font-segoe {
-            font-family: 'Segoe UI', 'Inter', sans-serif;
-        }
-        .font-segoe-mono {
-            font-family: 'Segoe UI Mono', monospace;
-        }
-        .station-list-scrollbar::-webkit-scrollbar { width: 8px; }
-        .station-list-scrollbar::-webkit-scrollbar-track { background: var(--surface-color); }
-        .station-list-scrollbar::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
-        
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 25px -5px var(--accent-color); }
-            50% { box-shadow: 0 0 40px 5px var(--accent-color); }
-        }
-        
-        #player-display {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1), 0 0 15px -5px var(--accent-color);
-            transition: all 0.4s ease-in-out;
-        }
-        #player-display.is-glowing { animation: pulse-glow 4s ease-in-out infinite; }
-        #player-display.cursor-pointer:hover { background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.15)); }
-
-        #station-list-in-options { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
-        #station-list-in-options.expanded { max-height: 250px; overflow-y: auto; }
-        
-        .station-item:hover, .station-item.selected { background-color: var(--accent-color) !important; color: var(--play-button-text) !important; }
-        .station-item:hover p, .station-item.selected p { color: var(--play-button-text) !important; }
-
-        /* Tuner Styles */
-        #tuner-container { max-height: 48px; transition: max-height 0.4s ease-out; }
-        #tuner-container.is-hidden { max-height: 0; overflow: hidden; }
-        #tuner-needle { 
-            background: linear-gradient(to right, #e53e3e, #c53030); 
-            box-shadow: 1px 0 3px rgba(0,0,0,0.5); 
-            transition: left 0.6s ease-out; /* Smooth transition for needle position */
-        }
-        .needle-settle {
-            animation: tuner-needle-settle 0.8s ease-out forwards;
-        }
-        
-        @keyframes tuner-needle-settle {
-            0% { transform: translateX(20%); }
-            40% { transform: translateX(-15%); }
-            70% { transform: translateX(8%); }
-            90% { transform: translateX(-4%); }
-            100% { transform: translateX(0); }
+        html.dark {
+            --bg-primary-val: 0 0 0;
+            --bg-secondary-val: 23 23 23;
+            --bg-panel-val: 15 23 42;
+            --text-primary-val: 241 245 249;
+            --text-secondary-val: 148 163 184;
+            --border-color-val: 51 65 85;
+            --input-bg-val: 51 65 85;
+            --stripe-color: rgba(148, 163, 184, 0.05);
         }
 
-        @keyframes web-dot-travel { from { transform: translateX(0); } to { transform: translateX(60px); opacity: 0; } }
-        .web-dot.is-animating { animation: web-dot-travel 1.5s linear infinite; }
+        @keyframes pulse { 50% { opacity: 0.6; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes marquee { 0% { transform: translateX(0%); } 100% { transform: translateX(-50%); } }
 
-        /* Options Panel Styles */
-        #options-modal { transition: visibility 0.3s; }
-        #options-modal.hidden { visibility: hidden; }
-        #options-backdrop { transition: opacity 0.3s ease-in-out; }
-        #options-panel { transition: transform 0.3s ease-in-out; }
-        #options-modal.is-open #options-backdrop { opacity: 1; }
-        #options-modal.is-open #options-panel { transform: translateX(0); }
+        body { font-family: 'Quicksand', sans-serif; background-color: rgb(var(--bg-primary-val)); color: rgb(var(--text-primary-val)); background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, var(--stripe-color) 10px, var(--stripe-color) 11px); }
+        .panel-bg { background-color: rgb(var(--bg-panel-val)); }
+        .bg-primary { background-color: rgba(var(--bg-primary-val), 1); }
+        .bg-secondary { background-color: rgba(var(--bg-secondary-val), 0.85); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+        .text-primary { color: rgb(var(--text-primary-val)); }
+        .text-secondary { color: rgb(var(--text-secondary-val)); }
+        .border-color { border-color: rgba(var(--border-color-val), 1); }
+        .input-bg { background-color: rgba(var(--input-bg-val), 1); }
 
-        /* Fade/Slide Animations */
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
-        @keyframes slideInFromRight { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .slide-in { animation: slideInFromRight 0.5s ease-out forwards; }
-        
-        /* Splash Screen */
-        #splash-screen {
-            transition: opacity 0.5s ease-out;
-        }
-        @keyframes splash-glow {
-            0%, 100% { filter: drop-shadow(0 0 10px var(--accent-color)); }
-            50% { filter: drop-shadow(0 0 25px var(--accent-color)); }
-        }
-        #splash-logo {
-            animation: splash-glow 3s ease-in-out infinite;
-        }
-
+        #log-container::-webkit-scrollbar, .icon-scroll-container::-webkit-scrollbar, .modal-content-scroll::-webkit-scrollbar { display: none; }
+        .icon-scroll-container { -ms-overflow-style: none; scrollbar-width: none; }
+        #qr-reader { border: 2px solid rgb(var(--border-color-val)); border-radius: 8px; }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
     </style>
 </head>
-<body class="w-full h-full flex justify-center items-center bg-gray-900 p-0 md:p-4">
-
-    <div id="splash-screen" class="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center space-y-4">
-        <svg id="splash-logo" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[var(--accent-color)]">
-            <path d="M8 12.5C8 11.12 9.12 10 10.5 10H13.5C14.88 10 16 11.12 16 12.5C16 13.88 14.88 15 13.5 15H10.5C9.12 15 8 13.88 8 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M11.25 10V10.65C11.25 11.45 11.9 12.1 12.7 12.1H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4.65 3.52L6.37 5.24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M17.63 5.24L19.35 3.52" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 2V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 20V22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M3.52 19.35L5.24 17.63" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M19.35 19.35L17.63 17.63" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M22 12H20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 12H2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <h1 class="text-3xl font-bold text-white tracking-widest">Glz Radio</h1>
-    </div>
+<body class="transition-colors duration-300">
     
-    <div id="app-container" class="w-full h-full md:max-w-xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden">
-        <!-- Status Bar -->
-        <header id="top-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-md flex-shrink-0">
-            <div id="status-left" class="w-1/3 text-left flex items-center h-full"></div>
-            <div id="status-center" class="w-1/3 text-center font-bold text-sm"></div>
-            <div id="status-right" class="w-1/3 flex justify-end"></div>
-        </header>
+    <div id="splash-screen" class="fixed inset-0 bg-primary flex flex-col items-center justify-center z-[100] transition-opacity duration-1000 ease-in-out">
+        <canvas id="logo-canvas" width="150" height="150" class="mb-4"></canvas>
+        <h1 class="text-5xl font-bold text-primary" style="animation: pulse 2.5s infinite ease-in-out;">LittleSprout</h1>
+        <p class="text-secondary mt-2">Your baby's little moments, treasured.</p>
+    </div>
 
-        <!-- Tuner Panel Container -->
-        <div id="tuner-container" class="w-full flex-shrink-0">
-            <div id="tuner-panel" class="w-full h-12 flex items-center p-2 relative">
-                <div id="power-animation" class="absolute inset-0 bg-[var(--bg-color)] z-30 flex items-center justify-center transition-opacity duration-300 pointer-events-none"></div>
-                <div id="tuner-content" class="w-full h-full flex items-center z-10 opacity-0 transition-opacity duration-300">
-                    <span id="tuner-band-indicator" class="w-10 text-center font-bold text-lg text-[var(--text-color)] opacity-75"></span>
-                    <div class="relative flex-grow h-full bg-black/20 border-y border-black/30 overflow-hidden">
-                        <div id="tuner-needle" class="absolute top-0 bottom-0 w-0.5" style="left: -10px;"></div>
-                        <div id="am-tuner" class="w-full h-full hidden">
-                            <div class="relative w-full h-full flex justify-between items-end px-2 text-xs text-[var(--text-muted-color)] pb-1">
-                                <span>530</span><span></span><span>800</span><span></span><span>1100</span><span></span><span>1600</span>
-                            </div>
-                            <div class="absolute inset-x-4 top-1/2 h-px bg-[var(--text-muted-color)] opacity-50"></div>
-                        </div>
-                        <div id="fm-tuner" class="w-full h-full hidden">
-                           <div class="relative w-full h-full flex justify-between items-end px-2 text-xs text-[var(--text-muted-color)] pb-1">
-                                <span>88</span><span>92</span><span>96</span><span>100</span><span>104</span><span>108</span>
-                            </div>
-                            <div class="absolute inset-x-4 top-1/2 h-px bg-[var(--text-muted-color)] opacity-50"></div>
-                        </div>
-                        <div id="web-tuner" class="w-full h-full hidden flex items-center justify-center space-x-4 text-[var(--text-muted-color)]">
-                            <i data-lucide="smartphone" class="text-xl"></i>
-                            <svg width="80" height="20" class="overflow-visible">
-                                <circle class="web-dot" cx="10" cy="10" r="3" fill="var(--accent-color)"/>
-                            </svg>
-                            <i data-lucide="globe" class="text-xl"></i>
-                        </div>
-                    </div>
-                </div>
+    <!-- Modals -->
+    <div id="setup-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="panel-bg text-primary p-8 rounded-2xl shadow-2xl w-full max-w-md animate-fadeIn">
+            <h2 id="setup-title" class="text-2xl font-bold mb-2">Welcome!</h2>
+            <p id="setup-subtitle" class="text-secondary mb-6">Let's get you and your little one set up.</p>
+            <div class="space-y-4">
+                <div><label for="user-name" class="block text-sm font-medium text-secondary">Your Name</label><input type="text" id="user-name" class="mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., Sarah"></div>
+                <div><label for="baby-name" class="block text-sm font-medium text-secondary">Baby's Name</label><input type="text" id="baby-name" class="mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., Charlie"></div>
+                <div><label for="baby-dob" class="block text-sm font-medium text-secondary">Date of Birth</label><input type="date" id="baby-dob" class="mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3 focus:ring-indigo-500 focus:border-indigo-500"></div>
+                <button onclick="saveBabyInfo()" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors mt-4">Save and Start Tracking</button>
             </div>
         </div>
+    </div>
 
-        <!-- Main Content -->
-        <main class="z-10 w-full px-4 flex flex-col items-center space-y-4 flex-grow justify-center">
-            <!-- Player Display -->
-            <div id="player-display" class="w-full h-36 rounded-xl flex items-center flex-shrink-0">
-                <div id="player-content" class="w-full h-full flex items-center justify-center">
-                    <p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>
+    <div id="disclaimer-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="panel-bg text-primary p-8 rounded-2xl shadow-2xl w-full max-w-md text-center animate-fadeIn">
+            <i class="fas fa-database text-4xl text-blue-500 mb-4"></i>
+            <h2 class="text-2xl font-bold mb-2">Your Data, Synced</h2>
+            <p class="text-secondary mb-6">Great news! LittleSprout now securely backs up your data online using Firebase. This means your data is safe and can be accessed if you log in on other devices. All data remains private to your account.</p>
+            <button onclick="acknowledgeDisclaimer()" class="w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition-colors mt-4">I Understand!</button>
+        </div>
+    </div>
+    
+     <div id="backup-options-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="panel-bg text-primary p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-md text-center animate-fadeIn">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Export & Import</h2>
+                <button onclick="hideModal('backup-options-modal')" class="text-secondary hover:text-primary"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <p class="text-secondary mb-6">Export your log data to a CSV file for your records or import data from another source.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <button onclick="exportDataToFile('csv')" class="flex flex-col items-center justify-center p-4 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors text-left">
+                    <div class="flex items-center w-full"><i class="fas fa-file-csv text-green-500 text-2xl mr-4"></i>
+                        <div><span class="font-semibold text-sm">Export to CSV</span><span class="block text-xs text-secondary mt-1">Save a .csv backup file to your device.</span></div>
+                    </div>
+                </button>
+                <button onclick="triggerImport()" class="flex flex-col items-center justify-center p-4 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors text-left">
+                     <div class="flex items-center w-full"><i class="fas fa-upload text-teal-500 text-2xl mr-4"></i>
+                         <div><span class="font-semibold text-sm">Import from CSV</span><span class="block text-xs text-secondary mt-1">Restore from a .csv file.</span></div>
+                     </div>
+                </button>
+                <input type="file" id="import-file-input" class="hidden" accept=".csv" onchange="importData(event)">
+            </div>
+            <button onclick="hideModal('backup-options-modal')" class="w-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors mt-6">Close</button>
+       </div>
+    </div>
+
+    <div id="activity-log-modal" class="fixed inset-0 panel-bg text-primary z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col">
+       <div class="p-4 md:p-6 flex-shrink-0">
+           <div class="flex justify-between items-center mb-4">
+               <h2 class="text-2xl font-bold">Activity Log</h2>
+               <button onclick="hideModal('activity-log-modal')" class="text-secondary hover:text-primary"><i class="fas fa-times text-2xl"></i></button>
+           </div>
+       </div>
+       <div id="log-container" class="flex-grow space-y-3 px-4 md:px-6 pr-2 overflow-y-auto mt-2 modal-content-scroll">
+           <p id="empty-log-msg" class="text-secondary text-center mt-8">No activities logged yet.</p>
+       </div>
+       <div class="p-4 md:p-6 pt-4 mt-2 border-t border-color flex-shrink-0">
+           <button onclick="clearLogWithConfirmation()" class="w-full bg-red-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-red-600 transition-colors flex items-center justify-center gap-2 text-sm"><i class="fas fa-trash"></i> Clear Log</button>
+       </div>
+    </div>
+
+    <div id="memories-modal" class="fixed inset-0 panel-bg text-primary z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col">
+        <div class="p-4 md:p-6 flex-shrink-0">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold">Memories</h2>
+                <button onclick="hideModal('memories-modal')" class="text-secondary hover:text-primary"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+             <p class="text-secondary text-sm">A visual timeline of your baby's best moments. Click the camera to add a new memory. Images over 1MB may not save.</p>
+        </div>
+        <div id="memories-container" class="flex-grow p-4 md:p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 overflow-y-auto modal-content-scroll">
+            <p id="empty-memories-msg" class="col-span-full text-secondary text-center mt-8">No memories saved yet. Add one!</p>
+        </div>
+        <div class="p-4 md:p-6 border-t border-color flex-shrink-0">
+            <input type="file" id="memory-photo-input" class="hidden" accept="image/*" onchange="addMemory(event)">
+            <button onclick="document.getElementById('memory-photo-input').click()" class="w-full bg-pink-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-pink-600 transition-colors flex items-center justify-center gap-2 text-sm"><i class="fas fa-camera-retro"></i> Add New Memory</button>
+        </div>
+    </div>
+    
+    <div id="inventory-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="panel-bg text-primary p-6 rounded-2xl shadow-2xl w-full max-w-md animate-fadeIn">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Supplies Inventory</h2>
+                <button onclick="hideModal('inventory-modal')" class="text-secondary hover:text-primary"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="diaper-count" class="block text-sm font-medium text-secondary">Diapers Left</label>
+                    <p class="text-xs text-secondary mb-1">Current: <span id="current-diapers">0</span></p>
+                    <input type="number" id="diaper-count" class="mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" placeholder="e.g., 50">
+                </div>
+                <div>
+                    <label for="formula-count" class="block text-sm font-medium text-secondary">Formula Cans/Boxes Left</label>
+                     <p class="text-xs text-secondary mb-1">Current: <span id="current-formula">0</span></p>
+                    <input type="number" id="formula-count" class="mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" placeholder="e.g., 2">
                 </div>
             </div>
+            <div class="mt-6 flex gap-4">
+                <button onclick="saveInventory()" class="w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600">Save Inventory</button>
+                <button onclick="hideModal('inventory-modal')" class="w-full bg-slate-200 dark:bg-slate-600 text-primary font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500">Cancel</button>
+            </div>
+        </div>
+    </div>
 
-            <!-- Controls -->
-            <div id="controls-container" class="w-full flex items-center justify-center space-x-4 flex-shrink-0">
-                <button id="options-button" class="bg-[var(--surface-color)] p-4 rounded-full text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 border border-[var(--border-color)]" aria-label="Open options">
-                    <i data-lucide="settings-2" class="w-7 h-7"></i>
-                </button>
-                <button id="play-button" class="bg-[var(--play-button-bg)] text-[var(--play-button-text)] p-5 rounded-full shadow-lg hover:opacity-90 transform hover:scale-105 transition-all duration-200" aria-label="Play">
-                    <i data-lucide="play" class="w-10 h-10 fill-current ml-1"></i>
-                </button>
-                 <button id="stop-button" class="hidden bg-red-600 text-white p-5 rounded-full shadow-lg hover:bg-red-700 transform hover:scale-105 transition-all duration-200" aria-label="Stop player">
-                    <i data-lucide="square" class="w-10 h-10 fill-current"></i>
-                </button>
+    <!-- Other modals (confirm, pdf, charts, etc.) are assumed to be here and are collapsed for brevity -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-[60] opacity-0 pointer-events-none transition-opacity duration-300"><div class="panel-bg text-primary p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center animate-fadeIn"><h2 class="text-xl font-bold mb-4">Are you sure?</h2><p id="confirm-modal-text" class="text-secondary mb-6"></p><div class="flex gap-4"><button id="confirm-modal-yes" class="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600">Yes</button><button id="confirm-modal-no" class="w-full bg-slate-200 dark:bg-slate-600 text-primary font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500">Cancel</button></div></div></div>
+    <div id="pdf-export-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 opacity-0 pointer-events-none transition-opacity duration-300"><div class="panel-bg text-primary p-6 rounded-2xl shadow-2xl w-full max-w-md animate-fadeIn"><div class="flex justify-between items-center mb-4"><h2 class="text-xl font-bold">Export to PDF</h2><button onclick="hideModal('pdf-export-modal')" class="text-secondary hover:text-primary"><i class="fas fa-times text-xl"></i></button></div><p class="text-secondary mb-4">Select a date range to generate a PDF report.</p><div class="space-y-3"><div><label for="pdf-start-date" class="block text-sm font-medium text-secondary">Start Date</label><input type="date" id="pdf-start-date" class="mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div><div><label for="pdf-end-date" class="block text-sm font-medium text-secondary">End Date</label><input type="date" id="pdf-end-date" class="mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div></div><div class="mt-6 flex gap-4"><button onclick="generatePDF()" class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600">Generate PDF</button><button onclick="hideModal('pdf-export-modal')" class="w-full bg-slate-200 dark:bg-slate-600 text-primary font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500">Cancel</button></div></div></div>
+    <div id="charts-modal" class="fixed inset-0 panel-bg text-primary z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col p-4 md:p-6"><div class="flex-shrink-0"><div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold">Growth Charts</h2><button onclick="hideCharts()" class="text-secondary hover:text-primary"><i class="fas fa-times text-2xl"></i></button></div></div><div class="flex-grow grid grid-cols-1 lg:grid-cols-2 gap-6 overflow-y-auto modal-content-scroll"><div><h3 class="text-lg font-semibold text-center mb-2">Weight Over Time (lbs)</h3><div class="p-4 input-bg rounded-lg"><canvas id="weight-chart"></canvas></div></div><div><h3 class="text-lg font-semibold text-center mb-2">Height Over Time (in)</h3><div class="p-4 input-bg rounded-lg"><canvas id="height-chart"></canvas></div></div></div></div>
+
+    <div id="settings-panel" class="fixed inset-0 panel-bg text-primary z-40 opacity-0 pointer-events-none transition-opacity duration-300 flex flex-col">
+       <div class="p-4 md:p-6 flex-shrink-0">
+           <div class="flex justify-between items-start mb-4">
+               <div>
+                   <h2 class="text-2xl font-bold">Settings</h2>
+                   <div id="panel-date-time" class="text-secondary text-sm mt-1"></div>
+               </div>
+               <div class="flex items-center gap-4">
+                   <button id="theme-toggle-button" onclick="toggleDarkMode()" class="text-secondary hover:text-primary"></button>
+                   <button onclick="toggleSettingsPanel()" class="text-secondary hover:text-primary"><i class="fas fa-times text-2xl"></i></button>
+               </div>
+           </div>
+           <div id="weather-display-panel" class="text-secondary text-sm mb-2">Loading weather...</div>
+           <div class="border-t border-b border-color py-2 my-4">
+               <h3 class="text-sm font-bold text-secondary mb-1">Upcoming Milestones:</h3>
+               <div id="milestone-ticker-wrap" class="ticker-wrap text-sm text-primary">
+                   <div id="milestone-ticker" class="ticker-move"></div>
+               </div>
+           </div>
+       </div>
+
+       <div class="flex-grow p-4 md:p-6 overflow-y-auto modal-content-scroll">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <button onclick="showModal('activity-log-modal'); toggleSettingsPanel();" class="flex flex-col items-center justify-center p-3 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"><i class="fas fa-list-alt text-green-500 text-2xl mb-2"></i><span class="font-semibold text-xs">Activity Log</span></button>
+                <button onclick="showCharts(); toggleSettingsPanel();" class="flex flex-col items-center justify-center p-3 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"><i class="fas fa-chart-line text-pink-500 text-2xl mb-2"></i><span class="font-semibold text-xs">Growth Charts</span></button>
+                <button onclick="showModal('memories-modal'); renderMemories(); toggleSettingsPanel();" class="flex flex-col items-center justify-center p-3 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"><i class="fas fa-camera-retro text-pink-500 text-2xl mb-2"></i><span class="font-semibold text-xs">Memories</span></button>
+                <button onclick="showInventoryModal(); toggleSettingsPanel();" class="flex flex-col items-center justify-center p-3 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"><i class="fas fa-boxes-stacked text-lime-500 text-2xl mb-2"></i><span class="font-semibold text-xs">Supplies</span></button>
+                <button onclick="showModal('backup-options-modal'); toggleSettingsPanel();" class="flex flex-col items-center justify-center p-3 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"><i class="fas fa-file-export text-teal-500 text-2xl mb-2"></i><span class="font-semibold text-xs">Export/Import</span></button>
+                <button onclick="showModal('pdf-export-modal'); toggleSettingsPanel();" class="flex flex-col items-center justify-center p-3 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"><i class="fas fa-file-pdf text-red-500 text-2xl mb-2"></i><span class="font-semibold text-xs">Export PDF</span></button>
+           </div>
+       </div>
+       
+        <div class="p-4 md:p-6 mt-auto border-t border-color flex-shrink-0">
+            <div id="user-info" class="text-xs text-secondary/50 text-center w-full mb-2">Not signed in</div>
+            <div id="version-info" class="text-xs text-secondary/50 text-center w-full"></div>
+       </div>
+    </div>
+
+
+    <div id="app-container" class="container mx-auto p-4 md:p-6 max-w-lg opacity-0 transition-opacity duration-500">
+        <header class="flex justify-between items-center mb-4 p-4 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 dark:from-slate-800 dark:to-indigo-900 shadow-lg text-white">
+            <div class="w-8"></div>
+            <div class="text-center">
+                <h1 id="header-title" class="text-2xl sm:text-3xl font-bold"></h1>
+                <p id="header-subtitle" class="text-white/80 mt-1"></p>
+            </div>
+            <button onclick="toggleSettingsPanel()" class="text-white/80 hover:text-white transition-colors w-8">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </header>
+        <div id="main-clock-container" class="text-center mb-6"><div class="flex items-end justify-center"><span id="main-time-display" class="text-5xl sm:text-6xl font-bold text-primary leading-none"></span><span id="main-ampm-display" class="text-xl sm:text-2xl font-semibold text-secondary pb-1 ml-2"></span></div><span id="main-date-display" class="text-base sm:text-lg text-secondary"></span></div>
+        <div id="last-activity-display" class="text-center text-sm text-secondary mb-6 h-5"></div>
+        <main>
+            <div id="log-buttons-container" class="bg-secondary p-4 sm:p-6 rounded-2xl shadow-lg border-t-4 border-blue-300 dark:border-indigo-500">
+                 <h2 class="text-xl sm:text-2xl font-semibold text-secondary mb-4">What are you logging?</h2>
+                 <div id="main-activity-buttons" class="icon-scroll-container flex items-center overflow-x-auto pb-4">
+                     <!-- Age-relevant activities will be rendered here -->
+                 </div>
+            </div>
+            <div id="form-display-area" class="hidden mt-4 bg-secondary p-4 sm:p-6 rounded-2xl shadow-lg border-t-4 border-blue-300 dark:border-indigo-500 animate-fadeIn"></div>
+            
+            <div id="outlook-section" class="text-center mt-6 p-4 bg-secondary rounded-2xl shadow-lg border-t-4 border-purple-300 dark:border-purple-500 hidden animate-fadeIn">
+                 <h3 class="font-bold text-primary mb-2">Today's Outlook</h3>
+                 <div id="main-weather-display" class="text-secondary text-sm mb-3"></div>
+                 <p id="outlook-suggestion" class="text-primary text-sm mb-4 p-3 bg-primary rounded-lg flex items-center justify-center gap-x-2"></p>
             </div>
         </main>
-        
-        <!-- Bottom Bar -->
-        <footer id="bottom-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-[-2px_0_10px_black] flex-shrink-0">
-            <span id="bottom-bar-station-name" class="font-bold text-sm h-5 truncate"></span>
-            <div id="network-speed-container" class="flex items-center space-x-1 text-xs text-[var(--text-muted-color)]"></div>
-        </footer>
-
-        <!-- Modals Container -->
-        <div id="modals-container">
-             <!-- Options Modal -->
-            <div id="options-modal" class="hidden fixed inset-0 z-50">
-                <!-- Backdrop -->
-                <div id="options-backdrop" class="absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-0"></div>
-                <!-- Panel -->
-                <div id="options-panel" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[var(--modal-bg)] flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
-                    <header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
-                        <h2 class="text-xl font-bold text-[var(--text-color)]">Options</h2>
-                        <button id="close-options-button" class="p-2 rounded-full hover:bg-[var(--border-color)] text-[var(--text-color)]">
-                            <i data-lucide="x" class="w-6 h-6"></i>
-                        </button>
-                    </header>
-                    <div id="options-container" class="p-4 space-y-3 text-[var(--text-color)] flex-grow overflow-y-auto">
-                         <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-lg">
-                            <span id="options-date"></span>
-                            <span id="options-clock" class="font-mono"></span>
-                        </div>
-                         <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-lg">
-                            <div id="weather-display-options" class="flex items-center space-x-2">
-                                <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
-                                <span>Loading Weather...</span>
-                            </div>
-                            <div id="temp-toggle" class="flex items-center space-x-1 text-sm cursor-pointer">
-                                <span id="temp-c" class="opacity-50">°C</span>
-                                <span>/</span>
-                                <span id="temp-f" class="font-bold">°F</span>
-                            </div>
-                        </div>
-                        <button id="theme-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
-                            <span>Toggle Theme</span>
-                            <span id="theme-icon-container">
-                               <i data-lucide="moon" class="w-5 h-5"></i>
-                            </span>
-                        </button>
-                        <button id="fullscreen-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
-                            <span>Fullscreen</span>
-                            <span id="fullscreen-icon-container">
-                               <i data-lucide="maximize" class="w-5 h-5"></i>
-                            </span>
-                        </button>
-                        <button id="toggle-station-list-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
-                            <span>Station List</span>
-                            <i data-lucide="chevron-down" class="w-5 h-5 transition-transform"></i>
-                        </button>
-                        <div id="station-list-in-options" class="station-list-scrollbar space-y-2 pr-2">
-                             <!-- Station list will be injected here -->
-                        </div>
-                        <button id="random-station-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
-                            <span>Random Station</span>
-                            <i data-lucide="dice-5" class="w-5 h-5"></i>
-                        </button>
-                        <div class="w-full grid grid-cols-3 gap-2 items-center p-3 bg-[var(--surface-color)] rounded-lg text-sm">
-                            <span class="text-left">Stream Time</span>
-                            <span id="options-rds-display" class="font-bold truncate text-center"></span>
-                            <span id="stopwatch-display" class="font-mono text-right">00:00</span>
-                        </div>
-                    </div>
-                     <div id="version-footer" class="text-center text-[var(--text-faint-color)] text-xs p-4 border-t border-[var(--border-color)] flex-shrink-0"></div>
-                </div>
-            </div>
-        </div>
+        <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white py-2 px-4 rounded-lg shadow-xl transition-all duration-300 opacity-0 translate-y-10 z-[100]"></div>
     </div>
+
+    <!-- Form Templates -->
+    <template id="feed-form-template"><h3 class="text-xl font-semibold mb-4 flex items-center text-primary"><i class="fas fa-fw fa-utensils text-blue-500 mr-3"></i>New Feeding</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-secondary">Type</label><select class="type mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"><option>Breast Milk</option><option>Formula</option></select></div><div><label class="block text-sm font-medium text-secondary">Amount (oz)</label><input type="number" class="amount mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" placeholder="e.g., 4"></div><div><label class="block text-sm font-medium text-secondary">Time</label><input type="datetime-local" class="time mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div><div class="flex items-center"><input id="deduct-formula" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded"><label for="deduct-formula" class="ml-2 block text-sm text-secondary">Deduct from inventory</label></div><div><label class="block text-sm font-medium text-secondary">Notes</label><textarea class="notes mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" rows="2" placeholder="e.g., Seemed extra hungry..."></textarea></div><div class="grid grid-cols-2 gap-3 mt-2"><button class="w-full bg-blue-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-600" onclick="addFeed()">Add Feed</button><button type="button" class="w-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500" onclick="showForm(null)">Cancel</button></div></div></template>
+    <template id="sleep-form-template"><h3 class="text-xl font-semibold mb-4 flex items-center text-primary"><i class="fas fa-fw fa-moon text-indigo-500 mr-3"></i>New Sleep</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-secondary">Start Time</label><input type="datetime-local" class="start-time mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div><div><label class="block text-sm font-medium text-secondary">End Time</label><input type="datetime-local" class="end-time mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div><div><label class="block text-sm font-medium text-secondary">Notes</label><textarea class="notes mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" rows="2" placeholder="e.g., Slept through the night!"></textarea></div><div class="grid grid-cols-2 gap-3 mt-2"><button class="w-full bg-indigo-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-600" onclick="addSleep('sleep')">Add Sleep</button><button type="button" class="w-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500" onclick="showForm(null)">Cancel</button></div></div></template>
+    <template id="diaper-form-template"><h3 class="text-xl font-semibold mb-4 flex items-center text-primary"><i class="fas fa-fw fa-baby text-amber-500 mr-3"></i>New Diaper</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-secondary">Type</label><select class="type mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"><option>Wet</option><option>Dirty</option><option>Wet & Dirty</option></select></div><div><label class="block text-sm font-medium text-secondary">Time</label><input type="datetime-local" class="time mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div><div class="flex items-center"><input id="deduct-diaper" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded"><label for="deduct-diaper" class="ml-2 block text-sm text-secondary">Deduct from inventory</label></div><div><label class="block text-sm font-medium text-secondary">Notes</label><textarea class="notes mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" rows="2" placeholder="e.g., Color seems normal..."></textarea></div><div class="grid grid-cols-2 gap-3 mt-2"><button class="w-full bg-amber-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-amber-600" onclick="addDiaper()">Add Diaper</button><button type="button" class="w-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500" onclick="showForm(null)">Cancel</button></div></div></template>
+    <template id="weight-form-template"><h3 class="text-xl font-semibold mb-4 flex items-center text-primary"><i class="fas fa-fw fa-weight-scale text-red-500 mr-3"></i>New Weight</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-secondary">Weight (lbs)</label><input type="number" step="0.1" class="amount mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" placeholder="e.g., 10.5"></div><div><label class="block text-sm font-medium text-secondary">Date</label><input type="date" class="date mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div><div><label class="block text-sm font-medium text-secondary">Notes</label><textarea class="notes mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" rows="2" placeholder="e.g., At pediatrician's office..."></textarea></div><div class="grid grid-cols-2 gap-3 mt-2"><button class="w-full bg-red-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-red-600" onclick="addMeasurement('weight')">Add Weight</button><button type="button" class="w-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500" onclick="showForm(null)">Cancel</button></div></div></template>
+    <template id="height-form-template"><h3 class="text-xl font-semibold mb-4 flex items-center text-primary"><i class="fas fa-fw fa-ruler-vertical text-green-500 mr-3"></i>New Height</h3><div class="space-y-4"><div><label class="block text-sm font-medium text-secondary">Height (in)</label><input type="number" step="0.1" class="amount mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" placeholder="e.g., 21.5"></div><div><label class="block text-sm font-medium text-secondary">Date</label><input type="date" class="date mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3"></div><div><label class="block text-sm font-medium text-secondary">Notes</label><textarea class="notes mt-1 block w-full input-bg border-transparent rounded-md py-2 px-3" rows="2" placeholder="e.g., Measured at home..."></textarea></div><div class="grid grid-cols-2 gap-3 mt-2"><button class="w-full bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600" onclick="addMeasurement('height')">Add Height</button><button type="button" class="w-full bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500" onclick="showForm(null)">Cancel</button></div></div></template>
     
-    <audio id="radio-player" preload="none" playsinline></audio>
-    <audio id="primer-audio" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSUNSAAAACgAAADIZMDI1AQ==" class="hidden"></audio>
-
-    <!-- App Logic -->
-    <script>
-        // --- Configuration ---
-        const RADIO_STATIONS = {
-            "WKAQ 580": { "logo": "https://i.iheart.com/v3/re/assets/images/77d5680e-688b-4488-8c56-9b4963cb0813.png", "streamUrl": "https://tunein.cdnstream1.com/4851_128.mp3", "frequency": "AM: 580 Khz", "callSign": "WKAQ AM", "rdsText": [ "WKAQ 580", "WKAQ AM", "580 AM", "San Juan, PR"] },
-            "NOTIUNO 630": { "logo": "https://www.unoradio.com/logos/logos/notiuno/notiuno630.png", "streamUrl": "https://server20.servistreaming.com:9022/stream", "frequency": "AM: 630 Khz", "callSign": "WUNO AM", "rdsText": [ "NotiUno 630", "WUNO AM", "630 AM", "San Juan, PR"] },
-            "Radio Once": { "logo": "https://www.radioonce.com/templates/rt_galatea/custom/images/demo/home/header/logo-radio11.png", "streamUrl": "http://49.13.212.200:14167/stream?type=http&nocache=21", "frequency": "AM: 1120 Khz", "callSign": "WMSW AM", "rdsText": [ "Radio Once", "WMSW AM", "1120 AM", "Hatillo, PR"] },
-            "Radio Isla": { "logo": "https://radioIsla.tv/wp-content/uploads/2019/06/Logo-Radio-Isla.png", "streamUrl": "https://server7.servistreaming.com/proxy/radioisla?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "AM: 1320 Khz", "callSign": "WSKN AM", "rdsText": ["Radio Isla", "WSKN AM", "1320 AM",  "San Juan, PR"] },
-            "Radio Tiempo": { "logo": "https://radiotiempo.net/wp-content/uploads/2022/08/tiempo-172x128.png", "streamUrl": "https://server7.servistreaming.com/proxy/tiempo?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "AM: 1430 Khz", "callSign": "WNLE AM", "rdsText": [ "Radio Tiempo", "WNLE AM", "1430 AM", "Caguas, PR"] },
-            "Radio Cumbre": { "logo": "https://i.ibb.co/5g2402Cc/wkum-png.png", "streamUrl": "https://sp.unoredcdn.net/8158/stream/1/", "frequency": "AM: 1470 Khz", "callSign": "WKUM AM", "rdsText": [ "Radio Cumbre", "WKUM AM", "1470 AM", "Orocovis, PR"] },
-            "Radio Oro": { "logo": "https://cdn-profiles.tunein.com/s21791/images/logod.png?t=637238626060000000", "streamUrl": "https://us2.internet-radio.com/proxy/woro?mp=/stream", "frequency": "FM: 92.5 Mhz", "callSign": "WORO FM", "rdsText": [ "Radio Oro", "WORO FM", "92.5 FM", "Corozal, PR"] },
-            "Z 93": { "logo": "https://i.ibb.co/23BMsKBY/wznt-png.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WZNT_icy", "frequency": "FM: 93.7 Mhz", "callSign": "WZNT FM", "rdsText": [ "Z 93", "La Emisora", "Nacional", "De La Salsa", "WZNT FM", "93.7 FM", "San Juan", "Puerto Rico"] },
-            "La Nueva 94": { "logo": "https://i.ibb.co/sv1RBc08/wodalogo.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WODA_icy", "frequency": "FM: 94.7 Mhz", "callSign": "WODA FM", "rdsText": [ "La Nueva 94", "Los #1", "En Joda", "WODA FM", "94.7 FM", "San Juan", "Puerto Rico"] },
-            "Fidelity": { "logo": "https://fidelitypr.com/wp-content/uploads/2022/01/cropped-Redisen%CC%83o-Logo-Fidelity-3-15-2048x677.png", "streamUrl": "https://server7.servistreaming.com/proxy/fidelity?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "FM: 95.7 Mhz", "callSign": "WFID FM", "rdsText": [ "Fidelity", "Tu Vida", "En Música", "WFID FM", "95.7 FM", "Rio Piedras", "Puerto Rico"] },
-            "Estereotempo": { "logo": "https://i.ibb.co/F4GM0W81/wrxr.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WRXD_icy", "frequency": "FM: 96.5 Mhz", "callSign": "WRXD FM", "rdsText": [ "Estereotempo", "WRXD FM", "96.5 FM", "San Juan", "Puerto Rico"] },
-            "Magic 97.3": { "logo": "https://i.ibb.co/Z6WqXPzV/woye.png", "streamUrl": "https://stream.eleden.com:8210/magic.aac", "frequency": "FM: 97.3 Mhz", "callSign": "WOYE FM", "rdsText": [ "Magic 97.3", "WOYE FM", "97.3 FM", "Rio Grande", "Puerto Rico"] },
-            "SalSoul": { "logo": "https://salsoul.com/wp-content/uploads/2020/12/cropped-salsoul-2.png", "streamUrl": "https://server20.servistreaming.com:9023/stream?type=.mp3&_=1", "frequency": "FM: 99.1 Mhz", "callSign": "WPRM FM", "rdsText": [ "SalSoul", "WPRM FM", "99.1 FM", "San Juan", "Puerto Rico"] },
-            "La X": { "logo": "https://i.ibb.co/zWDcRnBw/laxpng.png", "streamUrl": "http://stream.eleden.com:8235/lax.ogg", "frequency": "FM: 100.7 Mhz", "callSign": "WXYX FM", "rdsText": [ "La X", "Para", "Los Que Llevan", "La Musica", "Por Dentro", "WXYX FM", "100.7 FM",  "Bayamón", "Puerto Rico"] },
-            "Hot102": { "logo": "https://hot102pr.com/wp-content/uploads/2023/10/Artboard-4.png", "streamUrl": "https://server7.servistreaming.com/proxy/hot?mp=%2Fstream%3Ftype%3D.mp3&_=1", "frequency": "FM: 102.5 Mhz", "callSign": "WTOK FM", "rdsText": [ "HOT 102", "WTOK FM", "102.5 FM", "San Juan", "Puerto Rico"] },
-            "KQ105": { "logo": "https://upload.wikimedia.org/wikipedia/en/8/80/KQ_105_WKAQ-FM_2014_logo.png", "streamUrl": "https://televicentro.streamguys1.com/wkaqfm-icy?key=e018260d508e5b04e91a4d9a30f7ceea9b71bd86e2bfdb6fcc3bbd4928525c00", "frequency": "FM: 104.7 Mhz", "callSign": "WKAQ FM", "rdsText": [ "KQ 105", "La Primera", "WKAQ FM", "104.7 FM", "San Juan", "Puerto Rico"] },
-            "La Mega 106.9": { "logo": "https://i.ibb.co/Xrp2nhpQ/WMEG-PNG.png", "streamUrl": "https://liveaudio.lamusica.com/PR_WMEG_icy", "frequency": "FM: 106.9 Mhz", "callSign": "WMEG FM", "rdsText": [ "La Mega 106.9", "WMEG FM", "106.9 FM", "San Juan", "Puerto Rico"] },
-            "Latino 99": { "logo": "https://mm.aiircdn.com/371/5928f28889f51.png", "streamUrl": "https://lmmradiocast.com/latino99fm", "frequency": "Satellite Radio", "callSign": null, "rdsText": [ "Latino 99","¡Pura", "Salsa!", "Kissimmee,", "Florida"] },
-            "Salseo": { "logo": "https://static.wixstatic.com/media/8dfec0_3e265a2f0fb5417c90c55be4e4e7d3cf~mv2.png/v1/fill/w_276,h_120,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/LOGOSALSEORADIO_clipped_rev_2_v2%20(1).png", "streamUrl": "https://listen.radioking.com/radio/399811/stream/452110", "frequency": "Satellite Radio", "callSign": null, "rdsText": [ "Salseo Radio", "Ponte Al", "Día En", "La Salsa!", "Quebradillas", "Puerto Rico"] },
-            "La Vieja Z": { "logo": "https://i.ibb.co/d4VZVjj2/LVZ8-removebg-preview.png", "streamUrl": "https://s3.free-shoutcast.com/stream/18094", "frequency": "Satellite Radio", "callSign": null, "rdsText": [ "La Vieja Z", "Central Florida", "Salsa!" ] }
-        };
-        const STATIONS_ORDER = Object.keys(RADIO_STATIONS);
-        const delay = ms => new Promise(res => setTimeout(res, ms));
-
-        // --- DOM & State ---
-        const dom = {
-            appContainer: document.getElementById('app-container'),
-            body: document.body,
-            topBar: document.getElementById('top-bar'),
-            statusLeft: document.getElementById('status-left'),
-            statusCenter: document.getElementById('status-center'),
-            statusRight: document.getElementById('status-right'),
-            tunerContainer: document.getElementById('tuner-container'),
-            powerOnAnimation: document.getElementById('power-animation'),
-            tunerPanel: document.getElementById('tuner-panel'),
-            tunerContent: document.getElementById('tuner-content'),
-            tunerNeedle: document.getElementById('tuner-needle'),
-            tunerBandIndicator: document.getElementById('tuner-band-indicator'),
-            amTuner: document.getElementById('am-tuner'),
-            fmTuner: document.getElementById('fm-tuner'),
-            webTuner: document.getElementById('web-tuner'),
-            weatherDisplaySettings: document.getElementById('weather-display-options'),
-            tempToggle: document.getElementById('temp-toggle'),
-            tempC: document.getElementById('temp-c'),
-            tempF: document.getElementById('temp-f'),
-            optionsClock: document.getElementById('options-clock'),
-            optionsDate: document.getElementById('options-date'),
-            versionFooter: document.getElementById('version-footer'),
-            playerDisplay: document.getElementById('player-display'),
-            playerContent: document.getElementById('player-content'),
-            playButton: document.getElementById('play-button'),
-            stopButton: document.getElementById('stop-button'),
-            optionsButton: document.getElementById('options-button'),
-            optionsModal: document.getElementById('options-modal'),
-            optionsBackdrop: document.getElementById('options-backdrop'),
-            optionsPanel: document.getElementById('options-panel'),
-            optionsContainer: document.getElementById('options-container'),
-            optionsRdsDisplay: document.getElementById('options-rds-display'),
-            closeOptionsButton: document.getElementById('close-options-button'),
-            themeToggleButton: document.getElementById('theme-toggle-button'),
-            themeIconContainer: document.getElementById('theme-icon-container'),
-            fullscreenToggleButton: document.getElementById('fullscreen-toggle-button'),
-            fullscreenIconContainer: document.getElementById('fullscreen-icon-container'),
-            toggleStationListButton: document.getElementById('toggle-station-list-button'),
-            stationListInOptions: document.getElementById('station-list-in-options'),
-            randomStationButton: document.getElementById('random-station-button'),
-            stopwatchDisplay: document.getElementById('stopwatch-display'),
-            networkSpeedContainer: document.getElementById('network-speed-container'),
-            audioPlayer: document.getElementById('radio-player'),
-            primerAudio: document.getElementById('primer-audio'),
-            bottomBar: document.getElementById('bottom-bar'),
-            bottomBarStationName: document.getElementById('bottom-bar-station-name'),
-        };
-        let state = { currentStationName: null, isPlaying: false, isFirstPlay: true, elapsedTime: 0, rdsInterval: null, rdsObserverInterval: null, stopwatchInterval: null, flickerInterval: null, networkSpeedInterval: null, isCelsius: false, weatherData: null, isPrimed: false, isStopping: false };
-
-        // --- UI Update Functions ---
-        const runPlayerStartupAnimation = async (station) => {
-            const playerContent = dom.playerContent;
-            playerContent.innerHTML = ''; // Clear previous content
-            
-            // Rebuild the player display with animations
-            const stationHTML = `
-                <div class="flex items-center w-full h-full p-4 space-x-4">
-                    <img src="${station.logo}" alt="${state.currentStationName} Logo" class="w-24 h-24 object-contain bg-black/10 p-1 rounded-md flex-shrink-0 opacity-0" style="animation: fadeIn 0.5s 0.2s ease-out forwards;" onerror="this.onerror=null; this.src='https://placehold.co/96x96/1a1a1a/ffffff?text=Logo'; this.style.backgroundColor='transparent';">
-                    <div class="flex flex-col justify-center h-full flex-grow truncate text-left">
-                        <div id="rds-text-display" class="font-segoe-mono text-xl text-[var(--text-color)] h-8 truncate w-full opacity-0" style="animation: fadeIn 0.5s 1.2s ease-out forwards;"></div>
-                        <p id="station-name-display" class="font-segoe font-bold text-lg text-[var(--text-color)] truncate w-full mt-1 opacity-0" style="animation: fadeIn 0.5s 0.8s ease-out forwards;">${state.currentStationName}</p>
-                        <div id="station-info-display" class="flex items-center mt-1 opacity-0" style="animation: fadeIn 0.5s 0.5s ease-out forwards;">
-                            ${station.callSign ? `<span class="font-segoe text-xs text-[var(--text-muted-color)]">${station.callSign}</span><span class="font-segoe text-xs text-[var(--text-muted-color)] mx-1">|</span>` : ''}
-                            <span class="font-segoe text-xs text-[var(--text-muted-color)]">${station.frequency}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            playerContent.innerHTML = stationHTML;
-            
-            // Start RDS after a delay
-            await delay(1500);
-            startRdsRotation();
-        };
-
-        const runPlayerShutdownAnimation = (callback) => {
-            return new Promise(resolve => {
-                const playerContent = dom.playerContent;
-                playerContent.style.transition = 'opacity 0.3s ease-out';
-                playerContent.style.opacity = 0;
+    <script type="module">
+        // --- Firebase Imports ---
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, collection, query, writeBatch, getDocs, Timestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-                setTimeout(() => {
-                    playerContent.innerHTML = `<p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>`;
-                    playerContent.style.opacity = 1;
-                    if (callback) callback();
-                    resolve();
-                }, 300);
-            });
-        };
-
-        const updateControlButtons = () => {
-             if (state.isPlaying) {
-                dom.playButton.classList.add('hidden');
-                dom.stopButton.classList.remove('hidden');
-            } else {
-                dom.playButton.classList.remove('hidden');
-                dom.stopButton.classList.add('hidden');
-            }
-             lucide.createIcons();
-        };
-
-        const updateStopwatch = () => {
-            const h = Math.floor(state.elapsedTime / 3600);
-            const m = Math.floor((state.elapsedTime % 3600) / 60);
-            const s = state.elapsedTime % 60;
-            const pad = (num) => String(num).padStart(2, '0');
-            dom.stopwatchDisplay.textContent = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
-        };
-
-        const updateClocks = () => {
-            const now = new Date();
-            const timeOptions = { hour: '2-digit', minute: '2-digit' };
-            if(dom.optionsClock) dom.optionsClock.textContent = now.toLocaleTimeString([], timeOptions);
-
-            if(dom.optionsDate) {
-                const day = String(now.getDate()).padStart(2, '0');
-                const month = String(now.getMonth() + 1).padStart(2, '0');
-                const year = String(now.getFullYear()).slice(-2);
-                dom.optionsDate.textContent = `${day}/${month}/${year}`;
-            }
-        };
+        // --- GLOBAL STATE & CONFIG ---
+        let db, auth;
+        let userId = null;
+        let unsubscribeListeners = []; // To store unsubscribe functions for cleanup
         
-        const updateStatusBar = () => {
-            const now = new Date();
-            const timeOptions = { hour: '2-digit', minute: '2-digit' };
-            const timeString = now.toLocaleTimeString([], timeOptions);
+        let babyProfile = null; // Single active profile
+        let logs = [];
+        let memories = [];
+        let inventory = { diapers: 0, formula: 0 };
+        
+        let confirmCallback = null;
+        let activeForm = null;
+        let timeInterval;
+        let weightChartInstance = null, heightChartInstance = null;
+        const { jsPDF } = window.jspdf;
+        
+        // --- DOM ELEMENTS CACHE ---
+        const $ = (selector, parent = document) => parent.querySelector(selector);
+        const $$ = (selector, parent = document) => parent.querySelectorAll(selector);
+        const appContainer = $('#app-container'), settingsPanel = $('#settings-panel'), splashScreen = $('#splash-screen');
+        const logContainer = $('#log-container'), emptyLogMsg = $('#empty-log-msg');
+        const formDisplayArea = $('#form-display-area');
 
-            if (state.isPlaying) {
-                dom.statusLeft.innerHTML = `<span class="font-bold text-sm">${timeString}</span>`;
+        // --- DATA CONSTANTS ---
+        const defaultActivities = [
+            { id: 'feed', name: 'Feed', icon: 'fas fa-utensils', color: 'blue-500' },
+            { id: 'sleep', name: 'Sleep', icon: 'fas fa-moon', color: 'indigo-500' },
+            { id: 'diaper', name: 'Diaper', icon: 'fas fa-baby', color: 'amber-500' },
+            { id: 'weight', name: 'Weight', icon: 'fas fa-weight-scale', color: 'red-500' },
+            { id: 'height', name: 'Height', icon: 'fas fa-ruler-vertical', color: 'green-500' },
+        ];
+        const milestones = [ { id: 'm2_smile', age: 2, text: "Smiles at people" }, { id: 'm4_babble', age: 4, text: "Babbles with expression" }, { id: 'm6_sit', age: 6, text: "Sits without support" }, { id: 'm9_crawl', age: 9, text: "Crawls" }, { id: 'm12_steps', age: 12, text: "May take a few steps" }, { id: 'm18_walk', age: 18, text: "Walks alone" }];
+        const suggestions = [ { text: "It's a great day for a walk in the park!", icon: 'fa-tree', minTemp: 65, maxTemp: 85 }, { text: "A bit chilly! Cuddle up with a good book.", icon: 'fa-book-open-reader', maxTemp: 60 }, { text: "It's warm out! A lukewarm bath could be fun.", icon: 'fa-bath', minTemp: 80 }];
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            drawLogo();
+            $('#version-info').textContent = `v4.0 - ${new Date('2025-06-09').toLocaleDateString()}`;
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            document.documentElement.classList.toggle('dark', isDarkMode);
+            updateThemeButton(isDarkMode);
+
+            $('#confirm-modal-yes').addEventListener('click', () => { if (typeof confirmCallback === 'function') { confirmCallback(); } hideModal('confirm-modal'); confirmCallback = null; });
+            $('#confirm-modal-no').addEventListener('click', () => { hideModal('confirm-modal'); confirmCallback = null; });
+            
+            setupFirebase();
+
+            setTimeout(() => {
+                splashScreen.classList.add('opacity-0', 'pointer-events-none');
+            }, 2500);
+        });
+        
+        async function setupFirebase() {
+            try {
+                // These will be provided by the environment
+                const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+                const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+                const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        $('#user-info').textContent = `UID: ${userId.substring(0,10)}...`;
+                        await loadData();
+                    } else {
+                        // If no user, sign in
+                        if (initialAuthToken) {
+                            await signInWithCustomToken(auth, initialAuthToken);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase Initialization Error:", error);
+                showToast("Could not connect to the database.", "error");
+            }
+        }
+        
+        async function loadData() {
+            if (!userId) return;
+
+            // Clean up previous listeners
+            unsubscribeListeners.forEach(unsub => unsub());
+            unsubscribeListeners = [];
+
+            // Fetch profile
+            const profileRef = doc(db, "artifacts", "baby-tracker", "users", userId);
+            const profileSnap = await getDoc(profileRef);
+
+            if (profileSnap.exists()) {
+                babyProfile = { id: profileSnap.id, ...profileSnap.data() };
+                startApp();
                 
-                if (state.weatherData) {
-                    const temp = state.isCelsius ? state.weatherData.temperature : (state.weatherData.temperature * 9/5 + 32);
-                    const icon = getWeatherIcon(state.weatherData.weathercode);
-                    dom.statusCenter.innerHTML = `<div class="flex items-center justify-center space-x-1"><i data-lucide="${icon}" class="w-5 h-5"></i><span>${Math.round(temp)}°</span></div>`;
-                } else {
-                    dom.statusCenter.innerHTML = ``;
-                }
+                // Set up real-time listeners for subcollections
+                const logsQuery = query(collection(db, `artifacts/baby-tracker/users/${userId}/logs`));
+                const unsubLogs = onSnapshot(logsQuery, (snapshot) => {
+                    logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp.toDate() }));
+                    renderLog();
+                    updateLastLogDisplay();
+                }, (error) => console.error("Error listening to logs:", error));
+                
+                const memoriesQuery = query(collection(db, `artifacts/baby-tracker/users/${userId}/memories`));
+                const unsubMemories = onSnapshot(memoriesQuery, (snapshot) => {
+                    memories = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // If memories modal is open, re-render it
+                    if(!$('#memories-modal').classList.contains('opacity-0')) {
+                        renderMemories();
+                    }
+                }, (error) => console.error("Error listening to memories:", error));
 
-                dom.statusRight.innerHTML = `<div id="stream-status-icon"><i data-lucide="radio-tower" class="w-5 h-5"></i></div>`;
+                unsubscribeListeners.push(unsubLogs, unsubMemories);
+
             } else {
-                dom.statusLeft.innerHTML = `<span id="carrier-text" class="font-bold text-sm">GLZ RADIO</span>`;
-                dom.statusCenter.innerHTML = timeString;
-                dom.statusRight.innerHTML = `<div id="stream-status-icon"><i data-lucide="${navigator.onLine ? 'wifi' : 'wifi-off'}" class="w-5 h-5 ${!navigator.onLine ? 'text-red-500' : ''}"></i></div>`;
+                showModal('setup-modal');
             }
-            lucide.createIcons();
+        }
+        
+        async function saveBabyInfo() {
+            const userName = $('#user-name').value.trim();
+            const babyName = $('#baby-name').value.trim();
+            const dob = $('#baby-dob').value;
+            if (!userName || !babyName || !dob) { showToast("Please fill in all fields.", "error"); return; }
+            
+            const newProfile = { userName, babyName, dob };
+            const inventoryData = { diapers: 50, formula: 4 }; // Starting inventory
+            
+            try {
+                const profileRef = doc(db, "artifacts", "baby-tracker", "users", userId);
+                await setDoc(profileRef, newProfile);
+                
+                // Initialize inventory as well
+                const inventoryRef = doc(db, `artifacts/baby-tracker/users/${userId}/inventory`, "supplies");
+                await setDoc(inventoryRef, inventoryData);
+
+                babyProfile = { id: userId, ...newProfile };
+                inventory = inventoryData;
+
+                hideModal('setup-modal');
+                if (!localStorage.getItem('disclaimerAcknowledged')) {
+                    showModal('disclaimer-modal');
+                } else {
+                    startApp();
+                }
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                showToast("Failed to save profile.", "error");
+            }
+        }
+        
+        function acknowledgeDisclaimer() { 
+            localStorage.setItem('disclaimerAcknowledged', 'true'); 
+            hideModal('disclaimer-modal'); 
+            startApp(); 
         }
 
-        // --- Tuner, Color & Weather Logic ---
-       const runPowerOnAnimation = async (callback) => {
-            dom.tunerContainer.classList.remove('is-hidden');
-            const animationEl = dom.powerOnAnimation;
-            dom.tunerContent.style.opacity = 0;
-            animationEl.classList.remove('hidden');
-            animationEl.style.opacity = 1;
+        function startApp() {
+            if (!babyProfile) return;
+            updateHeader();
+            renderLog();
+            updateLastLogDisplay();
+            updateMilestoneTicker();
+            renderActivityButtons();
+            appContainer.classList.remove('opacity-0');
+            startDateTime();
+            // Using a fixed location for weather for reliability in this version
+            fetchWeather(28.11, -81.62); // Haines City, FL
+        }
 
-            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Tuning...</span>`;
-            
-            await delay(800);
-            
-            animationEl.style.opacity = 0;
-            await delay(300); // Wait for fade out
-            animationEl.classList.add('hidden');
-            
-            if (callback) callback();
-        };
+        // --- UI & UX ---
+        function drawLogo() { /* ... unchanged ... */ const canvas=$('#logo-canvas'),favicon=$('#favicon');if(canvas.getContext){const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);ctx.beginPath();ctx.arc(w/2,h/2,w/2-10,0,Math.PI*2);ctx.fillStyle='#F0F5FF';ctx.fill();ctx.beginPath();ctx.moveTo(w/2,h*0.8);ctx.bezierCurveTo(w/2-10,h*0.7,w/2-10,h*0.4,w/2,h*0.3);ctx.bezierCurveTo(w/2+10,h*0.4,w/2+10,h*0.7,w/2,h*0.8);ctx.fillStyle='#A1DD70';ctx.fill();ctx.beginPath();ctx.moveTo(w/2-2,h*0.45);ctx.bezierCurveTo(w*0.2,h*0.4,w*0.25,h*0.15,w*0.4,h*0.3);ctx.fillStyle='#8BC34A';ctx.fill();ctx.beginPath();ctx.moveTo(w/2+2,h*0.45);ctx.bezierCurveTo(w*0.8,h*0.4,w*0.75,h*0.15,w*0.6,h*0.3);ctx.fillStyle='#A1DD70';ctx.fill();favicon.href=canvas.toDataURL('image/png')}}
+        
+        function updateHeader() { if (!babyProfile) return; $('#header-title').textContent = `Hello, ${babyProfile.userName}!`; $('#header-subtitle').textContent = `${babyProfile.babyName} is ${calculatePreciseAge(babyProfile.dob)}`; }
+        
+        function calculatePreciseAge(dobString) {
+            const dob = new Date(dobString);
+            const today = new Date();
+            if (dob > today) return "not born yet!";
 
-        const runShutdownAnimation = async (callback) => {
-            const animationEl = dom.powerOnAnimation;
-            dom.tunerContent.style.opacity = 0; // Fade out tuner details
-            animationEl.classList.remove('hidden');
-            animationEl.style.opacity = 1;
+            let years = today.getFullYear() - dob.getFullYear();
+            let months = today.getMonth() - dob.getMonth();
+            let days = today.getDate() - dob.getDate();
 
-            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Power Off</span>`;
-            
-            await delay(800);
-            animationEl.style.opacity = 0;
+            if (days < 0) {
+                months--;
+                days += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+            }
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
 
-            await delay(300); // Wait for fade out to finish
+            if (years >= 2) return `${years} years old`;
+            if (years > 0) return `${years} year${years > 1 ? 's' : ''} & ${months} month${months > 1 ? 's' : ''} old`;
             
-            if (callback) callback();
-        };
+            const totalDays = Math.floor((today - dob) / (1000 * 60 * 60 * 24));
+            if (totalDays < 7) return `${totalDays} day${totalDays !== 1 ? 's' : ''} old`;
+            
+            const weeks = Math.floor(totalDays / 7);
+            if (months < 1) return `${weeks} week${weeks > 1 ? 's' : ''} old`;
 
-        const updateTunerDisplay = (isPowerOn = false) => {
-            const station = RADIO_STATIONS[state.currentStationName];
-            
-            if (!station || !state.isPlaying) {
-                runShutdownAnimation(() => {
-                    dom.tunerContainer.classList.add('is-hidden');
-                });
+            return `${months} month${months > 1 ? 's' : ''} old`;
+        }
+
+        function calculateAgeMonths(dobString) { const dob = new Date(dobString), today = new Date(); let months = (today.getFullYear() - dob.getFullYear()) * 12 - dob.getMonth() + today.getMonth(); if (today.getDate() < dob.getDate()) months--; return months < 0 ? 0 : months; }
+
+        function renderActivityButtons() {
+            const container = $('#main-activity-buttons');
+            container.innerHTML = '';
+            let buttonsHTML = '<div class="flex space-x-4 px-2">';
+            defaultActivities.forEach(act => {
+                buttonsHTML += `<button onclick="showForm('${act.id}')" class="flex-shrink-0 flex flex-col items-center justify-center h-20 w-20 input-bg rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700/50 transition-colors"><i class="${act.icon} text-${act.color} text-2xl mb-1"></i><span class="font-semibold text-xs text-center">${act.name}</span></button>`;
+            });
+            buttonsHTML += '</div>';
+            container.innerHTML = buttonsHTML;
+        }
+
+        function showForm(formType) {
+            if (!formType) {
+                formDisplayArea.innerHTML = '';
+                formDisplayArea.classList.add('hidden');
+                $('#log-buttons-container').classList.remove('hidden');
+                activeForm = null;
                 return;
             }
+            activeForm = formType;
+            const template = $(`#${formType}-form-template`);
+            if(!template) {
+                console.error(`Template not found for ${formType}`);
+                return;
+            }
+            formDisplayArea.innerHTML = template.innerHTML;
+            $('#log-buttons-container').classList.add('hidden');
+            formDisplayArea.classList.remove('hidden');
+            
+            if (['weight', 'height'].includes(formType)) {
+                const dateInput = $('.date', formDisplayArea);
+                if(dateInput) dateInput.valueAsDate = new Date();
+            } else {
+                setInitialTimeFor(formType);
+            }
+        }
 
-            const showTuner = () => {
-                dom.tunerContent.style.opacity = 1;
-                dom.amTuner.classList.add('hidden');
-                dom.fmTuner.classList.add('hidden');
-                dom.webTuner.classList.add('hidden');
-                dom.tunerBandIndicator.textContent = '';
-                dom.webTuner.querySelector('.web-dot').classList.remove('is-animating');
+        function setInitialTimeFor(formType) { const now = new Date(); now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); const nowString = now.toISOString().slice(0, 16); if ($('.time', formDisplayArea)) $('.time', formDisplayArea).value = nowString; if ($('.start-time', formDisplayArea)) $('.start-time', formDisplayArea).value = nowString; if ($('.end-time', formDisplayArea)) $('.end-time', formDisplayArea).value = nowString; }
+        
+        function toggleSettingsPanel() { settingsPanel.classList.toggle('opacity-0'); settingsPanel.classList.toggle('pointer-events-none'); }
+        function toggleDarkMode() { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); updateThemeButton(isDark); }
+        function updateThemeButton(isDark) { const themeButton = $('#theme-toggle-button'); if (themeButton) themeButton.innerHTML = isDark ? '<i class="fas fa-sun text-yellow-500 text-2xl"></i>' : '<i class="fas fa-moon text-indigo-500 text-2xl"></i>';}
+        function showModal(modalId) { const modal = $(`#${modalId}`); if (modal) { modal.classList.remove('opacity-0', 'pointer-events-none'); } }
+        function hideModal(modalId) { const modal = $(`#${modalId}`); if (modal) { modal.classList.add('opacity-0', 'pointer-events-none'); } }
+        function showConfirmation(message, callback) { $('#confirm-modal-text').textContent = message; confirmCallback = callback; showModal('confirm-modal'); }
 
-                const freqString = station.frequency;
-                let targetNeedlePos = -10; // Default off-screen position
+        // --- LOGGING ---
+        async function addEntry(entryData) {
+            try {
+                const logsCollection = collection(db, `artifacts/baby-tracker/users/${userId}/logs`);
+                await addDoc(logsCollection, entryData);
+                showToast(`${entryData.type.charAt(0).toUpperCase() + entryData.type.slice(1)} logged!`, 'success');
+            } catch (error) {
+                console.error("Error adding entry: ", error);
+                showToast("Failed to log entry.", "error");
+            }
+        }
+        
+        function deleteEntry(id) { showConfirmation('Are you sure you want to delete this entry?', async () => { try { await deleteDoc(doc(db, `artifacts/baby-tracker/users/${userId}/logs`, id)); showToast('Entry deleted.', 'info'); } catch(e) { console.error(e); showToast("Failed to delete entry", "error"); } }); }
+        
+        async function addFeed() { const f = formDisplayArea; const amount = parseFloat($('.amount', f).value); if(isNaN(amount) || amount <= 0) { showToast("Invalid amount", "error"); return; }; const entry = { type: 'feed', icon: 'fas fa-utensils', color: 'blue-500', details: `${$('.type', f).value} - ${amount} oz`, rawAmount: amount, timestamp: Timestamp.fromDate(new Date($('.time', f).value)), notes: $('.notes', f).value }; await addEntry(entry); showForm(null); if ($('#deduct-formula', f).checked && $('.type', f).value === 'Formula') { await updateInventory('formula', -1); } }
+        async function addSleep(type) { const f = formDisplayArea; const start = new Date($('.start-time', f).value), end = new Date($('.end-time', f).value); if (!start.getTime() || !end.getTime() || start >= end) { showToast("Invalid time range.", "error"); return; } const duration = Math.round((end - start) / 60000); const hours = Math.floor(duration / 60); const minutes = duration % 60; const entry = { type, icon: 'fas fa-moon', color: 'indigo-500', details: `Duration: ${hours}h ${minutes}m`, rawDuration: duration, timestamp: Timestamp.fromDate(start), notes: $('.notes', f).value }; await addEntry(entry); showForm(null); }
+        async function addDiaper() { const f = formDisplayArea; const entry = { type: 'diaper', icon: 'fas fa-baby', color: 'amber-500', details: $('.type', f).value, timestamp: Timestamp.fromDate(new Date($('.time', f).value)), notes: $('.notes', f).value }; await addEntry(entry); showForm(null); if ($('#deduct-diaper', f).checked) { await updateInventory('diapers', -1); } }
+        async function addMeasurement(type) { const f = formDisplayArea; const amount = parseFloat($('.amount', f).value); const date = $('.date',f).value; if(isNaN(amount) || amount <=0 || !date) { showToast("Invalid input", "error"); return; }; const unit = type === 'weight' ? 'lbs' : 'in'; const icon = type === 'weight' ? 'fas fa-weight-scale' : 'fas fa-ruler-vertical'; const color = type === 'weight' ? 'red-500' : 'green-500'; const entry = { type, icon, color, details: `${type.charAt(0).toUpperCase() + type.slice(1)}: ${amount} ${unit}`, rawAmount: amount, timestamp: Timestamp.fromDate(new Date(date)), notes: $('.notes', f).value }; await addEntry(entry); showForm(null); }
 
-                if (freqString.includes('AM')) {
-                    dom.amTuner.classList.remove('hidden');
-                    dom.tunerBandIndicator.textContent = 'AM';
-                    const freq = parseFloat(freqString.match(/(\d+)/)[0]);
-                    targetNeedlePos = 5 + ((freq - 530) / (1600 - 530)) * 90;
-                } else if (freqString.includes('FM')) {
-                    dom.fmTuner.classList.remove('hidden');
-                    dom.tunerBandIndicator.textContent = 'FM';
-                    const freq = parseFloat(freqString.match(/(\d+\.\d+)/)[0]);
-                    targetNeedlePos = 5 + ((freq - 88) / (108 - 88)) * 90;
-                } else { // Satellite
-                    dom.webTuner.classList.remove('hidden');
-                    dom.tunerBandIndicator.textContent = 'SAT';
-                    if (state.isPlaying) {
-                       dom.webTuner.querySelector('.web-dot').classList.add('is-animating');
-                    }
+        // --- RENDER & DATA DISPLAY ---
+        function renderLog() { logContainer.innerHTML = ''; emptyLogMsg.style.display = logs.length === 0 ? 'block' : 'none'; logContainer.appendChild(emptyLogMsg); [...logs].sort((a, b) => b.timestamp - a.timestamp).forEach(entry => { const logItem = document.createElement('div'); logItem.className = 'flex items-start p-3 bg-primary rounded-lg border border-color animate-fadeIn'; const time = entry.timestamp; const typeName = entry.type.charAt(0).toUpperCase() + entry.type.slice(1); logItem.innerHTML = `<div class="flex-shrink-0 w-10 h-10 rounded-full bg-${entry.color}/10 flex items-center justify-center mr-4"><i class="${entry.icon} text-${entry.color}"></i></div><div class="flex-grow"><p class="font-semibold text-primary">${typeName}</p><p class="text-sm text-secondary">${time.toLocaleDateString()} at ${time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p><p class="text-sm text-secondary break-words">${entry.details}</p>${entry.notes ? `<p class="text-xs italic text-secondary mt-1 border-l-2 border-slate-300 pl-2">${entry.notes}</p>` : ''}</div><button onclick="deleteEntry('${entry.id}')" class="text-secondary hover:text-red-500 transition-colors ml-2"><i class="fas fa-trash"></i></button>`; logContainer.appendChild(logItem); }); }
+        function updateLastLogDisplay() { const lastLog = [...logs].sort((a,b) => b.timestamp - a.timestamp)[0]; const display = $('#last-activity-display'); if(lastLog) { const time = lastLog.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); const typeName = lastLog.type.charAt(0).toUpperCase() + lastLog.type.slice(1); display.innerHTML = `<i class="${lastLog.icon} text-${lastLog.color} mr-2"></i>Last: ${typeName} at ${time}`; } else { display.innerHTML = ''; }}
+        
+        async function clearLogWithConfirmation() { showConfirmation("This will delete ALL log entries. This cannot be undone.", async () => { const logsCollectionRef = collection(db, `artifacts/baby-tracker/users/${userId}/logs`); const querySnapshot = await getDocs(logsCollectionRef); const batch = writeBatch(db); querySnapshot.forEach((doc) => { batch.delete(doc.ref); }); try { await batch.commit(); showToast("Log cleared.", "info"); } catch (e) { console.error("Error clearing log:", e); showToast("Failed to clear log.", "error"); } }); }
+        
+        // --- MILESTONE LOGIC ---
+        function updateMilestoneTicker() { /* ... This can be re-implemented if needed ... */ }
+
+        // --- IMPORT/EXPORT ---
+        function triggerImport() { $('#import-file-input').click(); }
+        async function importData(event) {
+            const file = event.target.files[0]; if (!file) return;
+            showConfirmation("This will add entries from the CSV to your log. Are you sure?", () => {
+                const reader = new FileReader();
+                reader.onload = async function(e) {
+                    try {
+                        const content = e.target.result;
+                        const rows = content.split('\n').slice(1).filter(r => r);
+                        const batch = writeBatch(db);
+                        let importCount = 0;
+                        rows.forEach(rowStr => {
+                           const row = rowStr.split(',');
+                           if(row.length < 8) return;
+                           const entry = { type: row[2], timestamp: Timestamp.fromDate(new Date(row[6])), details: row[3].replace(/"/g, ''), rawAmount: row[4] ? parseFloat(row[4]) : null, rawDuration: row[5] ? parseInt(row[5]) : null, notes: row[7] ? row[7].replace(/"/g, '') : '', icon: 'fas fa-upload', color: 'gray-500' };
+                           const newLogRef = doc(collection(db, `artifacts/baby-tracker/users/${userId}/logs`));
+                           batch.set(newLogRef, entry);
+                           importCount++;
+                        });
+                        await batch.commit();
+                        showToast(`${importCount} entries imported successfully!`, 'success');
+                    } catch (err) { console.error("Import Error:", err); showToast("Failed to import file.", "error"); } finally { event.target.value = null; hideModal('backup-options-modal'); }
+                };
+                reader.readAsText(file);
+            });
+        }
+        function exportDataToFile(format) {
+            if (logs.length === 0) { showToast("No log data to export.", "info"); return; }
+            let content = "data:text/csv;charset=utf-8,";
+            content += "Baby Name,Date,Type,Details,Amount,Duration,Timestamp,Notes\n";
+            logs.forEach(log => {
+                const row = [ babyProfile.babyName, log.timestamp.toLocaleDateString(), log.type, `"${log.details || ''}"`, log.rawAmount || '', log.rawDuration || '', log.timestamp.toISOString(), `"${log.notes || ''}"` ].join(",");
+                content += row + "\r\n";
+            });
+            const encodedUri = encodeURI(content);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `littlesprout_backup_${babyProfile.babyName}_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Backup file downloaded.", "success");
+        }
+        
+        // --- PDF EXPORT ---
+        function generatePDF() {
+            const startDate = new Date($('#pdf-start-date').value);
+            const endDate = new Date($('#pdf-end-date').value);
+            if (!babyProfile || !startDate.getTime() || !endDate.getTime() || startDate > endDate) { showToast("Please select a valid date range.", "error"); return; }
+            endDate.setHours(23, 59, 59, 999);
+            const logsToExport = logs.filter(log => log.timestamp >= startDate && log.timestamp <= endDate).sort((a, b) => a.timestamp - b.timestamp);
+            if (logsToExport.length === 0) { showToast("No log entries found in the selected date range.", "info"); return; }
+            
+            const doc = new jsPDF();
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(18); doc.text(`Activity Log for ${babyProfile.babyName}`, 14, 22);
+            doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.text(`Report from ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}`, 14, 30);
+            let yPos = 40;
+            logsToExport.forEach(log => {
+                if (yPos > 280) { doc.addPage(); yPos = 20; }
+                const time = log.timestamp.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
+                doc.setFont('helvetica', 'bold');
+                doc.text(`${log.type.charAt(0).toUpperCase() + log.type.slice(1)}: ${log.details}`, 14, yPos);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`- At: ${time}`, 18, yPos + 5);
+                if (log.notes) {
+                    const notesText = doc.splitTextToSize(`- Notes: ${log.notes}`, 170);
+                    doc.text(notesText, 18, yPos + 10);
+                    yPos += (notesText.length * 5);
                 }
+                yPos += 15;
+            });
+            doc.save(`${babyProfile.babyName}_Log_${new Date().toISOString().split('T')[0]}.pdf`);
+            hideModal('pdf-export-modal'); showToast("PDF generated successfully!", "success");
+        }
 
-                const needle = dom.tunerNeedle;
-                needle.classList.remove('needle-settle');
-
-                if (state.isPlaying && targetNeedlePos > -10) {
-                    needle.style.left = `${targetNeedlePos}%`;
-                    // Add animation class after a short delay to ensure the `left` property is applied first
-                    setTimeout(() => needle.classList.add('needle-settle'), 50);
+        // --- CHARTS ---
+        function showCharts() { showModal('charts-modal'); renderGrowthCharts(); }
+        function hideCharts() { hideModal('charts-modal'); if (weightChartInstance) weightChartInstance.destroy(); if (heightChartInstance) heightChartInstance.destroy(); weightChartInstance = null; heightChartInstance = null; }
+        function renderGrowthCharts() {
+            const weightData = logs.filter(log => log.type === 'weight' && log.rawAmount).sort((a,b) => a.timestamp - b.timestamp);
+            const heightData = logs.filter(log => log.type === 'height' && log.rawAmount).sort((a,b) => a.timestamp - b.timestamp);
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(148, 163, 184, 0.2)' : 'rgba(203, 213, 225, 0.5)';
+            const fontColor = isDark ? 'rgb(241, 245, 249)' : 'rgb(30, 41, 59)';
+            
+            const createChart = (ctx, chartInstance, data, label, color) => {
+                if (chartInstance) chartInstance.destroy();
+                if (data.length > 0) {
+                    return new Chart(ctx, { type: 'line', data: { labels: data.map(d => d.timestamp.toLocaleDateString()), datasets: [{ label, data: data.map(d => d.rawAmount), backgroundColor: `rgba(${color}, 0.2)`, borderColor: `rgba(${color}, 1)`, borderWidth: 2, tension: 0.1, pointBackgroundColor: `rgba(${color}, 1)` }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: fontColor }, grid: { color: gridColor } }, y: { beginAtZero: false, ticks: { color: fontColor }, grid: { color: gridColor } } }, plugins: { legend: { labels: { color: fontColor } } } } });
                 } else {
-                    needle.style.left = `-10px`;
+                    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                    ctx.font = "16px Quicksand"; ctx.fillStyle = fontColor; ctx.textAlign = "center";
+                    ctx.fillText(`No ${label.toLowerCase()} data logged yet.`, ctx.canvas.width/2, ctx.canvas.height/2);
+                    return null;
                 }
             };
             
-            if (isPowerOn) {
-                runPowerOnAnimation(showTuner);
-            } else {
-                dom.tunerContainer.classList.remove('is-hidden');
-                showTuner();
-            }
-        };
-
-        const getWeatherIcon = (code) => {
-            switch (code) {
-                case 0: return 'sun'; case 1: case 2: case 3: return 'cloud-sun'; case 45: case 48: return 'cloud-fog';
-                case 51: case 53: case 55: return 'cloud-drizzle'; case 61: case 63: case 65: return 'cloud-rain'; case 66: case 67: return 'cloud-snow';
-                case 71: case 73: case 75: return 'snowflake'; case 80: case 81: case 82: return 'cloud-rain'; case 85: case 86: return 'cloud-snow';
-                case 95: case 96: case 99: return 'cloud-lightning'; default: return 'cloud';
-            }
-        };
-
-        const updateWeatherDisplay = () => {
-            if (!state.weatherData) return;
-            const { temperature, weathercode } = state.weatherData;
-            const temp = state.isCelsius ? temperature : (state.weatherData.temperature * 9/5 + 32);
-            const icon = getWeatherIcon(weathercode);
-            const weatherHTML = `<i data-lucide="${icon}" class="w-5 h-5"></i><span>${Math.round(temp)}°${state.isCelsius ? 'C' : 'F'}</span>`;
-            
-            dom.weatherDisplaySettings.innerHTML = weatherHTML;
-            lucide.createIcons(); // Re-render icons after changing innerHTML
-            updateStatusBar();
-            
-            dom.tempC.classList.toggle('font-bold', state.isCelsius);
-            dom.tempC.classList.toggle('opacity-50', !state.isCelsius);
-            dom.tempF.classList.toggle('font-bold', !state.isCelsius);
-            dom.tempF.classList.toggle('opacity-50', state.isCelsius);
-        };
-
-        const getIPLocationAndWeather = async () => {
-            try {
-                // Using a CORS-friendly geolocation API
-                const response = await fetch('https://ipapi.co/json/');
-                if (!response.ok) throw new Error('IP Geolocation failed');
-                const locationData = await response.json();
-                fetchWeather(locationData.latitude, locationData.longitude);
-            } catch (error) {
-                console.error("IP Geolocation failed:", error);
-                // Fallback to a known location if geolocation fails
-                fetchWeather(18.22, -66.59); // Centered on Puerto Rico
-            }
-        };
-        
-        const fetchWeather = async (lat, lon) => {
-            try {
-                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-                const data = await response.json();
-                state.weatherData = data.current_weather;
-                updateWeatherDisplay();
-            } catch (error) {
-                console.error("Failed to fetch weather:", error);
-                dom.weatherDisplaySettings.innerHTML = `<span>Weather N/A</span>`;
-            }
-        };
-
-        // --- RDS, Network, and Flicker Logic ---
-        const startFlicker = () => { stopFlicker(); state.flickerInterval = setInterval(() => { const iconEl = document.querySelector('#status-right #stream-status-icon'); if (state.isPlaying && iconEl) { iconEl.style.opacity = (Math.random() * 0.5 + 0.5).toFixed(2); } }, 300); };
-        const stopFlicker = () => { clearInterval(state.flickerInterval); const iconEl = document.querySelector('#status-right #stream-status-icon'); if (iconEl) iconEl.style.opacity = 1; };
-        const startRdsRotation = () => {
-            clearInterval(state.rdsInterval);
-            clearInterval(state.rdsObserverInterval);
-            
-            if (!state.currentStationName) return;
-            const rdsTexts = RADIO_STATIONS[state.currentStationName].rdsText;
-            const rdsElement = document.getElementById('rds-text-display');
-            
-            if (!rdsTexts || rdsTexts.length === 0 || !rdsElement) { 
-                if(rdsElement) rdsElement.textContent = ''; 
-                if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = '';
-                return; 
-            }
-            
-            let rdsIndex = 0;
-            rdsElement.textContent = rdsTexts[rdsIndex];
-            
-            state.rdsInterval = setInterval(() => { 
-                rdsIndex = (rdsIndex + 1) % rdsTexts.length; 
-                rdsElement.textContent = rdsTexts[rdsIndex]; 
-            }, 4000);
-            
-            state.rdsObserverInterval = setInterval(() => {
-                if(dom.optionsRdsDisplay && rdsElement) {
-                    dom.optionsRdsDisplay.textContent = rdsElement.textContent;
-                }
-            }, 500);
-        };
-        const stopRdsRotation = () => { 
-            clearInterval(state.rdsInterval);
-            clearInterval(state.rdsObserverInterval);
-            const rdsElement = document.getElementById('rds-text-display'); 
-            if (rdsElement) rdsElement.textContent = ""; 
-            if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = "";
-        };
-
-        const updateNetworkSpeed = () => {
-            if (state.isPlaying) {
-                const speed = (Math.random() * (128 - 48) + 48).toFixed(1);
-                dom.networkSpeedContainer.innerHTML = `<i data-lucide="arrow-down-up" class="w-3 h-3"></i><span>${speed} kb/s</span>`;
-                lucide.createIcons();
-            } else {
-                dom.networkSpeedContainer.innerHTML = '';
-            }
-        };
-
-        // --- Core Player Logic ---
-        const selectStation = (stationName) => {
-            if (state.isPlaying && state.currentStationName === stationName) return;
-            
-            if (state.isPlaying) {
-                 stopPlayer(false).then(() => {
-                     playStation(stationName);
-                 });
-            } else {
-                 playStation(stationName);
-            }
-        };
-
-        const playStation = (stationName) => {
-            state.currentStationName = stationName;
-            document.querySelectorAll('.station-item').forEach(item => {
-                item.classList.remove('selected');
-                if (item.dataset.stationName === stationName) {
-                    item.classList.add('selected');
-                }
-            });
-            const station = RADIO_STATIONS[stationName];
-            dom.audioPlayer.src = station.streamUrl;
-            dom.audioPlayer.load();
-            dom.audioPlayer.play().catch(e => {
-                console.error("Play error:", e);
-                // Gracefully stop if play fails
-                stopPlayer(true);
-            });
-            
-            closeOptions();
+            weightChartInstance = createChart($('#weight-chart').getContext('2d'), weightChartInstance, weightData, 'Weight (lbs)', '239, 68, 68');
+            heightChartInstance = createChart($('#height-chart').getContext('2d'), heightChartInstance, heightData, 'Height (in)', '34, 197, 94');
         }
 
-        const togglePlay = () => {
-            if (!state.currentStationName) { 
-                openOptions();
-                const list = dom.stationListInOptions;
-                if (!list.classList.contains('expanded')) {
-                    list.classList.add('expanded');
-                    const icon = dom.toggleStationListButton.querySelector('svg');
-                    if (icon) icon.classList.add('rotate-180');
-                }
-                return; 
+        // --- UTILITIES ---
+        function startDateTime() { if(timeInterval) clearInterval(timeInterval); const mainTimeEl = $('#main-time-display'), mainAmpmEl = $('#main-ampm-display'), mainDateEl = $('#main-date-display'), panelDateEl = $('#panel-date-display'); timeInterval = setInterval(() => { const now = new Date(); const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }); const dateString = now.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); mainTimeEl.textContent = timeString.slice(0, -3); mainAmpmEl.textContent = timeString.slice(-2); mainDateEl.textContent = dateString; if(panelDateEl) panelDateEl.textContent = `${dateString} | ${timeString}`; }, 1000); }
+        async function fetchWeather(lat, lon) {
+            const weatherPanel = $('#weather-display-panel'), mainWeather = $('#main-weather-display'), outlookSection = $('#outlook-section');
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code&temperature_unit=fahrenheit`;
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error('Weather service not available');
+                const data = await res.json();
+                const temp = Math.round(data.current.temperature_2m);
+                const weatherDesc = getWeatherDescription(data.current.weather_code);
+                const weatherHTML = `<i class="fas fa-cloud-sun ml-2 mr-1"></i> ${temp}°F, ${weatherDesc}`;
+                mainWeather.innerHTML = weatherHTML;
+                weatherPanel.innerHTML = weatherHTML;
+                updateDynamicSuggestion(temp);
+                outlookSection.classList.remove('hidden');
+            } catch (error) {
+                console.error("Weather Error:", error);
+                const errorHTML = `<i class="fas fa-exclamation-triangle mr-1"></i> Could not load weather.`;
+                mainWeather.innerHTML = errorHTML; weatherPanel.innerHTML = errorHTML;
+                outlookSection.classList.add('hidden');
             }
-            // Primer audio for iOS compatibility
-            if (!state.isPrimed) {
-                dom.primerAudio.play().then(() => {
-                    state.isPrimed = true;
-                    dom.audioPlayer.play();
-                }).catch(e => {
-                    console.warn("Primer audio failed, attempting main play anyway.", e);
-                    dom.audioPlayer.play();
-                });
+        }
+        function getWeatherDescription(code) { const codes = {0:"Clear",1:"Mainly Clear",2:"Partly Cloudy",3:"Overcast",45:"Fog",48:"Fog",51:"Drizzle",53:"Drizzle",55:"Drizzle",61:"Rain",63:"Rain",65:"Heavy Rain",80:"Showers",81:"Showers",82:"Heavy Showers",95:"Thunderstorm"}; return codes[code] || "Unknown"; }
+        function updateDynamicSuggestion(temp) { if(!babyProfile) return; const ageInMonths = calculateAgeMonths(babyProfile.dob); const possibleSuggestions = suggestions.filter(s => { const ageMatch = (!s.minAge || ageInMonths >= s.minAge) && (!s.maxAge || ageInMonths < s.maxAge); const tempMatch = (!s.minTemp || temp >= s.minTemp) && (!s.maxTemp || temp < s.maxTemp); return ageMatch && tempMatch; }); const suggestion = possibleSuggestions.length > 0 ? possibleSuggestions[Math.floor(Math.random() * possibleSuggestions.length)] : {text: "Enjoy these precious moments!", icon: "fa-heart"}; $('#outlook-suggestion').innerHTML = `<i class="fas ${suggestion.icon} text-purple-500 mr-2"></i> ${suggestion.text}`; }
+        function showToast(message, type = 'success') { const toast = $('#toast'); toast.textContent = message; toast.className = 'fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-xl transition-all duration-300 z-[100]'; toast.classList.add(type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-slate-800'); toast.classList.add('opacity-100', 'translate-y-0'); setTimeout(() => { toast.classList.remove('opacity-100', 'translate-y-0'); }, 3000); }
+
+        // --- NEW FEATURES & FIXES ---
+        // Memories
+        function renderMemories() {
+            const container = $('#memories-container');
+            const msg = $('#empty-memories-msg');
+            container.innerHTML = '';
+            if (memories.length === 0) {
+                container.appendChild(msg);
+                msg.style.display = 'block';
             } else {
-                state.isPlaying ? dom.audioPlayer.pause() : dom.audioPlayer.play();
-            }
-        };
-        
-        const updateMediaSession = () => {
-            if ('mediaSession' in navigator && state.currentStationName) {
-                const station = RADIO_STATIONS[state.currentStationName];
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: state.currentStationName,
-                    artist: 'Glz Radio',
-                    album: station.frequency,
-                    artwork: [{ src: station.logo, sizes: '512x512', type: 'image/png' }]
-                });
-            }
-        };
-        
-        const stopPlayer = async (withAnimation = true) => {
-            if (!state.currentStationName) return;
-            
-            dom.audioPlayer.pause();
-            dom.audioPlayer.removeAttribute('src'); 
-            dom.audioPlayer.load();
-            
-            state.isPlaying = false;
-            
-            if (withAnimation) {
-                await Promise.all([
-                    runPlayerShutdownAnimation(),
-                    runShutdownAnimation()
-                ]);
-            }
-
-            state.currentStationName = null;
-            state.isFirstPlay = true;
-            updateControlButtons();
-            
-            if (!withAnimation) {
-                dom.playerContent.innerHTML = `<p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>`;
-                dom.tunerContainer.classList.add('is-hidden');
-            }
-            
-            stopRdsRotation();
-            stopFlicker();
-            dom.playerDisplay.classList.remove('is-glowing');
-            if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = '';
-            
-            clearInterval(state.stopwatchInterval);
-            clearInterval(state.networkSpeedInterval);
-            state.networkSpeedInterval = null;
-            updateNetworkSpeed();
-
-            state.elapsedTime = 0;
-            updateStopwatch();
-            updateStatusBar();
-            dom.bottomBarStationName.textContent = "Standby";
-
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = "none";
-                navigator.mediaSession.metadata = null;
-            }
-            document.querySelectorAll('.station-item').forEach(item => item.classList.remove('selected'));
-        };
-
-        const setupMediaSessionHandlers = () => {
-             if ('mediaSession' in navigator) {
-                navigator.mediaSession.setActionHandler('play', togglePlay);
-                navigator.mediaSession.setActionHandler('pause', togglePlay);
-                navigator.mediaSession.setActionHandler('stop', () => stopPlayer(true));
+                msg.style.display = 'none';
+                [...memories].sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(memory => {
+                    const memoryEl = document.createElement('div');
+                    memoryEl.className = 'group relative animate-fadeIn';
+                    memoryEl.innerHTML = `
+                        <img src="${memory.image}" class="w-full h-40 object-cover rounded-lg shadow-md" onerror="this.src='https://placehold.co/400x400/a1dd70/ffffff?text=Image%20Error'"/>
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg flex flex-col justify-end p-2 text-white">
+                            <p class="text-xs">${new Date(memory.date).toLocaleDateString()}</p>
+                            <p class="text-sm font-semibold">${memory.description}</p>
+                        </div>
+                        <button onclick="deleteMemory('${memory.id}')" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-times"></i></button>
+                    `;
+                    container.appendChild(memoryEl);
+                })
             }
         }
         
-        dom.audioPlayer.onplay = () => { 
-            state.isPlaying = true;
-            if(state.isFirstPlay) {
-                runPlayerStartupAnimation(RADIO_STATIONS[state.currentStationName]);
-            }
-            updateControlButtons(); 
-            updateStatusBar();
-            updateTunerDisplay(state.isFirstPlay); 
-            state.isFirstPlay = false;
-            startFlicker();
-            dom.playerDisplay.classList.add('is-glowing');
-            
-            clearInterval(state.stopwatchInterval);
-            clearInterval(state.networkSpeedInterval);
-            state.elapsedTime = 0; 
-            updateStopwatch();
-            updateNetworkSpeed();
-            state.stopwatchInterval = setInterval(() => { state.elapsedTime++; updateStopwatch(); }, 1000);
-            state.networkSpeedInterval = setInterval(updateNetworkSpeed, 2000);
-
-            updateMediaSession();
-            if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing";
-            dom.bottomBar.classList.remove('hidden');
-            dom.bottomBarStationName.textContent = "Now Playing: " + state.currentStationName;
-        };
-        dom.audioPlayer.onpause = () => { 
-            if (!state.currentStationName) return; // Ignore pause if we are in a stopped state
-            state.isPlaying = false; 
-            stopRdsRotation(); 
-            updateStatusBar(); 
-            updateControlButtons(); 
-            updateTunerDisplay();
-            stopFlicker();
-            dom.playerDisplay.classList.remove('is-glowing');
-            clearInterval(state.stopwatchInterval);
-            clearInterval(state.networkSpeedInterval);
-            state.networkSpeedInterval = null;
-            updateNetworkSpeed();
-
-            if ('mediaSession' in navigator) {
-                 navigator.mediaSession.playbackState = "paused";
-            }
-            dom.bottomBarStationName.textContent = "Paused";
-        };
+        async function deleteMemory(id) {
+            showConfirmation("Delete this memory forever?", async () => {
+                try {
+                    await deleteDoc(doc(db, `artifacts/baby-tracker/users/${userId}/memories`, id));
+                    showToast("Memory deleted.", "info");
+                } catch (e) {
+                    console.error("Error deleting memory", e);
+                    showToast("Could not delete memory.", "error");
+                }
+            });
+        }
         
-        // --- Modals, Theming, and Event Listeners ---
-        const openOptions = () => {
-            dom.optionsModal.classList.remove('hidden');
-            requestAnimationFrame(() => {
-                dom.optionsModal.classList.add('is-open');
-            });
-        };
+        function addMemory(event) {
+            const file = event.target.files[0];
+            if (!file) return;
 
-        const closeOptions = () => {
-            dom.optionsModal.classList.remove('is-open');
-             const list = dom.stationListInOptions;
-            if (list.classList.contains('expanded')) {
-                list.classList.remove('expanded');
-                const icon = dom.toggleStationListButton.querySelector('svg');
-                if (icon) icon.classList.remove('rotate-180');
+            if (file.size > 1024 * 1024) { // 1MB limit
+                showToast("Image is too large (max 1MB).", "error");
+                event.target.value = '';
+                return;
             }
-        };
-
-        const toggleFullScreen = () => {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-                });
-            } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
-            }
-        };
-
-        const updateFullscreenIcon = () => {
-            const iconContainer = dom.fullscreenIconContainer;
-            if (document.fullscreenElement) {
-                iconContainer.innerHTML = `<i data-lucide="minimize" class="w-5 h-5"></i>`;
-            } else {
-                iconContainer.innerHTML = `<i data-lucide="maximize" class="w-5 h-5"></i>`;
-            }
-            lucide.createIcons();
-        };
-
-        const setupEventListeners = () => {
-            dom.optionsButton.onclick = openOptions;
-            dom.closeOptionsButton.onclick = closeOptions;
-            dom.optionsBackdrop.onclick = closeOptions;
-            dom.optionsPanel.addEventListener('transitionend', () => {
-                if (!dom.optionsModal.classList.contains('is-open')) {
-                    dom.optionsModal.classList.add('hidden');
-                }
-            });
-
-            dom.stopButton.onclick = () => stopPlayer(true);
-            dom.toggleStationListButton.onclick = () => {
-                const list = dom.stationListInOptions;
-                const icon = dom.toggleStationListButton.querySelector('svg');
-                list.classList.toggle('expanded');
-                if (icon) {
-                    icon.classList.toggle('rotate-180');
-                }
-            };
-            dom.randomStationButton.onclick = () => {
-                const randomIndex = Math.floor(Math.random() * STATIONS_ORDER.length);
-                const randomStationName = STATIONS_ORDER[randomIndex];
-                selectStation(randomStationName);
-            };
-            dom.playerDisplay.onclick = () => { 
-                if (!state.currentStationName) {
-                    togglePlay();
-                }
-            };
-            dom.playButton.onclick = togglePlay;
-            dom.tempToggle.onclick = () => {
-                state.isCelsius = !state.isCelsius;
-                localStorage.setItem('glz-radio-temp-unit', state.isCelsius ? 'C' : 'F');
-                updateWeatherDisplay();
-            };
-            dom.fullscreenToggleButton.onclick = toggleFullScreen;
-            document.addEventListener('fullscreenchange', updateFullscreenIcon);
-        };
-
-        const setupTheming = () => {
-            const themes = ['dark', 'light', 'oled'];
-            let currentThemeIndex = 0; // Default to dark
-
-            const savedTheme = localStorage.getItem('glz-radio-theme');
-            if (savedTheme && themes.includes(savedTheme)) {
-                currentThemeIndex = themes.indexOf(savedTheme);
-            }
-
-            const applyTheme = (themeName) => {
-                dom.body.classList.remove('theme-light', 'theme-dark', 'theme-oled');
-                // The root theme is dark, so we only add classes for light and oled
-                if (themeName !== 'dark') {
-                    dom.body.classList.add(`theme-${themeName}`);
-                }
-                dom.themeIconContainer.innerHTML = `<i data-lucide="${themeName === 'light' ? 'moon' : 'sun'}" class="w-5 h-5"></i>`;
-                lucide.createIcons();
-                localStorage.setItem('glz-radio-theme', themeName);
-                 // Apply the static accent color from the theme
-                const themeAccentColor = getComputedStyle(dom.body).getPropertyValue('--play-button-bg').trim();
-                dom.appContainer.style.setProperty('--accent-color', themeAccentColor);
-            };
             
-            applyTheme(themes[currentThemeIndex]);
+            const description = prompt("Enter a short description for this memory:");
+            if(description === null) { event.target.value = ''; return; }
 
-            dom.themeToggleButton.onclick = () => {
-                currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-                applyTheme(themes[currentThemeIndex]);
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const newMemory = {
+                    date: new Date().toISOString(),
+                    image: e.target.result,
+                    description: description
+                };
+                try {
+                    await addDoc(collection(db, `artifacts/baby-tracker/users/${userId}/memories`), newMemory);
+                    showToast('Memory saved!', 'success');
+                } catch (error) {
+                    console.error("Error saving memory:", error);
+                    showToast("Failed to save memory. It might be too large.", "error");
+                }
             };
-        };
+            reader.readAsDataURL(file);
+            event.target.value = '';
+        }
         
-        // --- Initialization ---
-        const init = () => {
-            lucide.createIcons();
+        // Inventory
+        async function showInventoryModal() {
+            const inventoryRef = doc(db, `artifacts/baby-tracker/users/${userId}/inventory`, "supplies");
+            const docSnap = await getDoc(inventoryRef);
+            if (docSnap.exists()) {
+                inventory = docSnap.data();
+            } else {
+                // If no inventory, create it
+                inventory = { diapers: 0, formula: 0 };
+                await setDoc(inventoryRef, inventory);
+            }
+            $('#current-diapers').textContent = inventory.diapers || 0;
+            $('#current-formula').textContent = inventory.formula || 0;
+            $('#diaper-count').value = inventory.diapers || 0;
+            $('#formula-count').value = inventory.formula || 0;
+            showModal('inventory-modal');
+        }
+
+        async function saveInventory() {
+            const diaperCount = parseInt($('#diaper-count').value) || 0;
+            const formulaCount = parseInt($('#formula-count').value) || 0;
+            const newInventory = { diapers: diaperCount, formula: formulaCount };
             
-            setTimeout(() => {
-                const splash = document.getElementById('splash-screen');
-                splash.style.opacity = 0;
-                splash.addEventListener('transitionend', () => splash.remove(), { once: true });
-            }, 2500);
+            try {
+                const inventoryRef = doc(db, `artifacts/baby-tracker/users/${userId}/inventory`, "supplies");
+                await setDoc(inventoryRef, newInventory);
+                inventory = newInventory;
+                showToast('Inventory updated!', 'success');
+                hideModal('inventory-modal');
+            } catch (error) {
+                console.error("Error saving inventory:", error);
+                showToast("Failed to update inventory.", "error");
+            }
+        }
 
-            updateClocks();
-            setInterval(updateClocks, 10000); 
-            setInterval(updateStatusBar, 1000);
-            updateControlButtons(); 
-            setupEventListeners(); 
-            setupTheming();
-            setupMediaSessionHandlers();
-            dom.tunerContainer.classList.add('is-hidden');
-            dom.bottomBarStationName.textContent = "Standby";
-
-            dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 7.1 | Build: 25.07.08.2030</p>`;
-            
-            state.isCelsius = localStorage.getItem('glz-radio-temp-unit') === 'C';
-            getIPLocationAndWeather();
-            setInterval(getIPLocationAndWeather, 1000 * 60 * 15); // Update weather every 15 mins
-
-            dom.stationListInOptions.innerHTML = STATIONS_ORDER.map(name => {
-                const station = RADIO_STATIONS[name];
-                return `<div data-station-name="${name}" class="station-item flex items-center p-3 space-x-4 cursor-pointer hover:bg-[var(--border-color)] rounded-lg transition-colors duration-200">
-                            <img src="${station.logo}" class="w-10 h-10 object-contain bg-black/10 p-1 rounded-md" onerror="this.onerror=null; this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=Logo';">
-                            <div class="flex-grow truncate"><p class="font-bold text-[var(--text-color)]">${name}</p><p class="text-xs text-[var(--text-muted-color)]">${station.frequency}</p></div>
-                        </div>`;
-            }).join('');
-            dom.stationListInOptions.querySelectorAll('.station-item').forEach(item => {
-                item.onclick = () => selectStation(item.dataset.stationName);
-            });
-        };
-
-        init();
+        async function updateInventory(item, change) {
+            const inventoryRef = doc(db, `artifacts/baby-tracker/users/${userId}/inventory`, "supplies");
+            const currentAmount = inventory[item] || 0;
+            const newAmount = Math.max(0, currentAmount + change);
+            try {
+                await updateDoc(inventoryRef, { [item]: newAmount });
+                inventory[item] = newAmount;
+                if (change < 0 && newAmount < 10 && item === 'diapers') {
+                    showToast(`Low on diapers! Only ${newAmount} left.`, 'error');
+                }
+                 if (change < 0 && newAmount < 2 && item === 'formula') {
+                    showToast(`Low on formula! Only ${newAmount} left.`, 'error');
+                }
+            } catch (error) {
+                console.error("Error updating inventory:", error);
+            }
+        }
+        
+        // Expose functions to global scope for onclick handlers
+        window.saveBabyInfo = saveBabyInfo; window.acknowledgeDisclaimer = acknowledgeDisclaimer; window.toggleSettingsPanel = toggleSettingsPanel; window.toggleDarkMode = toggleDarkMode; window.showForm = showForm; window.addFeed = addFeed; window.addSleep = addSleep; window.addDiaper = addDiaper; window.addMeasurement = addMeasurement; window.deleteEntry = deleteEntry; window.clearLogWithConfirmation = clearLogWithConfirmation; window.showModal = showModal; window.hideModal = hideModal; window.exportDataToFile = exportDataToFile; window.importData = importData; window.triggerImport = triggerImport; window.generatePDF = generatePDF; window.showCharts = showCharts; window.hideCharts = hideCharts; window.renderMemories = renderMemories; window.addMemory = addMemory; window.deleteMemory = deleteMemory; window.showInventoryModal = showInventoryModal; window.saveInventory = saveInventory;
     </script>
 </body>
 </html>
