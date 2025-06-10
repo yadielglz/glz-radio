@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Glz Radio</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&family=Segoe+UI+Mono&family=DotGothic16&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -146,13 +149,15 @@
         <h1 class="text-3xl font-bold text-white tracking-widest">Glz Radio</h1>
     </div>
     
-    <div id="app-container" class="w-full h-full md:max-w-sm md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden">
+    <div id="app-container" class="w-full h-full md:max-w-xl md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden">
+        <!-- Status Bar -->
         <header id="top-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-md flex-shrink-0">
             <div id="status-left" class="w-1/3 text-left flex items-center h-full"></div>
             <div id="status-center" class="w-1/3 text-center font-bold text-sm"></div>
             <div id="status-right" class="w-1/3 flex justify-end"></div>
         </header>
 
+        <!-- Tuner Panel Container -->
         <div id="tuner-container" class="w-full flex-shrink-0">
             <div id="tuner-panel" class="w-full h-12 flex items-center p-2 relative">
                 <div id="power-animation" class="absolute inset-0 bg-[var(--bg-color)] z-30 flex items-center justify-center transition-opacity duration-300 pointer-events-none"></div>
@@ -184,13 +189,16 @@
             </div>
         </div>
 
+        <!-- Main Content -->
         <main class="z-10 w-full px-4 flex flex-col items-center space-y-4 flex-grow justify-center">
+            <!-- Player Display -->
             <div id="player-display" class="w-full h-36 rounded-xl flex items-center flex-shrink-0">
                 <div id="player-content" class="w-full h-full flex items-center justify-center">
                     <p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>
                 </div>
             </div>
 
+            <!-- Controls -->
             <div id="controls-container" class="w-full flex items-center justify-center space-x-4 flex-shrink-0">
                 <button id="options-button" class="bg-[var(--surface-color)] p-4 rounded-full text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 border border-[var(--border-color)]" aria-label="Open options">
                     <i data-lucide="settings-2" class="w-7 h-7"></i>
@@ -204,14 +212,19 @@
             </div>
         </main>
         
+        <!-- Bottom Bar -->
         <footer id="bottom-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-[-2px_0_10px_black] flex-shrink-0">
             <span id="bottom-bar-station-name" class="font-bold text-sm h-5 truncate"></span>
             <div id="network-speed-container" class="flex items-center space-x-1 text-xs text-[var(--text-muted-color)]"></div>
         </footer>
 
+        <!-- Modals Container -->
         <div id="modals-container">
-             <div id="options-modal" class="hidden fixed inset-0 z-50">
+             <!-- Options Modal -->
+            <div id="options-modal" class="hidden fixed inset-0 z-50">
+                <!-- Backdrop -->
                 <div id="options-backdrop" class="absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-0"></div>
+                <!-- Panel -->
                 <div id="options-panel" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[var(--modal-bg)] flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
                     <header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
                         <h2 class="text-xl font-bold text-[var(--text-color)]">Options</h2>
@@ -252,7 +265,8 @@
                             <i data-lucide="chevron-down" class="w-5 h-5 transition-transform"></i>
                         </button>
                         <div id="station-list-in-options" class="station-list-scrollbar space-y-2 pr-2">
-                             </div>
+                             <!-- Station list will be injected here -->
+                        </div>
                         <button id="random-station-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
                             <span>Random Station</span>
                             <i data-lucide="dice-5" class="w-5 h-5"></i>
@@ -272,6 +286,7 @@
     <audio id="radio-player" preload="none" playsinline></audio>
     <audio id="primer-audio" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSUNSAAAACgAAADIZMDI1AQ==" class="hidden"></audio>
 
+    <!-- App Logic -->
     <script>
         // --- Configuration ---
         const RADIO_STATIONS = {
@@ -943,7 +958,7 @@
             dom.tunerContainer.classList.add('is-hidden');
             dom.bottomBarStationName.textContent = "Standby";
 
-            dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 7.0 | Build: 25.07.08.2015</p>`;
+            dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 7.1 | Build: 25.07.08.2030</p>`;
             
             state.isCelsius = localStorage.getItem('glz-radio-temp-unit') === 'C';
             getIPLocationAndWeather();
