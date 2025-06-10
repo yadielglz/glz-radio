@@ -4,13 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Glz Radio</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;700&family=Segoe+UI+Mono&family=DotGothic16&display=swap" rel="stylesheet">
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
@@ -37,9 +34,6 @@
             --surface-color: rgba(231, 222, 237, 0.85);
             --border-color: rgba(202, 196, 208, 0.5);
             --modal-bg: #F7F2FA;
-            --play-button-bg: #00a3e0; /* Aqua color */
-            --play-button-text: #ffffff;
-            --accent-color: #00a3e0; /* Aqua color */
         }
         .theme-oled {
              /* OLED "Super Dark" Theme */
@@ -50,9 +44,6 @@
             --surface-color: rgba(20, 20, 20, 0.85);
             --border-color: rgba(50, 50, 50, 0.5);
             --modal-bg: #000000;
-            --play-button-bg: #00a3e0;
-            --play-button-text: #ffffff;
-            --accent-color: #00a3e0;
         }
 
         body, .font-segoe {
@@ -89,15 +80,25 @@
         /* Tuner Styles */
         #tuner-container { max-height: 48px; transition: max-height 0.4s ease-out; }
         #tuner-container.is-hidden { max-height: 0; overflow: hidden; }
-        #tuner-needle { background: linear-gradient(to right, #e53e3e, #c53030); box-shadow: 1px 0 3px rgba(0,0,0,0.5); }
+        #tuner-needle { 
+            background: linear-gradient(to right, #e53e3e, #c53030); 
+            box-shadow: 1px 0 3px rgba(0,0,0,0.5); 
+            transition: left 0.6s ease-out; /* Smooth transition for needle position */
+        }
+        .needle-settle {
+            animation: tuner-needle-settle 0.8s ease-out forwards;
+        }
         
-        @keyframes web-dot-travel { from { transform: translateX(0); } to { transform: translateX(60px); opacity: 0; } }
-        @keyframes web-dot-travel-reverse { from { transform: translateX(60px); } to { transform: translateX(0); opacity: 0; } }
-        .web-dot.is-animating { animation: web-dot-travel 1.5s linear infinite; }
-        .web-dot.is-animating-reverse { animation: web-dot-travel-reverse 1.5s linear infinite; }
+        @keyframes tuner-needle-settle {
+            0% { transform: translateX(20%); }
+            40% { transform: translateX(-15%); }
+            70% { transform: translateX(8%); }
+            90% { transform: translateX(-4%); }
+            100% { transform: translateX(0); }
+        }
 
-        @keyframes flash-icon { 50% { transform: scale(1.2); filter: brightness(1.5); } }
-        .icon-flash { animation: flash-icon 0.8s ease-in-out; }
+        @keyframes web-dot-travel { from { transform: translateX(0); } to { transform: translateX(60px); opacity: 0; } }
+        .web-dot.is-animating { animation: web-dot-travel 1.5s linear infinite; }
 
         /* Options Panel Styles */
         #options-modal { transition: visibility 0.3s; }
@@ -118,8 +119,8 @@
             transition: opacity 0.5s ease-out;
         }
         @keyframes splash-glow {
-            0%, 100% { filter: drop-shadow(0 0 10px #00a3e0); }
-            50% { filter: drop-shadow(0 0 25px #00a3e0); }
+            0%, 100% { filter: drop-shadow(0 0 10px var(--accent-color)); }
+            50% { filter: drop-shadow(0 0 25px var(--accent-color)); }
         }
         #splash-logo {
             animation: splash-glow 3s ease-in-out infinite;
@@ -127,10 +128,10 @@
 
     </style>
 </head>
-<body class="w-full h-full flex justify-center items-center bg-gray-900">
+<body class="w-full h-full flex justify-center items-center bg-gray-900 p-0 md:p-4">
 
     <div id="splash-screen" class="fixed inset-0 bg-black z-50 flex flex-col items-center justify-center space-y-4">
-        <svg id="splash-logo" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-cyan-400">
+        <svg id="splash-logo" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[var(--accent-color)]">
             <path d="M8 12.5C8 11.12 9.12 10 10.5 10H13.5C14.88 10 16 11.12 16 12.5C16 13.88 14.88 15 13.5 15H10.5C9.12 15 8 13.88 8 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M11.25 10V10.65C11.25 11.45 11.9 12.1 12.7 12.1H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M4.65 3.52L6.37 5.24" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -145,18 +146,16 @@
         <h1 class="text-3xl font-bold text-white tracking-widest">Glz Radio</h1>
     </div>
     
-    <div id="app-container" class="w-full max-w-sm h-full md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden">
-        <!-- Status Bar -->
+    <div id="app-container" class="w-full h-full md:max-w-sm md:h-auto md:max-h-[90vh] md:rounded-2xl md:shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden">
         <header id="top-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-md flex-shrink-0">
             <div id="status-left" class="w-1/3 text-left flex items-center h-full"></div>
             <div id="status-center" class="w-1/3 text-center font-bold text-sm"></div>
             <div id="status-right" class="w-1/3 flex justify-end"></div>
         </header>
 
-        <!-- Tuner Panel Container -->
         <div id="tuner-container" class="w-full flex-shrink-0">
             <div id="tuner-panel" class="w-full h-12 flex items-center p-2 relative">
-                <div id="power-animation" class="absolute inset-0 bg-[var(--bg-color)] z-30 flex items-center justify-center transition-opacity duration-300"></div>
+                <div id="power-animation" class="absolute inset-0 bg-[var(--bg-color)] z-30 flex items-center justify-center transition-opacity duration-300 pointer-events-none"></div>
                 <div id="tuner-content" class="w-full h-full flex items-center z-10 opacity-0 transition-opacity duration-300">
                     <span id="tuner-band-indicator" class="w-10 text-center font-bold text-lg text-[var(--text-color)] opacity-75"></span>
                     <div class="relative flex-grow h-full bg-black/20 border-y border-black/30 overflow-hidden">
@@ -177,8 +176,6 @@
                             <i data-lucide="smartphone" class="text-xl"></i>
                             <svg width="80" height="20" class="overflow-visible">
                                 <circle class="web-dot" cx="10" cy="10" r="3" fill="var(--accent-color)"/>
-                                <circle class="web-dot is-animating-reverse" cx="10" cy="10" r="3" fill="var(--accent-color)" style="animation-delay: 0.5s;"/>
-                                <circle class="web-dot" cx="10" cy="10" r="3" fill="var(--accent-color)" style="animation-delay: 0.75s;"/>
                             </svg>
                             <i data-lucide="globe" class="text-xl"></i>
                         </div>
@@ -187,16 +184,13 @@
             </div>
         </div>
 
-        <!-- Main Content -->
         <main class="z-10 w-full px-4 flex flex-col items-center space-y-4 flex-grow justify-center">
-            <!-- Player Display -->
             <div id="player-display" class="w-full h-36 rounded-xl flex items-center flex-shrink-0">
                 <div id="player-content" class="w-full h-full flex items-center justify-center">
                     <p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>
                 </div>
             </div>
 
-            <!-- Controls -->
             <div id="controls-container" class="w-full flex items-center justify-center space-x-4 flex-shrink-0">
                 <button id="options-button" class="bg-[var(--surface-color)] p-4 rounded-full text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 border border-[var(--border-color)]" aria-label="Open options">
                     <i data-lucide="settings-2" class="w-7 h-7"></i>
@@ -210,19 +204,14 @@
             </div>
         </main>
         
-        <!-- Bottom Bar -->
         <footer id="bottom-bar" class="w-full p-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-[var(--bg-color)] shadow-[-2px_0_10px_black] flex-shrink-0">
             <span id="bottom-bar-station-name" class="font-bold text-sm h-5 truncate"></span>
             <div id="network-speed-container" class="flex items-center space-x-1 text-xs text-[var(--text-muted-color)]"></div>
         </footer>
 
-        <!-- Modals Container -->
         <div id="modals-container">
-             <!-- Options Modal -->
-            <div id="options-modal" class="hidden fixed inset-0 z-50">
-                <!-- Backdrop -->
+             <div id="options-modal" class="hidden fixed inset-0 z-50">
                 <div id="options-backdrop" class="absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-0"></div>
-                <!-- Panel -->
                 <div id="options-panel" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[var(--modal-bg)] flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
                     <header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
                         <h2 class="text-xl font-bold text-[var(--text-color)]">Options</h2>
@@ -263,8 +252,7 @@
                             <i data-lucide="chevron-down" class="w-5 h-5 transition-transform"></i>
                         </button>
                         <div id="station-list-in-options" class="station-list-scrollbar space-y-2 pr-2">
-                             <!-- Station list will be injected here -->
-                        </div>
+                             </div>
                         <button id="random-station-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
                             <span>Random Station</span>
                             <i data-lucide="dice-5" class="w-5 h-5"></i>
@@ -283,9 +271,7 @@
     
     <audio id="radio-player" preload="none" playsinline></audio>
     <audio id="primer-audio" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSUNSAAAACgAAADIZMDI1AQ==" class="hidden"></audio>
-    <canvas id="color-thief-canvas" class="hidden"></canvas>
 
-    <!-- App Logic -->
     <script>
         // --- Configuration ---
         const RADIO_STATIONS = {
@@ -361,30 +347,18 @@
             primerAudio: document.getElementById('primer-audio'),
             bottomBar: document.getElementById('bottom-bar'),
             bottomBarStationName: document.getElementById('bottom-bar-station-name'),
-            colorThiefCanvas: document.getElementById('color-thief-canvas')
         };
         let state = { currentStationName: null, isPlaying: false, isFirstPlay: true, elapsedTime: 0, rdsInterval: null, rdsObserverInterval: null, stopwatchInterval: null, flickerInterval: null, networkSpeedInterval: null, isCelsius: false, weatherData: null, isPrimed: false, isStopping: false };
 
         // --- UI Update Functions ---
         const runPlayerStartupAnimation = async (station) => {
             const playerContent = dom.playerContent;
-            dom.playerDisplay.style.background = 'var(--surface-color)';
-            playerContent.innerHTML = '';
+            playerContent.innerHTML = ''; // Clear previous content
             
-            const initialDisplay = document.createElement('div');
-            initialDisplay.className = 'w-full h-full flex flex-col items-center justify-center space-y-2 fade-in';
-            initialDisplay.innerHTML = `<span class="text-xl font-bold text-[var(--text-color)]">GLZ Radio</span><i data-lucide="radio" class="w-8 h-8 text-[var(--text-color)]"></i>`;
-            playerContent.appendChild(initialDisplay);
-            lucide.createIcons();
-            
-            await delay(1200);
-            initialDisplay.style.opacity = 0;
-            await delay(300);
-            
-            dom.playerDisplay.style.background = '';
+            // Rebuild the player display with animations
             const stationHTML = `
                 <div class="flex items-center w-full h-full p-4 space-x-4">
-                    <img src="${station.logo}" alt="${state.currentStationName} Logo" class="w-24 h-24 object-contain bg-black/10 p-1 rounded-md flex-shrink-0 opacity-0" style="animation: fadeIn 0.5s 0.2s ease-out forwards;" onerror="this.onerror=null; this.src='https://placehold.co/96x96/000000/f59e0b?text=Logo';">
+                    <img src="${station.logo}" alt="${state.currentStationName} Logo" class="w-24 h-24 object-contain bg-black/10 p-1 rounded-md flex-shrink-0 opacity-0" style="animation: fadeIn 0.5s 0.2s ease-out forwards;" onerror="this.onerror=null; this.src='https://placehold.co/96x96/1a1a1a/ffffff?text=Logo'; this.style.backgroundColor='transparent';">
                     <div class="flex flex-col justify-center h-full flex-grow truncate text-left">
                         <div id="rds-text-display" class="font-segoe-mono text-xl text-[var(--text-color)] h-8 truncate w-full opacity-0" style="animation: fadeIn 0.5s 1.2s ease-out forwards;"></div>
                         <p id="station-name-display" class="font-segoe font-bold text-lg text-[var(--text-color)] truncate w-full mt-1 opacity-0" style="animation: fadeIn 0.5s 0.8s ease-out forwards;">${state.currentStationName}</p>
@@ -397,17 +371,14 @@
             `;
             playerContent.innerHTML = stationHTML;
             
-            const rdsElement = document.getElementById('rds-text-display');
-            if(rdsElement) rdsElement.textContent = "Welcome!";
-            await delay(2000);
+            // Start RDS after a delay
+            await delay(1500);
             startRdsRotation();
         };
 
         const runPlayerShutdownAnimation = (callback) => {
             return new Promise(resolve => {
                 const playerContent = dom.playerContent;
-                
-                // Simple fade out instead of TV effect for cleaner shutdown
                 playerContent.style.transition = 'opacity 0.3s ease-out';
                 playerContent.style.opacity = 0;
         
@@ -430,6 +401,7 @@
             }
              lucide.createIcons();
         };
+
         const updateStopwatch = () => {
             const h = Math.floor(state.elapsedTime / 3600);
             const m = Math.floor((state.elapsedTime % 3600) / 60);
@@ -437,6 +409,7 @@
             const pad = (num) => String(num).padStart(2, '0');
             dom.stopwatchDisplay.textContent = h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
         };
+
         const updateClocks = () => {
             const now = new Date();
             const timeOptions = { hour: '2-digit', minute: '2-digit' };
@@ -476,96 +449,36 @@
         }
 
         // --- Tuner, Color & Weather Logic ---
-       const runPowerOnAnimation = async (station, callback) => {
-            if (!station) {
-                if(callback) callback();
-                return;
-            }
+       const runPowerOnAnimation = async (callback) => {
             dom.tunerContainer.classList.remove('is-hidden');
             const animationEl = dom.powerOnAnimation;
             dom.tunerContent.style.opacity = 0;
             animationEl.classList.remove('hidden');
             animationEl.style.opacity = 1;
-            
-            animationEl.innerHTML = `<div class="flex items-center space-x-2 text-lg font-bold text-[var(--text-color)] opacity-0 transition-opacity duration-500" id="glz-poweron-stage1">
-                <span>Glz Radio</span>
-            </div>`;
-            await delay(100);
-            animationEl.querySelector('#glz-poweron-stage1').style.opacity = 1;
-            
-            await delay(500);
-            
-            const freqString = station.frequency;
-            let activeBandIcon = 'globe';
-            if (freqString.includes('AM')) activeBandIcon = 'radio';
-            if (freqString.includes('FM')) activeBandIcon = 'radio-tower';
 
-            animationEl.innerHTML = `<div class="flex items-center space-x-2 text-lg font-bold text-[var(--text-color)]">
-                <span>Glz Radio</span>
-                <span class="icon-wrapper" data-band-icon="radio"><i data-lucide="radio" class="w-5 h-5 transition-all duration-300 opacity-0" style="animation: slideInFromRight 0.5s 0.2s forwards;"></i></span>
-                <span class="icon-wrapper" data-band-icon="radio-tower"><i data-lucide="radio-tower" class="w-5 h-5 transition-all duration-300 opacity-0" style="animation: slideInFromRight 0.5s 0.4s forwards;"></i></span>
-                <span class="icon-wrapper" data-band-icon="globe"><i data-lucide="globe" class="w-5 h-5 transition-all duration-300 opacity-0" style="animation: slideInFromRight 0.5s 0.6s forwards;"></i></span>
-            </div>`;
-            lucide.createIcons();
-
-            await delay(1200);
-
-            const wrappers = animationEl.querySelectorAll('.icon-wrapper');
-            wrappers.forEach(wrapper => {
-                if (wrapper.dataset.bandIcon === activeBandIcon) {
-                   wrapper.classList.add('icon-flash');
-                } else {
-                    wrapper.style.opacity = 0;
-                    wrapper.style.transform = 'scale(0)';
-                }
-            });
+            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Tuning...</span>`;
             
             await delay(800);
-
-            animationEl.style.opacity = 0;
-            await delay(300);
-
-            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Loading...</span>`;
-            animationEl.style.opacity = 1;
-            
-            await delay(1000);
             
             animationEl.style.opacity = 0;
-            setTimeout(() => animationEl.classList.add('hidden'), 300);
-            if(callback) callback();
+            await delay(300); // Wait for fade out
+            animationEl.classList.add('hidden');
+            
+            if (callback) callback();
         };
 
-        const runShutdownAnimation = async (station, callback) => {
-            if (!station) {
-                if (callback) callback();
-                return;
-            }
-            
+        const runShutdownAnimation = async (callback) => {
             const animationEl = dom.powerOnAnimation;
-            dom.tunerContent.style.opacity = 0;
+            dom.tunerContent.style.opacity = 0; // Fade out tuner details
             animationEl.classList.remove('hidden');
             animationEl.style.opacity = 1;
 
-            const freqString = station.frequency;
-            let activeBandIcon = 'globe';
-            if (freqString.includes('AM')) activeBandIcon = 'radio';
-            if (freqString.includes('FM')) activeBandIcon = 'radio-tower';
-
-            animationEl.innerHTML = `<div class="flex items-center space-x-2 text-lg font-bold text-[var(--text-color)] transition-opacity duration-300">
-                <span>Glz Radio</span>
-                <i data-lucide="${activeBandIcon}" class="w-5 h-5"></i>
-            </div>`;
-            lucide.createIcons();
+            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Power Off</span>`;
             
-            await delay(1000);
+            await delay(800);
             animationEl.style.opacity = 0;
 
-            await delay(300);
-
-            animationEl.innerHTML = `<span class="text-lg font-bold text-[var(--text-color)]">Good bye!</span>`;
-            animationEl.style.opacity = 1;
-
-            await delay(1000);
+            await delay(300); // Wait for fade out to finish
             
             if (callback) callback();
         };
@@ -574,7 +487,7 @@
             const station = RADIO_STATIONS[state.currentStationName];
             
             if (!station || !state.isPlaying) {
-                runShutdownAnimation(station, () => {
+                runShutdownAnimation(() => {
                     dom.tunerContainer.classList.add('is-hidden');
                 });
                 return;
@@ -586,10 +499,10 @@
                 dom.fmTuner.classList.add('hidden');
                 dom.webTuner.classList.add('hidden');
                 dom.tunerBandIndicator.textContent = '';
-                dom.webTuner.querySelectorAll('.web-dot').forEach(d => d.classList.remove('is-animating', 'is-animating-reverse'));
+                dom.webTuner.querySelector('.web-dot').classList.remove('is-animating');
 
                 const freqString = station.frequency;
-                let targetNeedlePos = -10;
+                let targetNeedlePos = -10; // Default off-screen position
 
                 if (freqString.includes('AM')) {
                     dom.amTuner.classList.remove('hidden');
@@ -601,80 +514,32 @@
                     dom.tunerBandIndicator.textContent = 'FM';
                     const freq = parseFloat(freqString.match(/(\d+\.\d+)/)[0]);
                     targetNeedlePos = 5 + ((freq - 88) / (108 - 88)) * 90;
-                } else {
+                } else { // Satellite
                     dom.webTuner.classList.remove('hidden');
                     dom.tunerBandIndicator.textContent = 'SAT';
                     if (state.isPlaying) {
-                       dom.webTuner.querySelectorAll('.web-dot').forEach((d, i) => {
-                            d.classList.add(i % 2 === 0 ? 'is-animating' : 'is-animating-reverse');
-                        });
+                       dom.webTuner.querySelector('.web-dot').classList.add('is-animating');
                     }
                 }
 
                 const needle = dom.tunerNeedle;
+                needle.classList.remove('needle-settle');
+
                 if (state.isPlaying && targetNeedlePos > -10) {
-                    needle.style.transition = 'left 0.3s ease-in-out';
-                    needle.style.left = `${targetNeedlePos + 5}%`;
-                    setTimeout(() => {
-                        needle.style.left = `${targetNeedlePos - 4}%`;
-                    }, 300);
-                     setTimeout(() => {
-                        needle.style.left = `${targetNeedlePos + 2}%`;
-                    }, 600);
-                    setTimeout(() => {
-                        needle.style.transition = 'left 0.4s ease-out';
-                        needle.style.left = `${targetNeedlePos}%`;
-                    }, 800);
+                    needle.style.left = `${targetNeedlePos}%`;
+                    // Add animation class after a short delay to ensure the `left` property is applied first
+                    setTimeout(() => needle.classList.add('needle-settle'), 50);
                 } else {
-                    needle.style.transition = 'left 0.5s ease-out';
                     needle.style.left = `-10px`;
                 }
             };
             
             if (isPowerOn) {
-                runPowerOnAnimation(station, showTuner);
+                runPowerOnAnimation(showTuner);
             } else {
                 dom.tunerContainer.classList.remove('is-hidden');
                 showTuner();
             }
-        };
-
-        const getDominantColor = (imageUrl, callback) => {
-            const img = new Image();
-            img.crossOrigin = "Anonymous";
-            img.src = imageUrl;
-            img.onload = () => {
-                const canvas = dom.colorThiefCanvas;
-                const ctx = canvas.getContext('2d', { willReadFrequently: true });
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-
-                const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-                const colorCounts = {};
-                let maxCount = 0;
-                let dominantColor = null;
-
-                for (let i = 0; i < data.length; i += 4) {
-                    const r = data[i];
-                    const g = data[i + 1];
-                    const b = data[i + 2];
-                    if ((r > 240 && g > 240 && b > 240) || (r < 15 && g < 15 && b < 15)) {
-                        continue;
-                    }
-                    const rgb = `rgb(${r},${g},${b})`;
-                    colorCounts[rgb] = (colorCounts[rgb] || 0) + 1;
-                    if (colorCounts[rgb] > maxCount) {
-                        maxCount = colorCounts[rgb];
-                        dominantColor = rgb;
-                    }
-                }
-                callback(dominantColor);
-            };
-            img.onerror = () => {
-                console.warn(`Could not load image for color extraction (likely a CORS issue): ${imageUrl}. Using default accent color.`);
-                callback(null);
-            };
         };
 
         const getWeatherIcon = (code) => {
@@ -800,11 +665,6 @@
                 }
             });
             const station = RADIO_STATIONS[stationName];
-            getDominantColor(station.logo, (color) => {
-                const newAccentColor = color || getComputedStyle(dom.body).getPropertyValue('--play-button-bg');
-                dom.appContainer.style.setProperty('--accent-color', newAccentColor);
-                dom.playButton.style.backgroundColor = newAccentColor;
-            });
             dom.audioPlayer.src = station.streamUrl;
             dom.audioPlayer.load();
             dom.audioPlayer.play().catch(e => {
@@ -855,7 +715,6 @@
         
         const stopPlayer = async (withAnimation = true) => {
             if (!state.currentStationName) return;
-            const lastStation = RADIO_STATIONS[state.currentStationName];
             
             dom.audioPlayer.pause();
             dom.audioPlayer.removeAttribute('src'); 
@@ -866,7 +725,7 @@
             if (withAnimation) {
                 await Promise.all([
                     runPlayerShutdownAnimation(),
-                    runShutdownAnimation(lastStation)
+                    runShutdownAnimation()
                 ]);
             }
 
@@ -879,11 +738,6 @@
                 dom.tunerContainer.classList.add('is-hidden');
             }
             
-            // Reset colors
-            const defaultAccentColor = getComputedStyle(dom.body).getPropertyValue('--play-button-bg').trim();
-            dom.appContainer.style.setProperty('--accent-color', defaultAccentColor);
-            dom.playButton.style.backgroundColor = defaultAccentColor;
-
             stopRdsRotation();
             stopFlicker();
             dom.playerDisplay.classList.remove('is-glowing');
@@ -1039,8 +893,8 @@
         };
 
         const setupTheming = () => {
-            const themes = ['light', 'dark', 'oled'];
-            let currentThemeIndex = 1; // Default to dark
+            const themes = ['dark', 'light', 'oled'];
+            let currentThemeIndex = 0; // Default to dark
 
             const savedTheme = localStorage.getItem('glz-radio-theme');
             if (savedTheme && themes.includes(savedTheme)) {
@@ -1049,10 +903,16 @@
 
             const applyTheme = (themeName) => {
                 dom.body.classList.remove('theme-light', 'theme-dark', 'theme-oled');
-                dom.body.classList.add(`theme-${themeName}`);
+                // The root theme is dark, so we only add classes for light and oled
+                if (themeName !== 'dark') {
+                    dom.body.classList.add(`theme-${themeName}`);
+                }
                 dom.themeIconContainer.innerHTML = `<i data-lucide="${themeName === 'light' ? 'moon' : 'sun'}" class="w-5 h-5"></i>`;
                 lucide.createIcons();
                 localStorage.setItem('glz-radio-theme', themeName);
+                 // Apply the static accent color from the theme
+                const themeAccentColor = getComputedStyle(dom.body).getPropertyValue('--play-button-bg').trim();
+                dom.appContainer.style.setProperty('--accent-color', themeAccentColor);
             };
             
             applyTheme(themes[currentThemeIndex]);
@@ -1060,12 +920,6 @@
             dom.themeToggleButton.onclick = () => {
                 currentThemeIndex = (currentThemeIndex + 1) % themes.length;
                 applyTheme(themes[currentThemeIndex]);
-                // After theme change, reset accent color if not playing
-                if (!state.isPlaying) {
-                    const defaultAccentColor = getComputedStyle(dom.body).getPropertyValue('--play-button-bg').trim();
-                    dom.appContainer.style.setProperty('--accent-color', defaultAccentColor);
-                    dom.playButton.style.backgroundColor = defaultAccentColor;
-                }
             };
         };
         
@@ -1089,7 +943,7 @@
             dom.tunerContainer.classList.add('is-hidden');
             dom.bottomBarStationName.textContent = "Standby";
 
-            dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 6.6 | Build: 25.07.08.1940</p>`;
+            dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 7.0 | Build: 25.07.08.2015</p>`;
             
             state.isCelsius = localStorage.getItem('glz-radio-temp-unit') === 'C';
             getIPLocationAndWeather();
@@ -1098,7 +952,7 @@
             dom.stationListInOptions.innerHTML = STATIONS_ORDER.map(name => {
                 const station = RADIO_STATIONS[name];
                 return `<div data-station-name="${name}" class="station-item flex items-center p-3 space-x-4 cursor-pointer hover:bg-[var(--border-color)] rounded-lg transition-colors duration-200">
-                            <img src="${station.logo}" class="w-10 h-10 object-contain bg-black/10 p-1 rounded-md" onerror="this.onerror=null; this.src='https://placehold.co/40x40/000000/f59e0b?text=Logo';">
+                            <img src="${station.logo}" class="w-10 h-10 object-contain bg-black/10 p-1 rounded-md" onerror="this.onerror=null; this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=Logo';">
                             <div class="flex-grow truncate"><p class="font-bold text-[var(--text-color)]">${name}</p><p class="text-xs text-[var(--text-muted-color)]">${station.frequency}</p></div>
                         </div>`;
             }).join('');
