@@ -83,39 +83,7 @@
             }
         }
         
-        /* Ensure proper mobile viewport */
-        @media (max-width: 639px) {
-            body {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100vw;
-                height: 100vh;
-                height: 100dvh;
-                overflow: hidden;
-            }
-            
-            #app-container {
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                width: 100vw;
-                height: 100vh;
-                height: 100dvh;
-                height: calc(var(--vh, 1vh) * 100);
-                border-radius: 0;
-                margin: 0;
-                padding-top: 0; /* Top bar handles safe area */
-                padding-bottom: 0; /* Bottom bar handles safe area */
-                padding-left: env(safe-area-inset-left);
-                padding-right: env(safe-area-inset-right);
-            }
-        }
-        
+        /* Base app container styles */
         #app-container {
             width: 100vw;
             height: 100vh;
@@ -140,6 +108,49 @@
             padding-right: env(safe-area-inset-right);
         }
         
+        /* Ensure proper mobile viewport */
+        @media (max-width: 639px) {
+            body {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                height: calc(var(--vh, 1vh) * 100);
+                overflow: hidden;
+            }
+            
+            #app-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                height: calc(var(--vh, 1vh) * 100);
+                border-radius: 0;
+                margin: 0;
+                padding-top: 0; /* Top bar handles safe area */
+                padding-bottom: 0; /* Bottom bar handles safe area */
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+            
+            /* Ensure proper spacing for mobile */
+            #tuner-container {
+                margin-top: 8px;
+            }
+            
+            main {
+                padding-top: 8px;
+            }
+        }
+        
         /* Desktop styles */
         @media (min-width: 640px) {
             body {
@@ -157,6 +168,7 @@
                 border-radius: 1.5rem;
                 padding: 0;
                 margin: 1rem auto;
+                position: relative;
             }
         }
         
@@ -393,8 +405,8 @@
         /* Mobile-specific top bar adjustments */
         @media (max-width: 639px) {
             #top-bar {
-                padding-top: max(12px, env(safe-area-inset-top));
-                min-height: 60px;
+                padding-top: max(16px, env(safe-area-inset-top));
+                min-height: 70px;
                 display: flex;
                 align-items: center;
             }
@@ -422,13 +434,42 @@
                 margin-bottom: env(safe-area-inset-bottom);
             }
         }
+        
+        /* Desktop-specific adjustments */
+        @media (min-width: 640px) {
+            #top-bar {
+                padding-top: 12px;
+                min-height: 60px;
+            }
+            
+            #bottom-bar {
+                padding-bottom: 12px;
+                min-height: 50px;
+            }
+            
+            #app-container {
+                padding: 0;
+                margin: 1rem auto;
+                border-radius: 1.5rem;
+                max-width: 24rem;
+                max-height: 95vh;
+                height: auto;
+                position: relative;
+            }
+            
+            body {
+                position: static;
+                overflow: auto;
+                height: auto;
+            }
+        }
 
     </style>
 </head>
 <body class="w-full h-full font-sans bg-[var(--bg-color)] text-[var(--text-color)] transition-colors duration-300">
 
     <div id="splash-screen" class="fixed inset-0 z-[100] flex items-center justify-center" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);">
-        <div id="splash-content" class="text-center">
+        <div id="splash-content" class="text-center sm:p-4">
             <svg id="splash-logo" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[var(--accent-color)] mx-auto">
                 <path d="M8 12.5C8 11.12 9.12 10 10.5 10H13.5C14.88 10 16 11.12 16 12.5C16 13.88 14.88 15 13.5 15H10.5C9.12 15 8 13.88 8 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M11.25 10V10.65C11.25 11.45 11.9 12.1 12.7 12.1H13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -446,7 +487,7 @@
         </div>
     </div>
     
-    <div class="w-full h-full flex justify-center items-center p-0">
+    <div class="w-full h-full flex justify-center items-center p-0 sm:p-4">
         <div id="app-container" class="w-full h-full sm:max-w-xl sm:h-auto sm:max-h-[95vh] sm:rounded-2xl sm:shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden">
             
             <div id="ambient-bg"></div>
