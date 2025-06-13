@@ -57,14 +57,60 @@
         .station-list-scrollbar::-webkit-scrollbar-track { background: var(--surface-color); }
         .station-list-scrollbar::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
         
+        /* Mobile-first viewport handling */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+        }
+        
+        /* Ensure proper mobile viewport */
+        @media (max-width: 639px) {
+            body {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                overflow: hidden;
+            }
+            
+            #app-container {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh;
+                border-radius: 0;
+                margin: 0;
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                padding-left: env(safe-area-inset-left);
+                padding-right: env(safe-area-inset-right);
+            }
+        }
+        
         #app-container {
             width: 100vw;
+            height: 100vh;
             height: 100dvh;
             max-width: 100vw;
+            max-height: 100vh;
             max-height: 100dvh;
+            min-height: 100vh;
             min-height: 100dvh;
             min-width: 100vw;
-            border-radius: 1.5rem;
+            border-radius: 0;
             background: var(--bg-color);
             box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.37), 0 2px 8px 0 rgba(0,0,0,0.18);
             backdrop-filter: blur(24px) saturate(140%);
@@ -74,7 +120,31 @@
             overflow: hidden;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
         }
+        
+        /* Desktop styles */
+        @media (min-width: 640px) {
+            body {
+                position: static;
+                overflow: auto;
+            }
+            
+            #app-container {
+                width: 100%;
+                height: auto;
+                max-width: 24rem;
+                max-height: 95vh;
+                min-height: auto;
+                min-width: auto;
+                border-radius: 1.5rem;
+                padding: 0;
+                margin: 1rem auto;
+            }
+        }
+        
+        /* Fallback for browsers that don't support dvh */
         @supports not (height: 100dvh) {
             #app-container {
                 height: 100vh;
@@ -308,7 +378,7 @@
 </head>
 <body class="w-full h-full font-sans bg-[var(--bg-color)] text-[var(--text-color)] transition-colors duration-300">
 
-    <div id="splash-screen" class="fixed inset-0 z-[100] flex items-center justify-center">
+    <div id="splash-screen" class="fixed inset-0 z-[100] flex items-center justify-center" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);">
         <div id="splash-content" class="text-center">
             <svg id="splash-logo" width="100" height="100" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-[var(--accent-color)] mx-auto">
                 <path d="M8 12.5C8 11.12 9.12 10 10.5 10H13.5C14.88 10 16 11.12 16 12.5C16 13.88 14.88 15 13.5 15H10.5C9.12 15 8 13.88 8 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -327,7 +397,7 @@
         </div>
     </div>
     
-    <div class="w-full h-full flex justify-center items-center p-0 sm:p-4">
+    <div class="w-full h-full flex justify-center items-center p-0">
         <div id="app-container" class="w-full h-full sm:max-w-xl sm:h-auto sm:max-h-[95vh] sm:rounded-2xl sm:shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden">
             
             <div id="ambient-bg"></div>
@@ -403,7 +473,7 @@
             </footer>
 
             <div id="modals-container">
-                <div id="options-modal" class="hidden fixed inset-0 z-50">
+                <div id="options-modal" class="hidden fixed inset-0 z-50" style="padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);">
                     <div id="options-backdrop" class="absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-0"></div>
                     <div id="options-panel" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[var(--modal-bg)] flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
                         <header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
