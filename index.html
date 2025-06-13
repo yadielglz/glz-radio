@@ -66,6 +66,21 @@
             width: 100vw;
             height: 100vh;
             height: 100dvh;
+            height: calc(var(--vh, 1vh) * 100);
+        }
+        
+        /* Handle mobile browser viewport issues */
+        @supports (height: 100dvh) {
+            body {
+                height: 100dvh;
+            }
+        }
+        
+        /* Fallback for browsers that don't support dvh */
+        @supports not (height: 100dvh) {
+            body {
+                height: 100vh;
+            }
         }
         
         /* Ensure proper mobile viewport */
@@ -91,10 +106,11 @@
                 width: 100vw;
                 height: 100vh;
                 height: 100dvh;
+                height: calc(var(--vh, 1vh) * 100);
                 border-radius: 0;
                 margin: 0;
                 padding-top: 0; /* Top bar handles safe area */
-                padding-bottom: env(safe-area-inset-bottom);
+                padding-bottom: 0; /* Bottom bar handles safe area */
                 padding-left: env(safe-area-inset-left);
                 padding-right: env(safe-area-inset-right);
             }
@@ -383,8 +399,27 @@
                 align-items: center;
             }
             
+            #bottom-bar {
+                padding-bottom: max(12px, env(safe-area-inset-bottom));
+                min-height: 50px;
+                display: flex;
+                align-items: center;
+            }
+            
             #app-container {
-                padding-top: 0; /* Remove top padding from container since top bar handles it */
+                padding-top: 0; /* Top bar handles safe area */
+                padding-bottom: 0; /* Bottom bar handles safe area */
+            }
+            
+            /* Ensure main content doesn't get hidden behind browser UI */
+            main {
+                padding-bottom: env(safe-area-inset-bottom);
+                margin-bottom: 0;
+            }
+            
+            /* Adjust controls container for better mobile accessibility */
+            #controls-container {
+                margin-bottom: env(safe-area-inset-bottom);
             }
         }
 
@@ -586,7 +621,23 @@
         const closeOptions = () => { dom.appContainer.classList.remove('options-open'); dom.optionsModal.classList.remove('is-open'); const list = dom.stationListInOptions; if (list.classList.contains('expanded')) { list.classList.remove('expanded'); const icon = dom.toggleStationListButton.querySelector('svg'); if (icon) icon.classList.remove('rotate-180'); } };
         const toggleFullScreen = () => { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => { console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`); }); } else { if (document.exitFullscreen) { document.exitFullscreen(); } } };
         const updateFullscreenIcon = () => { const iconContainer = dom.fullscreenIconContainer; if (document.fullscreenElement) { iconContainer.innerHTML = `<i data-lucide="minimize" class="w-5 h-5"></i>`; } else { iconContainer.innerHTML = `<i data-lucide="maximize" class="w-5 h-5"></i>`; } lucide.createIcons(); };
-        const setupEventListeners = () => { dom.optionsButton.onclick = openOptions; dom.closeOptionsButton.onclick = closeOptions; dom.optionsBackdrop.onclick = closeOptions; dom.optionsPanel.addEventListener('transitionend', () => { if (!dom.optionsModal.classList.contains('is-open')) { dom.optionsModal.classList.add('hidden'); } }); dom.stopButton.onclick = () => stopPlayer(true); dom.toggleStationListButton.onclick = () => { const list = dom.stationListInOptions; const icon = dom.toggleStationListButton.querySelector('svg'); list.classList.toggle('expanded'); if (icon) { icon.classList.toggle('rotate-180'); } }; dom.randomStationButton.onclick = () => { const randomIndex = Math.floor(Math.random() * STATIONS_ORDER.length); const randomStationName = STATIONS_ORDER[randomIndex]; selectStation(randomStationName); }; dom.playerDisplay.onclick = () => { if (!state.currentStationName) { togglePlay(); } }; dom.playButton.onclick = togglePlay; dom.tempToggle.onclick = () => { state.isCelsius = !state.isCelsius; localStorage.setItem('glz-radio-temp-unit', state.isCelsius ? 'C' : 'F'); updateWeatherDisplay(); }; dom.fullscreenToggleButton.onclick = toggleFullScreen; document.addEventListener('fullscreenchange', updateFullscreenIcon); };
+        const setupEventListeners = () => { dom.optionsButton.onclick = openOptions; dom.closeOptionsButton.onclick = closeOptions; dom.optionsBackdrop.onclick = closeOptions; dom.optionsPanel.addEventListener('transitionend', () => { if (!dom.optionsModal.classList.contains('is-open')) { dom.optionsModal.classList.add('hidden'); } }); dom.stopButton.onclick = () => stopPlayer(true); dom.toggleStationListButton.onclick = () => { const list = dom.stationListInOptions; const icon = dom.toggleStationListButton.querySelector('svg'); list.classList.toggle('expanded'); if (icon) { icon.classList.toggle('rotate-180'); } }; dom.randomStationButton.onclick = () => { const randomIndex = Math.floor(Math.random() * STATIONS_ORDER.length); const randomStationName = STATIONS_ORDER[randomIndex]; selectStation(randomStationName); }; dom.playerDisplay.onclick = () => { if (!state.currentStationName) { togglePlay(); } }; dom.playButton.onclick = togglePlay; dom.tempToggle.onclick = () => { state.isCelsius = !state.isCelsius; localStorage.setItem('glz-radio-temp-unit', state.isCelsius ? 'C' : 'F'); updateWeatherDisplay(); }; dom.fullscreenToggleButton.onclick = toggleFullScreen; document.addEventListener('fullscreenchange', updateFullscreenIcon); 
+        
+        // Handle mobile browser viewport changes
+        const handleViewportChange = () => {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+        };
+        
+        // Listen for viewport changes (mobile browser navigation bar)
+        window.addEventListener('resize', handleViewportChange);
+        window.addEventListener('orientationchange', handleViewportChange);
+        window.addEventListener('scroll', handleViewportChange);
+        
+        // Initial setup
+        handleViewportChange();
+        };
+
         const setupTheming = () => { const themes = ['dark', 'light', 'oled']; let currentThemeIndex = 0; const savedTheme = localStorage.getItem('glz-radio-theme'); if (savedTheme && themes.includes(savedTheme)) { currentThemeIndex = themes.indexOf(savedTheme); } const applyTheme = (themeName) => { dom.body.classList.remove('theme-light', 'theme-dark', 'theme-oled'); if (themeName !== 'dark') { dom.body.classList.add(`theme-${themeName}`); } dom.themeIconContainer.innerHTML = `<i data-lucide="${themeName === 'light' ? 'moon' : 'sun'}" class="w-5 h-5"></i>`; lucide.createIcons(); localStorage.setItem('glz-radio-theme', themeName); const themeAccentColor = getComputedStyle(dom.body).getPropertyValue('--play-button-bg').trim(); dom.appContainer.style.setProperty('--accent-color', themeAccentColor); }; applyTheme(themes[currentThemeIndex]); dom.themeToggleButton.onclick = () => { currentThemeIndex = (currentThemeIndex + 1) % themes.length; applyTheme(themes[currentThemeIndex]); }; };
         const init = () => { lucide.createIcons(); setTimeout(() => { const splash = document.getElementById('splash-screen'); splash.style.opacity = 0; splash.style.visibility = 'hidden'; }, 2500); updateClocks(); setInterval(updateClocks, 10000); setInterval(updateStatusBar, 1000); updateControlButtons(); setupEventListeners(); setupTheming(); setupMediaSessionHandlers(); setTunerToPowerOff(); dom.bottomBarStationName.textContent = "Standby"; dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 9.2 | Build: ${new Date('2025-06-11').toISOString().slice(0, 10).replace(/-/g,'.')}</p>`; state.isCelsius = localStorage.getItem('glz-radio-temp-unit') === 'C'; getIPLocationAndWeather(); setInterval(getIPLocationAndWeather, 1000 * 60 * 15); dom.stationListInOptions.innerHTML = STATIONS_ORDER.map(name => { const station = RADIO_STATIONS[name]; return `<div data-station-name="${name}" class="station-item flex items-center p-3 space-x-4 cursor-pointer hover:bg-[var(--border-color)] rounded-lg transition-colors duration-200"> <img src="${station.logo}" class="w-10 h-10 object-contain bg-black/10 p-1 rounded-md" onerror="this.onerror=null; this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=Logo';"> <div class="flex-grow truncate"><p class="font-bold text-[var(--text-color)]">${name}</p><p class="text-xs text-[var(--text-muted-color)]">${station.frequency}</p></div> </div>`; }).join(''); dom.stationListInOptions.querySelectorAll('.station-item').forEach(item => { item.onclick = () => selectStation(item.dataset.stationName); }); };
 
