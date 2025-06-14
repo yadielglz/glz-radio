@@ -11,42 +11,53 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
-        /* Custom Styles & Theming */
+        /* Microsoft Zune Theme Styles */
         :root {
-            /* Default: Dark Theme */
+            /* Zune Color Palette */
             --bg-color: #1a1a1a;
             --text-color: #ffffff;
-            --text-muted-color: #b0b0b0;
-            --text-faint-color: #555555;
-            --surface-color: rgba(43, 43, 43, 0.85);
-            --border-color: rgba(74, 74, 74, 0.5);
+            --text-muted-color: #cccccc;
+            --text-faint-color: #888888;
+            --surface-color: rgba(40, 40, 40, 0.95);
+            --border-color: rgba(100, 100, 100, 0.3);
             --modal-bg: #1a1a1a;
-            --play-button-bg: #00a3e0;
+            --play-button-bg: linear-gradient(135deg, #f7931e 0%, #d67e1a 100%);
             --play-button-text: #ffffff;
-            --accent-color: #00a3e0;
-            --player-text-shadow: 1px 1px 5px rgba(0,0,0,0.7);
+            --accent-color: #f7931e;
+            --player-text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            
+            /* Zune Specific Colors */
+            --zune-orange: #f7931e;
+            --zune-orange-dark: #d67e1a;
+            --zune-brown: #8b4513;
+            --zune-dark-gray: #2a2a2a;
+            --zune-light-gray: #404040;
+            --zune-border: #555555;
+            --zune-shadow: rgba(0, 0, 0, 0.4);
+            --zune-highlight: rgba(255, 255, 255, 0.1);
+            --zune-glow: rgba(247, 147, 30, 0.3);
         }
 
         .theme-light {
-            /* Light Theme */
-            --bg-color: #F7F2FA;
-            --text-color: #1D1B20;
-            --text-muted-color: #48464C;
-            --text-faint-color: #79767D;
-            --surface-color: rgba(231, 222, 237, 0.85);
-            --border-color: rgba(202, 196, 208, 0.5);
-            --modal-bg: #F7F2FA;
-            --player-text-shadow: 1px 1px 3px rgba(0,0,0,0.25);
+            /* Light Theme - Zune inspired */
+            --bg-color: #f5f5f5;
+            --text-color: #2a2a2a;
+            --text-muted-color: #666666;
+            --text-faint-color: #999999;
+            --surface-color: rgba(255, 255, 255, 0.95);
+            --border-color: rgba(0, 0, 0, 0.1);
+            --modal-bg: #f5f5f5;
+            --player-text-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
         .theme-oled {
-            /* OLED "Super Dark" Theme */
+            /* Dark Theme - Zune inspired dark */
             --bg-color: #000000;
             --text-color: #ffffff;
-            --text-muted-color: #a0a0a0;
-            --text-faint-color: #444444;
-            --surface-color: rgba(20, 20, 20, 0.85);
-            --border-color: rgba(50, 50, 50, 0.5);
+            --text-muted-color: #cccccc;
+            --text-faint-color: #666666;
+            --surface-color: rgba(20, 20, 20, 0.95);
+            --border-color: rgba(255, 255, 255, 0.1);
             --modal-bg: #000000;
         }
 
@@ -83,7 +94,7 @@
             }
         }
         
-        /* Base app container styles */
+        /* Base app container styles - Zune inspired */
         #app-container {
             width: 100vw;
             height: 100vh;
@@ -96,10 +107,8 @@
             min-width: 100vw;
             border-radius: 0;
             background: var(--bg-color);
-            box-shadow: 0 12px 48px 0 rgba(31, 38, 135, 0.37), 0 2px 8px 0 rgba(0,0,0,0.18);
-            backdrop-filter: blur(24px) saturate(140%);
-            -webkit-backdrop-filter: blur(24px) saturate(140%);
-            border: 1.5px solid rgba(255,255,255,0.18);
+            box-shadow: 0 4px 20px 0 var(--zune-shadow);
+            border: 1px solid var(--zune-border);
             position: relative;
             overflow: hidden;
             padding-top: env(safe-area-inset-top);
@@ -165,7 +174,7 @@
                 max-height: 95vh;
                 min-height: auto;
                 min-width: auto;
-                border-radius: 1.5rem;
+                border-radius: 16px;
                 padding: 0;
                 margin: 1rem auto;
                 position: relative;
@@ -187,14 +196,16 @@
                 min-height: 100vh;
             }
         }
+        
+        /* Zune Ambient Background */
         #ambient-bg {
             position: absolute; inset: 0; width: 100%; height: 100%;
-            background: linear-gradient(120deg, #00a3e0 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-brown) 50%, var(--zune-orange) 100%);
             background-size: 200% 200%;
             background-position: 0% 50%;
-            opacity: 0.18;
-            filter: blur(60px) brightness(0.7);
-            transform: scale(1.2);
+            opacity: 0.15;
+            filter: blur(50px) brightness(0.6);
+            transform: scale(1.1);
             transition: opacity 1000ms ease-in-out, background-position 8s linear;
             z-index: 0;
             animation: ambientMove 16s linear infinite alternate;
@@ -203,69 +214,97 @@
             0% { background-position: 0% 50%; }
             100% { background-position: 100% 50%; }
         }
+        
+        /* Zune Player Display */
         #player-display {
-            background: linear-gradient(135deg, rgba(255,255,255,0.18), rgba(0,163,224,0.10));
-            backdrop-filter: blur(18px) saturate(120%);
-            -webkit-backdrop-filter: blur(18px) saturate(120%);
-            border: 2.5px solid var(--accent-color);
-            box-shadow: 0 8px 32px 0 rgba(0,163,224,0.18), 0 2px 8px 0 rgba(0,0,0,0.18);
-            border-radius: 1.5rem;
+            background: linear-gradient(135deg, var(--zune-dark-gray), var(--surface-color));
+            border: 2px solid var(--zune-orange);
+            box-shadow: 
+                0 4px 12px 0 var(--zune-shadow),
+                0 0 20px 0 var(--zune-glow),
+                inset 0 1px 0 0 var(--zune-highlight);
+            border-radius: 16px;
             position: relative;
             overflow: hidden;
             transition: box-shadow 0.3s, border 0.3s;
         }
+        
         #player-content img {
-            box-shadow: 0 0 24px 4px var(--accent-color), 0 2px 8px 0 rgba(0,0,0,0.18);
-            border: 2px solid var(--accent-color);
-            animation: logoGlow 2.5s ease-in-out infinite alternate;
+            border: 2px solid var(--zune-orange);
+            border-radius: 12px;
+            box-shadow: 0 0 15px 0 var(--zune-glow);
+            animation: zuneGlow 3s ease-in-out infinite alternate;
         }
-        @keyframes logoGlow {
-            0% { box-shadow: 0 0 12px 2px var(--accent-color), 0 2px 8px 0 rgba(0,0,0,0.18); }
-            100% { box-shadow: 0 0 32px 8px var(--accent-color), 0 2px 8px 0 rgba(0,0,0,0.18); }
+        
+        @keyframes zuneGlow {
+            0% { box-shadow: 0 0 10px 0 var(--zune-glow); }
+            100% { box-shadow: 0 0 25px 0 var(--zune-glow), 0 0 35px 0 var(--zune-glow); }
         }
+        
+        /* Zune Station Items */
         .station-item {
-            border-radius: 0.75rem;
-            transition: background 0.2s, color 0.2s, box-shadow 0.2s, transform 0.15s;
-            box-shadow: 0 2px 8px 0 rgba(0,163,224,0.08);
-            border: 2px solid transparent;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background: var(--surface-color);
+            border: 1px solid var(--zune-border);
+            box-shadow: 0 2px 8px 0 var(--zune-shadow);
         }
         .station-item:hover, .station-item.selected {
-            background: linear-gradient(90deg, var(--accent-color) 0%, #1a1a1a 100%) !important;
+            background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-orange-dark) 100%) !important;
             color: var(--play-button-text) !important;
-            box-shadow: 0 4px 16px 0 rgba(0,163,224,0.18);
-            border: 2px solid var(--accent-color);
-            transform: scale(1.03);
+            box-shadow: 
+                0 4px 16px 0 var(--zune-shadow),
+                0 0 20px 0 var(--zune-glow),
+                inset 0 1px 0 0 var(--zune-highlight);
+            border: 1px solid var(--zune-orange);
+            transform: translateY(-2px);
         }
         .station-item:hover p, .station-item.selected p {
             color: var(--play-button-text) !important;
         }
         .station-item img {
-            border: 1.5px solid var(--accent-color);
-            background: rgba(0,163,224,0.08);
+            border: 1px solid var(--zune-orange);
+            border-radius: 8px;
+            background: var(--surface-color);
         }
+        
+        /* Zune Options Panel */
         #options-panel {
             background: var(--modal-bg);
-            border-radius: 1.5rem 0 0 1.5rem;
-            box-shadow: 0 8px 32px 0 rgba(0,163,224,0.12);
+            border-radius: 16px 0 0 16px;
+            box-shadow: 
+                -4px 0 20px 0 var(--zune-shadow),
+                inset 1px 0 0 0 var(--zune-highlight);
         }
-        /* Button gradients and scale */
+        
+        /* Zune Button Styles */
         #controls-container button, #options-panel button, #theme-toggle-button, #fullscreen-toggle-button, #random-station-button {
-            background: linear-gradient(90deg, var(--accent-color) 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-orange-dark) 100%);
             color: var(--play-button-text);
-            box-shadow: 0 2px 8px 0 rgba(0,163,224,0.10);
-            border: none;
-            transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
+            border: 1px solid var(--zune-orange-dark);
+            box-shadow: 
+                0 2px 8px 0 var(--zune-shadow),
+                0 0 10px 0 var(--zune-glow),
+                inset 0 1px 0 0 var(--zune-highlight);
+            border-radius: 12px;
+            transition: all 0.3s ease;
         }
+        
         #controls-container button:active, #options-panel button:active, #theme-toggle-button:active, #fullscreen-toggle-button:active, #random-station-button:active {
-            transform: scale(0.96);
-            box-shadow: 0 1px 4px 0 rgba(0,163,224,0.08);
+            transform: translateY(2px);
+            box-shadow: 
+                0 1px 4px 0 var(--zune-shadow),
+                inset 0 1px 0 0 var(--zune-highlight);
         }
+        
         #play-button, #stop-button {
             font-size: 1.2rem;
             font-weight: bold;
             letter-spacing: 0.05em;
+            border-radius: 50%;
         }
-        /* Typography improvements */
+        
+        /* iOS 5 Typography */
         h1, h2, .font-bold {
             letter-spacing: 0.04em;
         }
@@ -278,22 +317,29 @@
             font-weight: 700;
             letter-spacing: 0.02em;
         }
+        
         /* Smooth transitions for interactive elements */
         .transition-colors, .transition-all, .transition-transform, .transition-opacity, .transition-shadow {
             transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Tuner Styles */
+        /* Zune Tuner Styles */
         #tuner-panel {
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-            backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-            border-top: 1px solid rgba(255, 255, 255, 0.15); border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            background: linear-gradient(135deg, var(--zune-dark-gray), var(--surface-color));
+            border: 1px solid var(--zune-border);
+            border-radius: 12px;
+            box-shadow: 
+                0 2px 8px 0 var(--zune-shadow),
+                inset 0 1px 0 0 var(--zune-highlight);
         }
+        
         #tuner-needle { 
-            background: linear-gradient(to right, #e53e3e, #c53030); 
-            box-shadow: 1px 0 3px rgba(0,0,0,0.5); 
+            background: linear-gradient(to right, var(--zune-orange), var(--zune-orange-dark)); 
+            box-shadow: 0 0 8px 0 var(--zune-glow); 
             transition: left 0.6s ease-out;
+            border-radius: 2px;
         }
+        
         .needle-settle { animation: tuner-needle-settle 0.8s ease-out forwards; }
         @keyframes tuner-needle-settle {
             0% { transform: translateX(20%); } 40% { transform: translateX(-15%); }
@@ -301,7 +347,7 @@
             100% { transform: translateX(0); }
         }
 
-        /* Options Panel Styles */
+        /* iOS 5 Options Panel Styles */
         #options-modal { transition: visibility 0.3s; }
         #options-modal.hidden { visibility: hidden; }
         #options-backdrop { transition: opacity 0.3s ease-in-out; }
@@ -313,66 +359,76 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
         
-        /* Modern Splash Screen */
+        /* Zune Splash Screen */
         #splash-screen {
-            background-color: var(--bg-color);
+            background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-brown) 50%, var(--zune-orange) 100%);
             transition: opacity 0.75s ease-out, visibility 0.75s ease-out;
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
         }
+        
         @keyframes splash-pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         #splash-content { animation: splash-pop-in 0.8s ease-out forwards; }
-        #splash-logo { filter: drop-shadow(0 0 15px var(--accent-color)); }
+        #splash-logo { filter: drop-shadow(0 0 15px var(--zune-glow)); }
 
-        /* --- AESTHETIC UPGRADE STYLES --- */
+        /* Zune Aesthetic Styles */
         #top-bar, #tuner-container, main, #bottom-bar {
             z-index: 1;
-             transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out, opacity 0.3s ease-in-out;
         }
-        #controls-container button { transition: all 0.2s ease-out; }
-        #controls-container button:active { transform: scale(0.95); opacity: 0.8; }
+        
+        #controls-container button { transition: all 0.3s ease-out; }
+        #controls-container button:active { transform: translateY(2px); opacity: 0.9; }
+        
         #play-button, #stop-button {
             will-change: transform, opacity; transition: transform 0.3s ease, opacity 0.3s ease;
         }
+        
         #play-button.hidden, #stop-button.hidden {
             transform: scale(0.5); opacity: 0; pointer-events: none;
         }
+        
         #am-tuner .relative, #fm-tuner .relative {
             background-image: repeating-linear-gradient(to right, 
                 var(--text-faint-color), var(--text-faint-color) 1px, 
                 transparent 1px, transparent 10%
             );
         }
+        
         #player-content #rds-text-display, #player-content #station-name-display, #player-content #station-info-display {
             text-shadow: var(--player-text-shadow);
         }
+        
         #app-container.options-open > #top-bar, #app-container.options-open > #tuner-container,
         #app-container.options-open > main, #app-container.options-open > #bottom-bar {
             transform: scale(0.97); filter: blur(3px); opacity: 0.7; pointer-events: none;
         }
-        /* Tuner Startup Animation Styles */
+        
+        /* Zune Tuner Startup Animation Styles */
         .startup-item { opacity: 0; animation: fadeIn 0.5s ease-in-out forwards; }
         .band-icon { transition: filter 0.4s ease-in-out, color 0.4s ease-in-out; }
         .band-icon-glow {
-            color: var(--accent-color) !important;
-            filter: drop-shadow(0 0 8px var(--accent-color));
+            color: var(--zune-orange) !important;
+            filter: drop-shadow(0 0 12px var(--zune-glow));
         }
         
-        /* Tuner Frequency Readability Fix */
+        /* Zune Tuner Frequency Readability */
         #am-tuner span, #fm-tuner span {
-            text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8), 0px 0px 6px rgba(0, 0, 0, 0.7);
+            text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+            color: var(--text-color);
         }
+        
         .theme-light #am-tuner span, .theme-light #fm-tuner span {
-            color: white;
+            color: var(--text-color);
         }
 
-        /* Orbital Lock Animation */
+        /* Zune Orbital Lock Animation */
         .beam-center-container { height: 100%; justify-content: center; align-items: center; display: flex; flex-direction: column; }
         .beam-container { display: flex; align-items: center; flex-grow: 1; padding: 0 8px; position: relative; width: 100%; }
         .beam {
             width: 0%; height: 2px;
-            background-color: var(--accent-color);
-            box-shadow: 0 0 4px var(--accent-color);
+            background: linear-gradient(to right, var(--zune-orange), var(--zune-orange-dark));
+            box-shadow: 0 0 8px 0 var(--zune-glow);
             border-radius: 2px;
             transition: width 1s ease-out;
         }
@@ -383,10 +439,10 @@
         }
         #web-tuner.is-linking .beam { animation: draw-beam 1s ease-out forwards; }
         #web-tuner.is-linking .globe-left, #web-tuner.is-linking .globe-right {
-            color: var(--accent-color);
-            filter: drop-shadow(0 0 5px var(--accent-color));
+            color: var(--zune-orange);
+            filter: drop-shadow(0 0 8px var(--zune-glow));
         }
-        .connected-text { color: var(--accent-color); opacity: 0; transition: opacity 0.4s ease; transition-delay: 1s; pointer-events: none; text-align: center; display: block; margin-bottom: 0.25rem; }
+        .connected-text { color: var(--zune-orange); opacity: 0; transition: opacity 0.4s ease; transition-delay: 1s; pointer-events: none; text-align: center; display: block; margin-bottom: 0.25rem; }
         #web-tuner.is-linking .connected-text { opacity: 1; }
         @keyframes draw-beam { from { width: 0%; } to { width: 100%; } }
 
@@ -402,7 +458,7 @@
             padding-bottom: env(safe-area-inset-bottom);
         }
 
-        /* Mobile-specific top bar adjustments */
+        /* iOS 5 Mobile-specific adjustments */
         @media (max-width: 639px) {
             #top-bar {
                 padding-top: max(16px, env(safe-area-inset-top));
@@ -435,7 +491,7 @@
             }
         }
         
-        /* Desktop-specific adjustments */
+        /* iOS 5 Desktop-specific adjustments */
         @media (min-width: 640px) {
             #top-bar {
                 padding-top: 12px;
@@ -450,7 +506,7 @@
             #app-container {
                 padding: 0;
                 margin: 1rem auto;
-                border-radius: 1.5rem;
+                border-radius: 12px;
                 max-width: 24rem;
                 max-height: 95vh;
                 height: auto;
@@ -464,6 +520,22 @@
             }
         }
 
+        /* Zune Station List Toggle */
+        #station-list-in-options {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        
+        #station-list-in-options.expanded {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        /* Chevron rotation animation */
+        .rotate-180 {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="w-full h-full font-sans bg-[var(--bg-color)] text-[var(--text-color)] transition-colors duration-300">
@@ -536,16 +608,16 @@
                 </div>
 
                 <div id="controls-container" class="w-full flex items-center justify-center space-x-4 flex-shrink-0">
-                    <button id="options-button" class="bg-[var(--surface-color)] p-4 rounded-full text-[var(--text-color)] hover:bg-[var(--border-color)] transition-all duration-200 border border-[var(--border-color)]" aria-label="Open options">
+                    <button id="options-button" class="bg-[var(--surface-color)] p-4 rounded-xl text-[var(--text-color)] hover:bg-[var(--zune-light-gray)] transition-all duration-300 border border-[var(--zune-border)] shadow-md" aria-label="Open options">
                         <i data-lucide="settings-2" class="w-7 h-7"></i>
                     </button>
-                    <button id="play-button" class="bg-[var(--play-button-bg)] text-[var(--play-button-text)] p-5 rounded-full shadow-lg hover:opacity-90 transform hover:scale-105" aria-label="Play">
+                    <button id="play-button" class="bg-gradient-to-br from-[var(--zune-orange)] to-[var(--zune-orange-dark)] text-[var(--play-button-text)] p-5 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 border border-[var(--zune-orange-dark)]" aria-label="Play">
                         <i data-lucide="play" class="w-10 h-10 fill-current ml-1"></i>
                     </button>
-                    <button id="stop-button" class="hidden bg-red-600 text-white p-5 rounded-full shadow-lg hover:bg-red-700 transform hover:scale-105" aria-label="Stop player">
+                    <button id="stop-button" class="hidden bg-gradient-to-br from-red-500 to-red-600 text-white p-5 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 border border-red-600" aria-label="Stop player">
                         <i data-lucide="square" class="w-10 h-10 fill-current"></i>
                     </button>
-                    <div class="p-4 rounded-full w-[68px]"></div>
+                    <div class="p-4 rounded-xl w-[68px]"></div>
                 </div>
             </main>
             
@@ -560,16 +632,16 @@
                     <div id="options-panel" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[var(--modal-bg)] flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
                         <header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
                             <h2 class="text-xl font-bold text-[var(--text-color)]">Options</h2>
-                            <button id="close-options-button" class="p-2 rounded-full hover:bg-[var(--border-color)] text-[var(--text-color)]">
+                            <button id="close-options-button" class="p-2 rounded-xl hover:bg-[var(--zune-light-gray)] text-[var(--text-color)] border border-[var(--zune-border)] shadow-md transition-all duration-300">
                                 <i data-lucide="x" class="w-6 h-6"></i>
                             </button>
                         </header>
                         <div id="options-container" class="p-4 space-y-3 text-[var(--text-color)] flex-grow overflow-y-auto station-list-scrollbar">
-                             <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-lg">
+                             <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-xl border border-[var(--zune-border)] shadow-md">
                                  <span id="options-date"></span>
                                  <span id="options-clock" class="font-mono"></span>
                              </div>
-                             <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-lg">
+                             <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-xl border border-[var(--zune-border)] shadow-md">
                                  <div id="weather-display-options" class="flex items-center space-x-2">
                                      <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
                                      <span>Loading Weather...</span>
@@ -580,29 +652,29 @@
                                      <span id="temp-f" class="font-bold">°F</span>
                                  </div>
                              </div>
-                            <button id="theme-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
+                            <button id="theme-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
                                 <span>Toggle Theme</span>
                                 <span id="theme-icon-container">
                                    <i data-lucide="moon" class="w-5 h-5"></i>
                                 </span>
                             </button>
-                            <button id="fullscreen-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
+                            <button id="fullscreen-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
                                 <span>Fullscreen</span>
                                 <span id="fullscreen-icon-container">
                                    <i data-lucide="maximize" class="w-5 h-5"></i>
                                 </span>
                             </button>
-                            <button id="toggle-station-list-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
+                            <button id="toggle-station-list-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
                                 <span>Station List</span>
                                 <i data-lucide="chevron-down" class="w-5 h-5 transition-transform"></i>
                             </button>
                             <div id="station-list-in-options" class="station-list-scrollbar space-y-2 pr-2">
                             </div>
-                            <button id="random-station-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--border-color)] rounded-lg">
+                            <button id="random-station-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
                                 <span>Random Station</span>
                                 <i data-lucide="dice-5" class="w-5 h-5"></i>
                             </button>
-                            <div class="w-full grid grid-cols-3 gap-2 items-center p-3 bg-[var(--surface-color)] rounded-lg text-sm">
+                            <div class="w-full grid grid-cols-3 gap-2 items-center p-3 bg-[var(--surface-color)] rounded-xl text-sm border border-[var(--zune-border)] shadow-md">
                                 <span class="text-left">Stream Time</span>
                                 <span id="options-rds-display" class="font-bold truncate text-center"></span>
                                 <span id="stopwatch-display" class="font-mono text-right">00:00</span>
@@ -644,17 +716,17 @@
         const updateNetworkSpeed = () => { if (state.isPlaying) { const speed = (Math.random() * (128 - 48) + 48).toFixed(1); dom.networkSpeedContainer.innerHTML = `<i data-lucide="arrow-down-up" class="w-3 h-3"></i><span>${speed} kb/s</span>`; lucide.createIcons(); } else { dom.networkSpeedContainer.innerHTML = ''; } };
         const selectStation = (stationName) => { if (state.isPlaying && state.currentStationName === stationName) return; if (state.isPlaying) { stopPlayer(false).then(() => { playStation(stationName); }); } else { playStation(stationName); } };
         const playStation = (stationName) => { state.currentStationName = stationName; document.querySelectorAll('.station-item').forEach(item => { item.classList.remove('selected'); if (item.dataset.stationName === stationName) { item.classList.add('selected'); } }); const station = RADIO_STATIONS[stationName]; const ambientBg = document.getElementById('ambient-bg'); if (station.logo) { ambientBg.style.backgroundImage = `url(${station.logo})`; ambientBg.style.opacity = 1; } dom.audioPlayer.src = station.streamUrl; dom.audioPlayer.load(); dom.audioPlayer.play().catch(e => { console.error("Play error:", e); stopPlayer(true); }); closeOptions(); }
-        const togglePlay = () => { if (!state.currentStationName) { openOptions(); const list = dom.stationListInOptions; if (!list.classList.contains('expanded')) { list.classList.add('expanded'); const icon = dom.toggleStationListButton.querySelector('svg'); if (icon) icon.classList.add('rotate-180'); } return; } if (!state.isPrimed) { dom.primerAudio.play().then(() => { state.isPrimed = true; dom.audioPlayer.play(); }).catch(e => { console.warn("Primer audio failed, attempting main play anyway.", e); dom.audioPlayer.play(); }); } else { state.isPlaying ? dom.audioPlayer.pause() : dom.audioPlayer.play(); } };
+        const togglePlay = () => { if (!state.currentStationName) { openOptions(); const list = dom.stationListInOptions; if (!list.classList.contains('expanded')) { list.classList.add('expanded'); const icon = dom.toggleStationListButton.querySelector('i[data-lucide="chevron-down"]'); if (icon) icon.classList.add('rotate-180'); } return; } if (!state.isPrimed) { dom.primerAudio.play().then(() => { state.isPrimed = true; dom.audioPlayer.play(); }).catch(e => { console.warn("Primer audio failed, attempting main play anyway.", e); dom.audioPlayer.play(); }); } else { state.isPlaying ? dom.audioPlayer.pause() : dom.audioPlayer.play(); } };
         const updateMediaSession = () => { if ('mediaSession' in navigator && state.currentStationName) { const station = RADIO_STATIONS[state.currentStationName]; navigator.mediaSession.metadata = new MediaMetadata({ title: state.currentStationName, artist: 'Glz Radio', album: station.frequency, artwork: [{ src: station.logo, sizes: '512x512', type: 'image/png' }] }); } };
         const stopPlayer = async (withAnimation = true) => { document.getElementById('ambient-bg').style.opacity = 0; if (!state.currentStationName) return; dom.audioPlayer.pause(); dom.audioPlayer.removeAttribute('src'); dom.audioPlayer.load(); state.isPlaying = false; if (withAnimation) { await runPlayerShutdownAnimation(); } setTunerToPowerOff(); state.currentStationName = null; state.isFirstPlay = true; updateControlButtons(); if (!withAnimation) { dom.playerContent.innerHTML = `<p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>`; } stopRdsRotation(); stopFlicker(); if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = ''; clearInterval(state.stopwatchInterval); clearInterval(state.networkSpeedInterval); state.networkSpeedInterval = null; updateNetworkSpeed(); state.elapsedTime = 0; updateStopwatch(); updateStatusBar(); dom.bottomBarStationName.textContent = "Standby"; if ('mediaSession' in navigator) { navigator.mediaSession.playbackState = "none"; navigator.mediaSession.metadata = null; } document.querySelectorAll('.station-item').forEach(item => item.classList.remove('selected')); };
         const setupMediaSessionHandlers = () => { if ('mediaSession' in navigator) { navigator.mediaSession.setActionHandler('play', togglePlay); navigator.mediaSession.setActionHandler('pause', togglePlay); navigator.mediaSession.setActionHandler('stop', () => stopPlayer(true)); } }
         dom.audioPlayer.onplay = () => { state.isPlaying = true; if(state.isFirstPlay) { runPlayerStartupAnimation(RADIO_STATIONS[state.currentStationName]); } updateControlButtons(); updateStatusBar(); updateTunerDisplay(RADIO_STATIONS[state.currentStationName], state.isFirstPlay); state.isFirstPlay = false; startFlicker(); clearInterval(state.stopwatchInterval); clearInterval(state.networkSpeedInterval); state.elapsedTime = 0; updateStopwatch(); updateNetworkSpeed(); state.stopwatchInterval = setInterval(() => { state.elapsedTime++; updateStopwatch(); }, 1000); state.networkSpeedInterval = setInterval(updateNetworkSpeed, 2000); updateMediaSession(); if ('mediaSession' in navigator) navigator.mediaSession.playbackState = "playing"; dom.bottomBar.classList.remove('hidden'); dom.bottomBarStationName.textContent = "Now Playing: " + state.currentStationName; };
         dom.audioPlayer.onpause = () => { if (!state.currentStationName) return; state.isPlaying = false; stopRdsRotation(); updateStatusBar(); updateControlButtons(); updateTunerDisplay(); stopFlicker(); clearInterval(state.stopwatchInterval); clearInterval(state.networkSpeedInterval); state.networkSpeedInterval = null; updateNetworkSpeed(); if ('mediaSession' in navigator) { navigator.mediaSession.playbackState = "paused"; } dom.bottomBarStationName.textContent = "Paused"; };
         const openOptions = () => { dom.appContainer.classList.add('options-open'); dom.optionsModal.classList.remove('hidden'); requestAnimationFrame(() => { dom.optionsModal.classList.add('is-open'); }); };
-        const closeOptions = () => { dom.appContainer.classList.remove('options-open'); dom.optionsModal.classList.remove('is-open'); const list = dom.stationListInOptions; if (list.classList.contains('expanded')) { list.classList.remove('expanded'); const icon = dom.toggleStationListButton.querySelector('svg'); if (icon) icon.classList.remove('rotate-180'); } };
+        const closeOptions = () => { dom.appContainer.classList.remove('options-open'); dom.optionsModal.classList.remove('is-open'); const list = dom.stationListInOptions; if (list.classList.contains('expanded')) { list.classList.remove('expanded'); const icon = dom.toggleStationListButton.querySelector('i[data-lucide="chevron-down"]'); if (icon) icon.classList.remove('rotate-180'); } };
         const toggleFullScreen = () => { if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(err => { console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`); }); } else { if (document.exitFullscreen) { document.exitFullscreen(); } } };
         const updateFullscreenIcon = () => { const iconContainer = dom.fullscreenIconContainer; if (document.fullscreenElement) { iconContainer.innerHTML = `<i data-lucide="minimize" class="w-5 h-5"></i>`; } else { iconContainer.innerHTML = `<i data-lucide="maximize" class="w-5 h-5"></i>`; } lucide.createIcons(); };
-        const setupEventListeners = () => { dom.optionsButton.onclick = openOptions; dom.closeOptionsButton.onclick = closeOptions; dom.optionsBackdrop.onclick = closeOptions; dom.optionsPanel.addEventListener('transitionend', () => { if (!dom.optionsModal.classList.contains('is-open')) { dom.optionsModal.classList.add('hidden'); } }); dom.stopButton.onclick = () => stopPlayer(true); dom.toggleStationListButton.onclick = () => { const list = dom.stationListInOptions; const icon = dom.toggleStationListButton.querySelector('svg'); list.classList.toggle('expanded'); if (icon) { icon.classList.toggle('rotate-180'); } }; dom.randomStationButton.onclick = () => { const randomIndex = Math.floor(Math.random() * STATIONS_ORDER.length); const randomStationName = STATIONS_ORDER[randomIndex]; selectStation(randomStationName); }; dom.playerDisplay.onclick = () => { if (!state.currentStationName) { togglePlay(); } }; dom.playButton.onclick = togglePlay; dom.tempToggle.onclick = () => { state.isCelsius = !state.isCelsius; localStorage.setItem('glz-radio-temp-unit', state.isCelsius ? 'C' : 'F'); updateWeatherDisplay(); }; dom.fullscreenToggleButton.onclick = toggleFullScreen; document.addEventListener('fullscreenchange', updateFullscreenIcon); 
+        const setupEventListeners = () => { dom.optionsButton.onclick = openOptions; dom.closeOptionsButton.onclick = closeOptions; dom.optionsBackdrop.onclick = closeOptions; dom.optionsPanel.addEventListener('transitionend', () => { if (!dom.optionsModal.classList.contains('is-open')) { dom.optionsModal.classList.add('hidden'); } }); dom.stopButton.onclick = () => stopPlayer(true); dom.toggleStationListButton.onclick = () => { const list = dom.stationListInOptions; const icon = dom.toggleStationListButton.querySelector('i[data-lucide="chevron-down"]'); list.classList.toggle('expanded'); if (icon) { icon.classList.toggle('rotate-180'); } }; dom.randomStationButton.onclick = () => { const randomIndex = Math.floor(Math.random() * STATIONS_ORDER.length); const randomStationName = STATIONS_ORDER[randomIndex]; selectStation(randomStationName); }; dom.playerDisplay.onclick = () => { if (!state.currentStationName) { togglePlay(); } }; dom.playButton.onclick = togglePlay; dom.tempToggle.onclick = () => { state.isCelsius = !state.isCelsius; localStorage.setItem('glz-radio-temp-unit', state.isCelsius ? 'C' : 'F'); updateWeatherDisplay(); }; dom.fullscreenToggleButton.onclick = toggleFullScreen; document.addEventListener('fullscreenchange', updateFullscreenIcon); 
         
         // Handle mobile browser viewport changes
         const handleViewportChange = () => {
@@ -671,8 +743,8 @@
         handleViewportChange();
         };
 
-        const setupTheming = () => { const themes = ['dark', 'light', 'oled']; let currentThemeIndex = 0; const savedTheme = localStorage.getItem('glz-radio-theme'); if (savedTheme && themes.includes(savedTheme)) { currentThemeIndex = themes.indexOf(savedTheme); } const applyTheme = (themeName) => { dom.body.classList.remove('theme-light', 'theme-dark', 'theme-oled'); if (themeName !== 'dark') { dom.body.classList.add(`theme-${themeName}`); } dom.themeIconContainer.innerHTML = `<i data-lucide="${themeName === 'light' ? 'moon' : 'sun'}" class="w-5 h-5"></i>`; lucide.createIcons(); localStorage.setItem('glz-radio-theme', themeName); const themeAccentColor = getComputedStyle(dom.body).getPropertyValue('--play-button-bg').trim(); dom.appContainer.style.setProperty('--accent-color', themeAccentColor); }; applyTheme(themes[currentThemeIndex]); dom.themeToggleButton.onclick = () => { currentThemeIndex = (currentThemeIndex + 1) % themes.length; applyTheme(themes[currentThemeIndex]); }; };
-        const init = () => { lucide.createIcons(); setTimeout(() => { const splash = document.getElementById('splash-screen'); splash.style.opacity = 0; splash.style.visibility = 'hidden'; }, 2500); updateClocks(); setInterval(updateClocks, 10000); setInterval(updateStatusBar, 1000); updateControlButtons(); setupEventListeners(); setupTheming(); setupMediaSessionHandlers(); setTunerToPowerOff(); dom.bottomBarStationName.textContent = "Standby"; dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 9.2 | Build: ${new Date('2025-06-11').toISOString().slice(0, 10).replace(/-/g,'.')}</p>`; state.isCelsius = localStorage.getItem('glz-radio-temp-unit') === 'C'; getIPLocationAndWeather(); setInterval(getIPLocationAndWeather, 1000 * 60 * 15); dom.stationListInOptions.innerHTML = STATIONS_ORDER.map(name => { const station = RADIO_STATIONS[name]; return `<div data-station-name="${name}" class="station-item flex items-center p-3 space-x-4 cursor-pointer hover:bg-[var(--border-color)] rounded-lg transition-colors duration-200"> <img src="${station.logo}" class="w-10 h-10 object-contain bg-black/10 p-1 rounded-md" onerror="this.onerror=null; this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=Logo';"> <div class="flex-grow truncate"><p class="font-bold text-[var(--text-color)]">${name}</p><p class="text-xs text-[var(--text-muted-color)]">${station.frequency}</p></div> </div>`; }).join(''); dom.stationListInOptions.querySelectorAll('.station-item').forEach(item => { item.onclick = () => selectStation(item.dataset.stationName); }); };
+        const setupTheming = () => { const themes = ['dark', 'light', 'oled']; let currentThemeIndex = 0; const savedTheme = localStorage.getItem('glz-radio-theme'); if (savedTheme && themes.includes(savedTheme)) { currentThemeIndex = themes.indexOf(savedTheme); } const applyTheme = (themeName) => { dom.body.classList.remove('theme-light', 'theme-dark', 'theme-oled'); if (themeName !== 'dark') { dom.body.classList.add(`theme-${themeName}`); } dom.themeIconContainer.innerHTML = `<i data-lucide="${themeName === 'light' ? 'moon' : 'sun'}" class="w-5 h-5"></i>`; lucide.createIcons(); localStorage.setItem('glz-radio-theme', themeName); const themeAccentColor = getComputedStyle(dom.body).getPropertyValue('--zune-orange').trim(); dom.appContainer.style.setProperty('--accent-color', themeAccentColor); }; applyTheme(themes[currentThemeIndex]); dom.themeToggleButton.onclick = () => { currentThemeIndex = (currentThemeIndex + 1) % themes.length; applyTheme(themes[currentThemeIndex]); }; };
+        const init = () => { lucide.createIcons(); setTimeout(() => { const splash = document.getElementById('splash-screen'); splash.style.opacity = 0; splash.style.visibility = 'hidden'; }, 2500); updateClocks(); setInterval(updateClocks, 10000); setInterval(updateStatusBar, 1000); updateControlButtons(); setupEventListeners(); setupTheming(); setupMediaSessionHandlers(); setTunerToPowerOff(); dom.bottomBarStationName.textContent = "Standby"; dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: 9.2 | Build: ${new Date('2025-06-11').toISOString().slice(0, 10).replace(/-/g,'.')}</p>`; state.isCelsius = localStorage.getItem('glz-radio-temp-unit') === 'C'; getIPLocationAndWeather(); setInterval(getIPLocationAndWeather, 1000 * 60 * 15); dom.stationListInOptions.innerHTML = STATIONS_ORDER.map(name => { const station = RADIO_STATIONS[name]; return `<div data-station-name="${name}" class="station-item flex items-center p-3 space-x-4 cursor-pointer hover:bg-[var(--zune-light-gray)] rounded-xl transition-all duration-300 border border-[var(--zune-border)] shadow-md"> <img src="${station.logo}" class="w-10 h-10 object-contain bg-[var(--surface-color)] p-1 rounded-lg border border-[var(--zune-orange)]" onerror="this.onerror=null; this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=Logo';"> <div class="flex-grow truncate"><p class="font-bold text-[var(--text-color)]">${name}</p><p class="text-xs text-[var(--text-muted-color)]">${station.frequency}</p></div> </div>`; }).join(''); dom.stationListInOptions.querySelectorAll('.station-item').forEach(item => { item.onclick = () => selectStation(item.dataset.stationName); }); };
 
         init();
     </script>
