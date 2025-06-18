@@ -1,0 +1,525 @@
+/* Microsoft Zune Theme Styles */
+:root {
+    /* Zune Color Palette */
+    --bg-color: #1a1a1a;
+    --text-color: #ffffff;
+    --text-muted-color: #cccccc;
+    --text-faint-color: #888888;
+    --surface-color: rgba(40, 40, 40, 0.95);
+    --border-color: rgba(100, 100, 100, 0.3);
+    --modal-bg: #1a1a1a;
+    --play-button-bg: linear-gradient(135deg, #f7931e 0%, #d67e1a 100%);
+    --play-button-text: #ffffff;
+    --accent-color: #f7931e;
+    --player-text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    
+    /* Zune Specific Colors */
+    --zune-orange: #f7931e;
+    --zune-orange-dark: #d67e1a;
+    --zune-brown: #8b4513;
+    --zune-dark-gray: #2a2a2a;
+    --zune-light-gray: #404040;
+    --zune-border: #555555;
+    --zune-shadow: rgba(0, 0, 0, 0.4);
+    --zune-highlight: rgba(255, 255, 255, 0.1);
+    --zune-glow: rgba(247, 147, 30, 0.3);
+}
+
+.theme-light {
+    /* Light Theme - Zune inspired */
+    --bg-color: #f5f5f5;
+    --text-color: #2a2a2a;
+    --text-muted-color: #666666;
+    --text-faint-color: #999999;
+    --surface-color: rgba(255, 255, 255, 0.95);
+    --border-color: rgba(0, 0, 0, 0.1);
+    --modal-bg: #f5f5f5;
+    --player-text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+.theme-oled {
+    /* Dark Theme - Zune inspired dark */
+    --bg-color: #000000;
+    --text-color: #ffffff;
+    --text-muted-color: #cccccc;
+    --text-faint-color: #666666;
+    --surface-color: rgba(20, 20, 20, 0.95);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --modal-bg: #000000;
+}
+
+body, .font-sans { font-family: 'Inter', 'Segoe UI', sans-serif; }
+.font-mono { font-family: 'Segoe UI Mono', monospace; }
+
+.station-list-scrollbar::-webkit-scrollbar { width: 8px; }
+.station-list-scrollbar::-webkit-scrollbar-track { background: var(--surface-color); }
+.station-list-scrollbar::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
+
+/* Mobile-first viewport handling */
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    height: calc(var(--vh, 1vh) * 100);
+}
+
+/* Handle mobile browser viewport issues */
+@supports (height: 100dvh) {
+    body {
+        height: 100dvh;
+    }
+}
+
+/* Fallback for browsers that don't support dvh */
+@supports not (height: 100dvh) {
+    body {
+        height: 100vh;
+    }
+}
+
+/* Base app container styles - Zune inspired */
+#app-container {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-width: 100vw;
+    max-height: 100vh;
+    max-height: 100dvh;
+    min-height: 100vh;
+    min-height: 100dvh;
+    min-width: 100vw;
+    border-radius: 0;
+    background: var(--bg-color);
+    box-shadow: 0 4px 20px 0 var(--zune-shadow);
+    border: 1px solid var(--zune-border);
+    position: relative;
+    overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* Ensure proper mobile viewport */
+@media (max-width: 639px) {
+    body {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        height: calc(var(--vh, 1vh) * 100);
+        overflow: hidden;
+    }
+    
+    #app-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        height: calc(var(--vh, 1vh) * 100);
+        border-radius: 0;
+        margin: 0;
+        padding-top: 0; /* Top bar handles safe area */
+        padding-bottom: 0; /* Bottom bar handles safe area */
+        padding-left: env(safe-area-inset-left);
+        padding-right: env(safe-area-inset-right);
+    }
+    
+    /* Ensure proper spacing for mobile */
+    #tuner-container {
+        margin-top: 8px;
+    }
+    
+    main {
+        padding-top: 8px;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 640px) {
+    body {
+        position: static;
+        overflow: auto;
+    }
+    
+    #app-container {
+        width: 100%;
+        height: auto;
+        max-width: 24rem;
+        max-height: 95vh;
+        min-height: auto;
+        min-width: auto;
+        border-radius: 16px;
+        padding: 0;
+        margin: 1rem auto;
+        position: relative;
+    }
+}
+
+/* Fallback for browsers that don't support dvh */
+@supports not (height: 100dvh) {
+    #app-container {
+        height: 100vh;
+        min-height: 100vh;
+        max-height: 100vh;
+    }
+}
+@media (max-width: 640px) {
+    #app-container {
+        border-radius: 0;
+        min-width: 100vw;
+        min-height: 100vh;
+    }
+}
+
+/* Zune Ambient Background */
+#ambient-bg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-brown) 50%, var(--zune-orange) 100%);
+    background-size: 200% 200%;
+    background-position: 0% 50%;
+    opacity: 0.15;
+    filter: blur(50px) brightness(0.6);
+    transform: scale(1.1);
+    transition: opacity 1000ms ease-in-out, background-position 8s linear;
+    z-index: 0;
+    animation: ambientMove 16s linear infinite alternate;
+}
+@keyframes ambientMove {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+/* Zune Player Display */
+#player-display {
+    background: linear-gradient(135deg, var(--zune-dark-gray), var(--surface-color));
+    border: 2px solid var(--zune-orange);
+    box-shadow: 
+        0 4px 12px 0 var(--zune-shadow),
+        0 0 20px 0 var(--zune-glow),
+        inset 0 1px 0 0 var(--zune-highlight);
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.3s, border 0.3s;
+}
+
+#player-content img {
+    border: 2px solid var(--zune-orange);
+    border-radius: 12px;
+    box-shadow: 0 0 15px 0 var(--zune-glow);
+    animation: zuneGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes zuneGlow {
+    0% { box-shadow: 0 0 10px 0 var(--zune-glow); }
+    100% { box-shadow: 0 0 25px 0 var(--zune-glow), 0 0 35px 0 var(--zune-glow); }
+}
+
+/* Zune Station Items */
+.station-item {
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    background: var(--surface-color);
+    border: 1px solid var(--zune-border);
+    box-shadow: 0 2px 8px 0 var(--zune-shadow);
+}
+.station-item:hover, .station-item.selected {
+    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-orange-dark) 100%) !important;
+    color: var(--play-button-text) !important;
+    box-shadow: 
+        0 4px 16px 0 var(--zune-shadow),
+        0 0 20px 0 var(--zune-glow),
+        inset 0 1px 0 0 var(--zune-highlight);
+    border: 1px solid var(--zune-orange);
+    transform: translateY(-2px);
+}
+.station-item:hover p, .station-item.selected p {
+    color: var(--play-button-text) !important;
+}
+.station-item img {
+    border: 1px solid var(--zune-orange);
+    border-radius: 8px;
+    background: var(--surface-color);
+}
+
+/* Zune Options Panel */
+#options-panel {
+    background: var(--modal-bg);
+    border-radius: 16px 0 0 16px;
+    box-shadow: 
+        -4px 0 20px 0 var(--zune-shadow),
+        inset 1px 0 0 0 var(--zune-highlight);
+}
+
+/* Zune Button Styles */
+#controls-container button, #options-panel button, #theme-toggle-button, #fullscreen-toggle-button, #random-station-button {
+    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-orange-dark) 100%);
+    color: var(--play-button-text);
+    border: 1px solid var(--zune-orange-dark);
+    box-shadow: 
+        0 2px 8px 0 var(--zune-shadow),
+        0 0 10px 0 var(--zune-glow),
+        inset 0 1px 0 0 var(--zune-highlight);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+#controls-container button:active, #options-panel button:active, #theme-toggle-button:active, #fullscreen-toggle-button:active, #random-station-button:active {
+    transform: translateY(2px);
+    box-shadow: 
+        0 1px 4px 0 var(--zune-shadow),
+        inset 0 1px 0 0 var(--zune-highlight);
+}
+
+#play-button, #stop-button {
+    font-size: 1.2rem;
+    font-weight: bold;
+    letter-spacing: 0.05em;
+    border-radius: 50%;
+}
+
+/* iOS 5 Typography */
+h1, h2, .font-bold {
+    letter-spacing: 0.04em;
+}
+h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+}
+.station-item p.font-bold {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+/* Smooth transitions for interactive elements */
+.transition-colors, .transition-all, .transition-transform, .transition-opacity, .transition-shadow {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Zune Tuner Styles */
+#tuner-panel {
+    background: linear-gradient(135deg, var(--zune-dark-gray), var(--surface-color));
+    border: 1px solid var(--zune-border);
+    border-radius: 12px;
+    box-shadow: 
+        0 2px 8px 0 var(--zune-shadow),
+        inset 0 1px 0 0 var(--zune-highlight);
+}
+
+#tuner-needle { 
+    background: linear-gradient(to right, var(--zune-orange), var(--zune-orange-dark)); 
+    box-shadow: 0 0 8px 0 var(--zune-glow); 
+    transition: left 0.6s ease-out;
+    border-radius: 2px;
+}
+
+.needle-settle { animation: tuner-needle-settle 0.8s ease-out forwards; }
+@keyframes tuner-needle-settle {
+    0% { transform: translateX(20%); } 40% { transform: translateX(-15%); }
+    70% { transform: translateX(8%); } 90% { transform: translateX(-4%); }
+    100% { transform: translateX(0); }
+}
+
+/* iOS 5 Options Panel Styles */
+#options-modal { transition: visibility 0.3s; }
+#options-modal.hidden { visibility: hidden; }
+#options-backdrop { transition: opacity 0.3s ease-in-out; }
+#options-panel { transition: transform 0.3s ease-in-out; }
+#options-modal.is-open #options-backdrop { opacity: 1; }
+#options-modal.is-open #options-panel { transform: translateX(0); }
+
+/* Fade/Slide Animations */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+
+/* Zune Splash Screen */
+#splash-screen {
+    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-brown) 50%, var(--zune-orange) 100%);
+    transition: opacity 0.75s ease-out, visibility 0.75s ease-out;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+@keyframes splash-pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+#splash-content { animation: splash-pop-in 0.8s ease-out forwards; }
+#splash-logo { filter: drop-shadow(0 0 15px var(--zune-glow)); }
+
+/* Zune Aesthetic Styles */
+#top-bar, #tuner-container, main, #bottom-bar {
+    z-index: 1;
+    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+#controls-container button { transition: all 0.3s ease-out; }
+#controls-container button:active { transform: translateY(2px); opacity: 0.9; }
+
+#play-button, #stop-button {
+    will-change: transform, opacity; transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+#play-button.hidden, #stop-button.hidden {
+    transform: scale(0.5); opacity: 0; pointer-events: none;
+}
+
+#am-tuner .relative, #fm-tuner .relative {
+    background-image: repeating-linear-gradient(to right, 
+        var(--text-faint-color), var(--text-faint-color) 1px, 
+        transparent 1px, transparent 10%
+    );
+}
+
+#player-content #rds-text-display, #player-content #station-name-display, #player-content #station-info-display {
+    text-shadow: var(--player-text-shadow);
+}
+
+#app-container.options-open > #top-bar, #app-container.options-open > #tuner-container,
+#app-container.options-open > main, #app-container.options-open > #bottom-bar {
+    transform: scale(0.97); filter: blur(3px); opacity: 0.7; pointer-events: none;
+}
+
+/* Zune Tuner Startup Animation Styles */
+.startup-item { opacity: 0; animation: fadeIn 0.5s ease-in-out forwards; }
+.band-icon { transition: filter 0.4s ease-in-out, color 0.4s ease-in-out; }
+.band-icon-glow {
+    color: var(--zune-orange) !important;
+    filter: drop-shadow(0 0 12px var(--zune-glow));
+}
+
+/* Zune Tuner Frequency Readability */
+#am-tuner span, #fm-tuner span {
+    text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
+    color: var(--text-color);
+}
+
+.theme-light #am-tuner span, .theme-light #fm-tuner span {
+    color: var(--text-color);
+}
+
+/* Zune Orbital Lock Animation */
+.beam-center-container { height: 100%; justify-content: center; align-items: center; display: flex; flex-direction: column; }
+.beam-container { display: flex; align-items: center; flex-grow: 1; padding: 0 8px; position: relative; width: 100%; }
+.beam {
+    width: 0%; height: 2px;
+    background: linear-gradient(to right, var(--zune-orange), var(--zune-orange-dark));
+    box-shadow: 0 0 8px 0 var(--zune-glow);
+    border-radius: 2px;
+    transition: width 1s ease-out;
+}
+.globe-left, .globe-right {
+    color: var(--text-muted-color);
+    font-size: 1.2rem;
+    transition: color 0.3s 1s ease, filter 0.3s 1s ease;
+}
+#web-tuner.is-linking .beam { animation: draw-beam 1s ease-out forwards; }
+#web-tuner.is-linking .globe-left, #web-tuner.is-linking .globe-right {
+    color: var(--zune-orange);
+    filter: drop-shadow(0 0 8px var(--zune-glow));
+}
+.connected-text { color: var(--zune-orange); opacity: 0; transition: opacity 0.4s ease; transition-delay: 1s; pointer-events: none; text-align: center; display: block; margin-bottom: 0.25rem; }
+#web-tuner.is-linking .connected-text { opacity: 1; }
+@keyframes draw-beam { from { width: 0%; } to { width: 100%; } }
+
+#top-bar {
+    padding-top: env(safe-area-inset-top);
+}
+#bottom-bar {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+#splash-screen,
+#options-modal {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS 5 Mobile-specific adjustments */
+@media (max-width: 639px) {
+    #top-bar {
+        padding-top: max(16px, env(safe-area-inset-top));
+        min-height: 70px;
+        display: flex;
+        align-items: center;
+    }
+    
+    #bottom-bar {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+        min-height: 50px;
+        display: flex;
+        align-items: center;
+    }
+    
+    #app-container {
+        padding-top: 0; /* Top bar handles safe area */
+        padding-bottom: 0; /* Bottom bar handles safe area */
+    }
+    
+    /* Ensure main content doesn't get hidden behind browser UI */
+    main {
+        padding-bottom: env(safe-area-inset-bottom);
+        margin-bottom: 0;
+    }
+    
+    /* Adjust controls container for better mobile accessibility */
+    #controls-container {
+        margin-bottom: env(safe-area-inset-bottom);
+    }
+}
+
+/* iOS 5 Desktop-specific adjustments */
+@media (min-width: 640px) {
+    #top-bar {
+        padding-top: 12px;
+        min-height: 60px;
+    }
+    
+    #bottom-bar {
+        padding-bottom: 12px;
+        min-height: 50px;
+    }
+    
+    #app-container {
+        padding: 0;
+        margin: 1rem auto;
+        border-radius: 12px;
+        max-width: 24rem;
+        max-height: 95vh;
+        height: auto;
+        position: relative;
+    }
+    
+    body {
+        position: static;
+        overflow: auto;
+        height: auto;
+    }
+}
+
+/* Zune Station List Toggle */
+#station-list-in-options {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+}
+
+#station-list-in-options.expanded {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+/* Chevron rotation animation */
+.rotate-180 {
+    transform: rotate(180deg);
+} 
