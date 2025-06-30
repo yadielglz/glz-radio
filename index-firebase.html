@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLZ Radio - Puerto Rico</title>
+    <meta name="description" content="Listen to the best Puerto Rican radio stations online. AM and FM stations from San Juan, Bayamón, Caguas and more.">
+    <meta name="keywords" content="radio puerto rico, radio online, radio san juan, salsa radio, merengue radio, radio en vivo">
+    <meta name="author" content="GLZ Radio">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="GLZ Radio">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="GLZ Radio - Puerto Rico">
+    <meta property="og:description" content="Listen to the best Puerto Rican radio stations online">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://glz-radio.web.app">
+    <meta property="og:image" content="https://glz-radio.web.app/icons/icon-512x512.png">
+    
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="GLZ Radio - Puerto Rico">
+    <meta name="twitter:description" content="Listen to the best Puerto Rican radio stations online">
+    <meta name="twitter:image" content="https://glz-radio.web.app/icons/icon-512x512.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    
+    <!-- Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCAITVOQyXyQ4AMrSuE2SrkNw_YHla4OEM",
+            authDomain: "glz-radio.firebaseapp.com",
+            projectId: "glz-radio",
+            storageBucket: "glz-radio.firebasestorage.app",
+            messagingSenderId: "1050172072593",
+            appId: "1:1050172072593:web:ef47a5578958f47fe59530",
+            measurementId: "G-R4LXL61NJ6"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+        
+        // Make Firebase available globally
+        window.firebaseApp = app;
+        window.firebaseAnalytics = analytics;
+        window.firebaseDb = db;
+    </script>
+</head>
+<body>
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div class="text-center">
+            <div class="w-32 h-32 mx-auto mb-4 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                <span class="text-white text-4xl font-bold">GLZ</span>
+            </div>
+            <h1 class="text-white text-2xl font-bold mb-2">GLZ Radio</h1>
+            <p class="text-gray-300">Puerto Rico's Finest</p>
+            <div class="mt-4">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app" class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white relative overflow-hidden">
+        <!-- Ambient Background -->
+        <div id="ambient-bg" class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-0 transition-opacity duration-1000"></div>
+        
+        <!-- Main Content -->
+        <div class="relative z-10 flex flex-col h-screen">
+            <!-- Header -->
+            <header class="flex items-center justify-between p-4 bg-black/20 backdrop-blur-sm">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">GLZ</span>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold">GLZ Radio</h1>
+                        <p class="text-xs text-gray-300">Puerto Rico's Finest</p>
+                    </div>
+                </div>
+                
+                <!-- Weather Display -->
+                <div id="weather-display" class="flex items-center space-x-2 text-sm">
+                    <i data-lucide="sun" class="w-4 h-4"></i>
+                    <span>--°C</span>
+                </div>
+            </header>
+
+            <!-- Player Section -->
+            <div id="player-section" class="flex-1 flex flex-col items-center justify-center p-6">
+                <div id="player-content" class="text-center max-w-md w-full">
+                    <p class="text-xl font-bold">Select a Station</p>
+                </div>
+                
+                <!-- Control Buttons -->
+                <div class="flex items-center space-x-4 mt-6">
+                    <button id="play-pause-btn" class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center hover:scale-105 transition-transform">
+                        <i data-lucide="play" class="w-8 h-8 text-white"></i>
+                    </button>
+                    
+                    <button id="stop-btn" class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center hover:bg-gray-500 transition-colors">
+                        <i data-lucide="square" class="w-6 h-6 text-white"></i>
+                    </button>
+                    
+                    <button id="random-btn" class="w-12 h-12 bg-gray-600 rounded-full flex items-center justify-center hover:bg-gray-500 transition-colors">
+                        <i data-lucide="shuffle" class="w-6 h-6 text-white"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tuner Section -->
+            <div id="tuner-section" class="p-6">
+                <div class="bg-black/20 backdrop-blur-sm rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-bold">Tuner</h2>
+                        <div class="flex items-center space-x-2">
+                            <button id="temp-c" class="text-sm font-bold">°C</button>
+                            <span class="text-sm text-gray-400">|</span>
+                            <button id="temp-f" class="text-sm opacity-50">°F</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tuner Display -->
+                    <div id="tuner-display" class="bg-gray-800 rounded-lg p-4 mb-4">
+                        <div class="text-center">
+                            <div id="frequency-display" class="text-2xl font-mono font-bold mb-2">--</div>
+                            <div id="station-display" class="text-sm text-gray-300">No Station Selected</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tuner Knob -->
+                    <div class="flex justify-center">
+                        <div id="tuner-knob" class="w-20 h-20 bg-gradient-to-br from-gray-700 to-gray-900 rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform relative">
+                            <div class="w-16 h-16 bg-gradient-to-br from-gray-800 to-gray-600 rounded-full flex items-center justify-center">
+                                <div class="w-2 h-2 bg-white rounded-full"></div>
+                            </div>
+                            <div id="tuner-needle" class="absolute w-1 h-8 bg-red-500 transform -translate-y-4 transition-transform duration-300"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Station List -->
+            <div id="station-list" class="flex-1 overflow-y-auto p-4">
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Stations will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div id="bottom-bar" class="bg-black/20 backdrop-blur-sm p-4">
+                <div class="flex items-center justify-between text-sm">
+                    <div class="flex items-center space-x-4">
+                        <span id="bottom-bar-station">Standby</span>
+                        <span id="stopwatch">00:00:00</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span id="network-speed">-- Mbps</span>
+                        <button id="options-btn" class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center hover:bg-gray-500 transition-colors">
+                            <i data-lucide="settings" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Options Modal -->
+        <div id="options-modal" class="fixed inset-0 bg-black/50 z-40 hidden">
+            <div class="absolute bottom-0 left-0 right-0 bg-gray-900 rounded-t-2xl p-6 max-h-[80vh] overflow-y-auto">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold">Options</h2>
+                    <button id="close-options" class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center hover:bg-gray-500 transition-colors">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                
+                <!-- Station List in Options -->
+                <div class="mb-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-lg font-semibold">Stations</h3>
+                        <button id="toggle-station-list" class="flex items-center space-x-1 text-sm text-gray-300">
+                            <span>Show All</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div id="station-list-options" class="space-y-2 max-h-0 overflow-hidden transition-all duration-300">
+                        <!-- Stations will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- RDS Display -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold mb-3">RDS Text</h3>
+                    <div id="options-rds-display" class="bg-gray-800 rounded-lg p-3 text-center font-mono text-sm min-h-[2rem]">
+                        <!-- RDS text will be displayed here -->
+                    </div>
+                </div>
+                
+                <!-- App Info -->
+                <div class="text-center text-sm text-gray-400">
+                    <p>GLZ Radio v<span id="app-version">10.0</span></p>
+                    <p>Powered by Firebase</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audio Elements -->
+    <audio id="audio-player" preload="none"></audio>
+    <audio id="primer-audio" preload="none" src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT">
+    </audio>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="js/config-firebase.js"></script>
+    
+    <!-- Core App Scripts -->
+    <script src="js/utils.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/dom.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/tuner.js"></script>
+    <script src="js/weather.js"></script>
+    <script src="js/player.js"></script>
+    <script src="js/player-firebase.js"></script>
+    <script src="js/pwa.js"></script>
+    <script src="js/app.js"></script>
+    
+    <!-- Firebase Enhanced App Initialization -->
+    <script>
+        // Initialize Firebase-enhanced app
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Initialize Firebase components
+            await window.playerFirebase.initializeWithFirebase();
+            
+            // Initialize the main app
+            initializeApp();
+        });
+    </script>
+</body>
+</html> 
