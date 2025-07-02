@@ -1,327 +1,140 @@
-// UI functionality
+import { dom } from './dom.js';
+import { state } from './state.js';
 
-// UI Module - Export all functions to window.ui
-const ui = {};
+export function updateClock(date) {
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    
+    // Update top bar clock (12-hour format)
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = ((hours + 11) % 12 + 1); // Converts 24h to 12h, 0 to 12
+    if(dom.clock) {
+      dom.clock.textContent = `${displayHours}:${minutes} ${ampm}`;
+    }
 
-const updateControlButtons = () => {
-    if (state.isPlaying) {
-        dom.playButton.classList.add('hidden');
-        dom.stopButton.classList.remove('hidden');
+    // Update big clock (24-hour format)
+    const bigClockHours = hours.toString().padStart(2, '0');
+    if(dom.bigClock) {
+      dom.bigClock.textContent = `${bigClockHours}:${minutes}`;
+    }
+}
+
+export function updateTuner(index) {
+    if (dom.tuner) {
+        dom.tuner.value = index;
+    }
+}
+
+export function updatePlayerUI(station, isPlaying) {
+    const playIcon = dom.playBtn.querySelector('i');
+
+    if (isPlaying && station) {
+        // State: Playing a station
+        dom.bigClock.classList.add('hidden');
+        dom.nowPlaying.classList.remove('hidden');
+        dom.clock.classList.remove('hidden');
+
+        dom.stationLogo.src = station.logo;
+        dom.stationName.textContent = station.name;
+        dom.stationFrequency.textContent = station.frequency;
+        dom.stationCallsign.textContent = station.callSign;
+
+        if (playIcon) {
+            playIcon.setAttribute('data-lucide', 'pause');
+        }
     } else {
-        dom.playButton.classList.remove('hidden');
-        dom.stopButton.classList.add('hidden');
-    }
-    lucide.createIcons();
-};
-
-const updateStopwatch = () => {
-    const timeString = formatTime(state.elapsedTime);
-    dom.stopwatchDisplay.textContent = timeString;
-};
-
-const updateClocks = () => {
-    const now = new Date();
-    const timeOptions = { hour: '2-digit', minute: '2-digit' };
-    
-    if(dom.optionsClock) {
-        dom.optionsClock.textContent = now.toLocaleTimeString([], timeOptions);
-    }
-    
-    if(dom.optionsDate) {
-        dom.optionsDate.textContent = getFormattedDate();
-    }
-};
-
-const updateStatusBar = () => {
-    const timeString = getFormattedTime();
-    
-    if (state.isPlaying) {
-        dom.statusLeft.innerHTML = `<span class="font-bold text-sm">${timeString}</span>`;
+        // State: Idle or stopped
+        dom.bigClock.classList.remove('hidden');
+        dom.nowPlaying.classList.add('hidden');
+        dom.clock.classList.add('hidden');
         
-        if (state.weatherData) {
-            const temp = state.isCelsius ? state.weatherData.temperature : celsiusToFahrenheit(state.weatherData.temperature);
-            const icon = getWeatherIcon(state.weatherData.weathercode);
-            dom.statusCenter.innerHTML = `<div class="flex items-center justify-center space-x-1"><i data-lucide="${icon}" class="w-5 h-5 text-indigo-400"></i><span class="font-semibold">${Math.round(temp)}°</span></div>`;
-        } else {
-            dom.statusCenter.innerHTML = ``;
+        if (playIcon) {
+            playIcon.setAttribute('data-lucide', 'play');
         }
+    }
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+    
+    updateConnectionStatus(isPlaying);
+    updateRds(station, isPlaying);
+}
+
+export function updateRds(station, isPlaying) {
+    if (state.rdsInterval) {
+        clearInterval(state.rdsInterval);
+        state.rdsInterval = null;
+    }
+
+    if (isPlaying && station && station.rdsText && station.rdsText.length > 0) {
+        state.rdsTextIndex = 0;
+        dom.rdsText.textContent = station.rdsText[state.rdsTextIndex];
         
-        dom.statusRight.innerHTML = `<div id="stream-status-icon"><i data-lucide="radio-tower" class="w-5 h-5 text-indigo-400"></i></div>`;
+        if (station.rdsText.length > 1) {
+            state.rdsInterval = setInterval(() => {
+                state.rdsTextIndex = (state.rdsTextIndex + 1) % station.rdsText.length;
+                dom.rdsText.textContent = station.rdsText[state.rdsTextIndex];
+            }, 4000);
+        }
+    } else if (station) {
+        dom.rdsText.textContent = station.frequency;
     } else {
-        dom.statusLeft.innerHTML = `<span id="carrier-text" class="font-bold text-sm">GLZ RADIO</span>`;
-        dom.statusCenter.innerHTML = timeString;
-        dom.statusRight.innerHTML = `<div id="stream-status-icon"><i data-lucide="${navigator.onLine ? 'wifi' : 'wifi-off'}" class="w-5 h-5 ${!navigator.onLine ? 'text-red-400' : 'text-indigo-400'}"></i></div>`;
+        dom.rdsText.textContent = 'GLZ Radio';
     }
-    
-    lucide.createIcons();
-};
+}
 
-const startFlicker = () => {
-    stopFlicker();
-    state.flickerInterval = setInterval(() => {
-        const iconEl = document.querySelector('#status-right #stream-status-icon');
-        if (state.isPlaying && iconEl) {
-            iconEl.style.opacity = (Math.random() * 0.5 + 0.5).toFixed(2);
+export function createTunerLabels(stations) {
+    if (!dom.tunerLabels) return;
+
+    dom.tunerLabels.innerHTML = ''; // Clear existing labels
+
+    const bands = stations.reduce((acc, station) => {
+        let band = 'SAT'; // Default to SAT
+        if (station.frequency.includes('AM')) {
+            band = 'AM';
+        } else if (station.frequency.includes('FM')) {
+            band = 'FM';
         }
-    }, 300);
-};
+        acc[band] = (acc[band] || 0) + 1;
+        return acc;
+    }, {});
 
-const stopFlicker = () => {
-    clearInterval(state.flickerInterval);
-    const iconEl = document.querySelector('#status-right #stream-status-icon');
-    if (iconEl) iconEl.style.opacity = 1;
-};
+    const totalStations = stations.length;
+    const bandOrder = ['AM', 'FM', 'SAT'];
 
-const startRdsRotation = () => {
-    clearInterval(state.rdsInterval);
-    clearInterval(state.rdsObserverInterval);
-    
-    if (!state.currentStationName) return;
-    
-    const rdsTexts = RADIO_STATIONS[state.currentStationName].rdsText;
-    const rdsElement = document.getElementById('rds-text-display');
-    
-    if (!rdsTexts || rdsTexts.length === 0 || !rdsElement) {
-        if(rdsElement) rdsElement.textContent = '';
-        if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = '';
-        return;
+    for (const bandName of bandOrder) {
+        if (bands[bandName]) {
+            const count = bands[bandName];
+            const percentage = (count / totalStations) * 100;
+            const label = document.createElement('span');
+            label.textContent = bandName;
+            label.style.width = `${percentage}%`;
+            label.classList.add('text-center');
+            dom.tunerLabels.appendChild(label);
+        }
     }
-    
-    let rdsIndex = 0;
-    rdsElement.textContent = rdsTexts[rdsIndex];
-    
-    state.rdsInterval = setInterval(() => {
-        rdsIndex = (rdsIndex + 1) % rdsTexts.length;
-        rdsElement.textContent = rdsTexts[rdsIndex];
-    }, 4000);
-    
-    state.rdsObserverInterval = setInterval(() => {
-        if(dom.optionsRdsDisplay && rdsElement) {
-            dom.optionsRdsDisplay.textContent = rdsElement.textContent;
-        }
-    }, 500);
-};
+}
 
-const stopRdsRotation = () => {
-    clearInterval(state.rdsInterval);
-    clearInterval(state.rdsObserverInterval);
-    
-    const rdsElement = document.getElementById('rds-text-display');
-    if (rdsElement) rdsElement.textContent = "";
-    if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = "";
-};
-
-const updateNetworkSpeed = () => {
-    if (state.isPlaying) {
-        const speed = generateNetworkSpeed();
-        dom.networkSpeedContainer.innerHTML = `<i data-lucide="arrow-down-up" class="w-3 h-3 text-indigo-400"></i><span class="text-gray-300">${speed} kb/s</span>`;
-        lucide.createIcons();
+export function updateConnectionStatus(isConnected) {
+    if (isConnected) {
+        dom.connectionStatus.innerHTML = '<i data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>';
     } else {
-        dom.networkSpeedContainer.innerHTML = '';
+        dom.connectionStatus.innerHTML = '<i data-lucide="wifi-off" class="w-4 h-4 text-red-400 inline-block"></i>';
     }
-};
-
-const openOptions = () => {
-    state.isOptionsOpen = true;
-    dom.appContainer.classList.add('options-open');
-    dom.optionsModal.classList.remove('hidden');
-    
-    requestAnimationFrame(() => {
-        dom.optionsModal.classList.add('is-open');
-    });
-};
-
-const closeOptions = () => {
-    state.isOptionsOpen = false;
-    dom.appContainer.classList.remove('options-open');
-    dom.optionsModal.classList.remove('is-open');
-    
-    const list = dom.stationListInOptions;
-    if (list.classList.contains('expanded')) {
-        list.classList.remove('expanded');
-        const icon = dom.toggleStationListButton.querySelector('i[data-lucide="chevron-down"]');
-        if (icon) icon.classList.remove('rotate-180');
+    if (window.lucide) {
+        window.lucide.createIcons();
     }
-};
+}
 
-const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(err => {
-            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
-        });
-    } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
+export function setAppFooter() {
+    if (dom.buildTimestamp) {
+        const now = new Date();
+        const year = String(now.getFullYear()).slice(-2);
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        dom.buildTimestamp.textContent = `${year}.${month}.${day}-${hours}${minutes}`;
     }
-};
-
-const updateFullscreenIcon = () => {
-    const iconContainer = dom.fullscreenIconContainer;
-    if (document.fullscreenElement) {
-        iconContainer.innerHTML = `<i data-lucide="minimize" class="w-5 h-5"></i>`;
-    } else {
-        iconContainer.innerHTML = `<i data-lucide="maximize" class="w-5 h-5"></i>`;
-    }
-    lucide.createIcons();
-};
-
-const setupTheming = () => {
-    const themes = ['dark', 'light', 'oled'];
-    let currentThemeIndex = 0;
-    
-    const savedTheme = storage.get('glz-radio-theme', 'dark');
-    if (savedTheme && themes.includes(savedTheme)) {
-        currentThemeIndex = themes.indexOf(savedTheme);
-    }
-    
-    const applyTheme = (themeName) => {
-        dom.body.classList.remove('theme-light', 'theme-dark', 'theme-oled');
-        if (themeName !== 'dark') {
-            dom.body.classList.add(`theme-${themeName}`);
-        }
-        
-        dom.themeIconContainer.innerHTML = `<i data-lucide="${themeName === 'light' ? 'moon' : 'sun'}" class="w-5 h-5 text-indigo-400"></i>`;
-        lucide.createIcons();
-        
-        storage.set('glz-radio-theme', themeName);
-        state.currentTheme = themeName;
-        
-        const themeAccentColor = getComputedStyle(dom.body).getPropertyValue('--primary').trim();
-        dom.appContainer.style.setProperty('--accent-color', themeAccentColor);
-    };
-    
-    applyTheme(themes[currentThemeIndex]);
-    
-    dom.themeToggleButton.onclick = () => {
-        currentThemeIndex = (currentThemeIndex + 1) % themes.length;
-        applyTheme(themes[currentThemeIndex]);
-    };
-};
-
-const setupEventListeners = () => {
-    // Options
-    dom.optionsButton.onclick = openOptions;
-    dom.closeOptionsButton.onclick = closeOptions;
-    dom.optionsBackdrop.onclick = closeOptions;
-    
-    dom.optionsPanel.addEventListener('transitionend', () => {
-        if (!dom.optionsModal.classList.contains('is-open')) {
-            dom.optionsModal.classList.add('hidden');
-        }
-    });
-    
-    // Player controls
-    dom.stopButton.onclick = () => {
-        if (window.player && window.player.stopPlayer) {
-            window.player.stopPlayer(true);
-        }
-    };
-    dom.playButton.onclick = () => {
-        if (window.player && window.player.togglePlay) {
-            window.player.togglePlay();
-        }
-    };
-    dom.playerDisplay.onclick = () => {
-        if (!state.currentStationName) {
-            if (window.player && window.player.togglePlay) {
-                window.player.togglePlay();
-            }
-        }
-    };
-    
-    // Station list
-    dom.toggleStationListButton.onclick = () => {
-        const list = dom.stationListInOptions;
-        const icon = dom.toggleStationListButton.querySelector('i[data-lucide="chevron-down"]');
-        list.classList.toggle('expanded');
-        if (icon) {
-            icon.classList.toggle('rotate-180');
-        }
-    };
-    
-    dom.randomStationButton.onclick = () => {
-        if (window.player && window.player.selectRandomStation) {
-            window.player.selectRandomStation();
-        }
-    };
-    
-    // Temperature toggle
-    dom.tempToggle.onclick = () => {
-        if (window.weather && window.weather.toggleTemperatureUnit) {
-            window.weather.toggleTemperatureUnit();
-        }
-    };
-    
-    // Fullscreen
-    dom.fullscreenToggleButton.onclick = toggleFullScreen;
-    document.addEventListener('fullscreenchange', updateFullscreenIcon);
-    
-    // Handle mobile browser viewport changes
-    if (window.utils && window.utils.handleViewportChange) {
-        window.addEventListener('resize', window.utils.handleViewportChange);
-        window.addEventListener('orientationchange', window.utils.handleViewportChange);
-        window.addEventListener('scroll', window.utils.handleViewportChange);
-        
-        // Initial setup
-        window.utils.handleViewportChange();
-    }
-};
-
-const runSplashAnimation = () => {
-    const progressBar = dom.splashProgress;
-    if (!progressBar) {
-        console.warn('Splash progress element not found');
-        return;
-    }
-    
-    let progress = 0;
-    
-    const animate = () => {
-        progress += 2;
-        progressBar.style.width = `${progress}%`;
-        
-        if (progress < 100) {
-            requestAnimationFrame(animate);
-        }
-    };
-    
-    animate();
-};
-
-const hideSplashScreen = () => {
-    const splash = dom.splashScreen;
-    if (splash) {
-        splash.style.opacity = '0';
-        splash.style.visibility = 'hidden';
-        splash.style.pointerEvents = 'none';
-        
-        // Remove from DOM after transition
-        setTimeout(() => {
-            if (splash.parentNode) {
-                splash.parentNode.removeChild(splash);
-            }
-        }, 1000);
-    }
-};
-
-// Export functions
-window.ui = {
-    updateControlButtons,
-    updateStopwatch,
-    updateClocks,
-    updateStatusBar,
-    startFlicker,
-    stopFlicker,
-    startRdsRotation,
-    stopRdsRotation,
-    updateNetworkSpeed,
-    openOptions,
-    closeOptions,
-    toggleFullScreen,
-    updateFullscreenIcon,
-    setupTheming,
-    setupEventListeners,
-    runSplashAnimation,
-    hideSplashScreen
-};
+} 
