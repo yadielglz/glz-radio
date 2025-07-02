@@ -8,6 +8,7 @@ export const dom = {
     clock: document.getElementById('clock'),
     rdsText: document.getElementById('rds-text'),
     connectionStatus: document.getElementById('connection-status'),
+    networkIcon: document.getElementById('network-icon'),
 
     // Main Display
     playerDisplay: document.getElementById('player-display'),
@@ -24,6 +25,7 @@ export const dom = {
     tuner: document.getElementById('tuner'),
     tunerLabels: document.getElementById('tuner-labels'),
     tunerMarkers: document.getElementById('tuner-markers'),
+    tunerContainer: document.getElementById('tuner-container'),
     bandButtons: document.querySelectorAll('.band-btn'),
     prevBtn: document.getElementById('prev-btn'),
     nextBtn: document.getElementById('next-btn'),
@@ -31,6 +33,8 @@ export const dom = {
 
     // Controls
     playBtn: document.getElementById('play-btn'),
+    controlsContainer: document.getElementById('controls-container'),
+    playStatus: document.getElementById('play-status'),
 
     // Footer
     buildTimestamp: document.getElementById('build-timestamp'),

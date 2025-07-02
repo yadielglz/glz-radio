@@ -31,8 +31,19 @@ export function updateTuner(index) {
 
 export function updatePlayerUI(station, isPlaying) {
     const iconName = isPlaying ? 'pause' : 'play';
-    dom.playBtn.innerHTML = `<i data-lucide="${iconName}" class="w-8 h-8 text-white"></i>`;
+    dom.playBtn.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6 text-white"></i><span id="play-btn-text" class="font-medium ml-2">${isPlaying ? 'Pause' : 'Play'}</span>`;
     
+    if (dom.stationSelect) {
+        dom.stationSelect.classList.toggle('hidden', isPlaying);
+    }
+    if (dom.tunerContainer) {
+        dom.tunerContainer.classList.toggle('hidden', isPlaying);
+    }
+
+    if (dom.playStatus) {
+        dom.playStatus.textContent = isPlaying ? 'Playing' : 'Paused';
+    }
+
     if (isPlaying && station) {
         // State: Playing
         dom.idleDisplay.classList.add('hidden');
@@ -121,12 +132,10 @@ export function updateRds(station, isPlaying) {
 
 export function updateNetworkStatus() {
     const isOnline = navigator.onLine;
-    if (dom.connectionStatus) {
-        if (isOnline) {
-            dom.connectionStatus.innerHTML = '<i data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>';
-        } else {
-            dom.connectionStatus.innerHTML = '<i data-lucide="wifi-off" class="w-4 h-4 text-red-400 inline-block"></i>';
-        }
+    if (dom.networkIcon) {
+        dom.networkIcon.setAttribute('data-lucide', isOnline ? 'wifi' : 'wifi-off');
+        dom.networkIcon.classList.toggle('text-green-400', isOnline);
+        dom.networkIcon.classList.toggle('text-red-400', !isOnline);
         if (window.lucide) {
             lucide.createIcons();
         }

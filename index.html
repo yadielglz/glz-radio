@@ -36,13 +36,13 @@
         <header class="flex items-center justify-between py-2 px-6 text-sm flex-shrink-0 glass rounded-b-3xl">
             <div class="flex items-center space-x-2">
                 <div id="clock" class="text-left font-mono invisible"></div>
-                <div id="header-weather" class="hidden text-xs flex items-center space-x-1"></div>
             </div>
             <div id="rds-display" class="flex-1 text-center font-semibold truncate px-2">
                 <span id="rds-text">GLZ Radio</span>
     </div>
-            <div id="connection-status" class="w-20 text-right">
-                <i data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>
+            <div id="connection-status" class="flex items-center space-x-2">
+                <div id="header-weather" class="hidden text-xs flex items-center space-x-1"></div>
+                <i id="network-icon" data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>
             </div>
         </header>
 
@@ -67,10 +67,10 @@
                 </div>
             </div>
 
-            <div id="radio-controls-wrapper" class="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6 w-full">
+            <div id="radio-controls-wrapper" class="space-y-6 w-full flex flex-col items-center">
 
             <!-- Tuner -->
-            <div class="glass rounded-3xl p-3 md:col-span-2">
+            <div id="tuner-container" class="glass rounded-3xl p-3 w-full">
                 <div class="flex flex-col space-y-2 items-stretch">
                     <!-- Band Selection Buttons -->
                     <div id="band-btn-group" class="self-start flex space-x-2">
@@ -91,12 +91,12 @@
             </div>
 
             <!-- Controls -->
-            <div class="flex justify-center items-center md:items-start">
-                <div class="glass rounded-3xl p-4 flex justify-center items-center backdrop-blur-md">
-                    <button id="play-btn" class="p-4 rounded-full flex items-center justify-center shadow-lg transform active:scale-95 transition">
-                        <i data-lucide="play" class="w-8 h-8 text-white"></i>
-                    </button>
-                </div>
+            <div id="controls-container" class="flex flex-col items-center">
+                <button id="play-btn" class="glass rounded-full px-8 py-3 flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md">
+                    <i data-lucide="play" class="w-6 h-6 text-white"></i>
+                    <span id="play-btn-text" class="font-medium">Play</span>
+                </button>
+                <div id="play-status" class="text-xs text-gray-400 mt-2 h-5"></div>
             </div>
 
             </div> <!-- end radio-controls-wrapper -->
