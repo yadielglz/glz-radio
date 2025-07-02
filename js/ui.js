@@ -53,6 +53,12 @@ export function updatePlayerUI(station, isPlaying) {
 
         // Apply dynamic glow color
         applyGlowFromLogo(station.logo);
+
+        // Activate blurred background
+        if (dom.bgBlur) {
+            dom.bgBlur.style.backgroundImage = `url('${station.logo}')`;
+            dom.bgBlur.classList.add('active');
+        }
     } else {
         // State: Idle
         dom.idleDisplay.classList.remove('hidden');
@@ -65,8 +71,15 @@ export function updatePlayerUI(station, isPlaying) {
         dom.idleStationInfo.textContent = '';
 
         // Reset glow color to default (CSS handles default)
-        if (dom.playerDisplay) {
-            dom.playerDisplay.style.removeProperty('--glow-color');
+        dom.playerDisplay.style.removeProperty('--glow-color');
+        if (dom.header) {
+            dom.header.style.removeProperty('--glow-color');
+        }
+
+        // Deactivate blurred background
+        if (dom.bgBlur) {
+            dom.bgBlur.classList.remove('active');
+            dom.bgBlur.style.backgroundImage = '';
         }
     }
     
@@ -81,15 +94,19 @@ export function updatePlayerUI(station, isPlaying) {
 }
 
 export function updateRds(station, isPlaying) {
+    // Clear any existing timers
     if (state.rdsInterval) {
         clearInterval(state.rdsInterval);
         state.rdsInterval = null;
     }
 
+    // Remove marquee class by default
+    dom.rdsText.classList.remove('marquee');
+
     if (isPlaying && station && station.rdsText && station.rdsText.length > 0) {
         state.rdsTextIndex = 0;
         dom.rdsText.textContent = station.rdsText[state.rdsTextIndex];
-        
+
         if (station.rdsText.length > 1) {
             state.rdsInterval = setInterval(() => {
                 state.rdsTextIndex = (state.rdsTextIndex + 1) % station.rdsText.length;
@@ -97,7 +114,7 @@ export function updateRds(station, isPlaying) {
             }, 4000);
         }
     } else {
-        // When not playing, reflect the selected band (AM, FM, SAT)
+        // When not playing, reflect selected band
         dom.rdsText.textContent = state.currentBand;
     }
 }
@@ -306,7 +323,13 @@ async function applyGlowFromLogo(logoSrc) {
     if (color) {
         const glow = `rgba(${color.r},${color.g},${color.b},0.45)`;
         dom.playerDisplay.style.setProperty('--glow-color', glow);
+        if (dom.header) {
+            dom.header.style.setProperty('--glow-color', glow);
+        }
     } else {
         dom.playerDisplay.style.removeProperty('--glow-color');
+        if (dom.header) {
+            dom.header.style.removeProperty('--glow-color');
+        }
     }
 } 

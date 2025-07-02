@@ -141,7 +141,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     100% { transform: translateX(100%); }
 }
 #player-display.playing::after {
-    animation: sheen 15s linear infinite;
+    animation: sheen 15s linear infinite, grain-shift 8s steps(2) infinite;
+    opacity: 0.8; /* stronger grain visibility */
 }
 
 /* Now Playing inner sheet */
@@ -258,4 +259,46 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 /* Override Tailwind default sans font to Manrope */
 .font-sans {
     font-family: 'Manrope', sans-serif !important;
+}
+
+/* RDS marquee animation */
+#rds-text.marquee {
+    display: inline-block;
+    white-space: nowrap;
+    animation: marquee 15s linear infinite;
+}
+@keyframes marquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+/* Blurred full-screen station artwork */
+#bg-blur {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-size: cover;
+    background-position: center;
+    filter: blur(40px) brightness(0.5) saturate(1.2);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+}
+#bg-blur.active {
+    opacity: 0.25;
+    animation: bg-zoom 30s ease-in-out infinite alternate;
+}
+
+@keyframes bg-zoom {
+    from { transform: scale(1); }
+    to   { transform: scale(1.15); }
+}
+
+/* Subtle grain drift while playing */
+@keyframes grain-shift {
+    0% { background-position: 0 0; }
+    100% { background-position: 60px 30px; }
+}
+#player-display.playing::after {
+    animation: sheen 15s linear infinite, grain-shift 8s steps(2) infinite;
+    opacity: 0.8; /* stronger grain visibility */
 } 

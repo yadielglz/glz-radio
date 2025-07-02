@@ -4,6 +4,7 @@ export const dom = {
     splash: document.getElementById('splash-screen'),
 
     // Header
+    header: document.querySelector('header'),
     clock: document.getElementById('clock'),
     rdsText: document.getElementById('rds-text'),
     connectionStatus: document.getElementById('connection-status'),
@@ -40,4 +41,7 @@ export const dom = {
     // New additions
     idleWeather: document.getElementById('idle-weather'),
     headerWeather: document.getElementById('header-weather'),
+
+    // Background
+    bgBlur: document.getElementById('bg-blur'),
 }; 
