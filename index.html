@@ -13,7 +13,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -23,30 +23,34 @@
 <body class="bg-black text-white font-sans overflow-hidden">
 
     <div id="app" class="flex flex-col h-dvh max-w-md mx-auto bg-black relative">
-        
-        <!-- Splash Screen -->
+
+    <!-- Splash Screen -->
         <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center z-50 transition-opacity duration-500">
             <h1 class="text-4xl font-bold">GLZ Radio</h1>
         </div>
 
         <!-- Header -->
-        <header class="flex items-center justify-between p-4 text-sm flex-shrink-0 glass rounded-b-3xl">
-            <div id="clock" class="w-20 text-left font-mono invisible"></div>
+        <header class="flex items-center justify-between py-2 px-6 text-sm flex-shrink-0 glass rounded-b-3xl">
+            <div class="flex items-center space-x-2">
+                <div id="clock" class="text-left font-mono invisible"></div>
+                <div id="header-weather" class="hidden text-xs flex items-center space-x-1"></div>
+            </div>
             <div id="rds-display" class="flex-1 text-center font-semibold truncate px-2">
                 <span id="rds-text">GLZ Radio</span>
-            </div>
+    </div>
             <div id="connection-status" class="w-20 text-right">
                 <i data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main class="flex-grow flex flex-col justify-center p-4">
+        <main class="flex-grow flex flex-col justify-center px-6 py-4 space-y-6">
             <div id="player-display" class="glass rounded-3xl p-6 h-48 flex flex-col justify-center items-center relative text-white w-full mb-6">
                 <!-- Idle Display -->
                 <div id="idle-display" class="text-center">
                     <div id="big-clock" class="text-6xl font-bold"></div>
                     <div id="idle-station-info" class="text-lg text-gray-400 mt-2 h-7"></div>
+                    <div id="idle-weather" class="text-sm text-gray-300 mt-1 flex items-center justify-center space-x-1"></div>
                 </div>
                 
                 <!-- Now Playing Display (Initially Hidden) -->
@@ -60,26 +64,44 @@
                 </div>
             </div>
 
+            <div id="radio-controls-wrapper" class="space-y-6 md:space-y-0 md:grid md:grid-cols-3 md:gap-6 w-full">
+
             <!-- Tuner -->
-            <div class="w-full mb-6 glass rounded-3xl p-4">
-                <div class="relative">
-                    <input type="range" id="tuner" min="0" max="100" value="0" class="w-full">
-                    <div id="tuner-labels" class="absolute w-full flex justify-between text-xs -top-3.5 px-1 pointer-events-none"></div>
+            <div class="glass rounded-3xl p-3 md:col-span-2">
+                <div class="flex flex-col space-y-2 items-stretch">
+                    <!-- Band Selection Buttons -->
+                    <div id="band-btn-group" class="self-start flex space-x-2">
+                        <button class="band-btn glass rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md bg-white/10" data-band="AM">AM</button>
+                        <button class="band-btn glass rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md bg-white/10" data-band="FM">FM</button>
+                        <button class="band-btn glass rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md bg-white/10" data-band="SAT">SAT</button>
+                    </div>
+
+                    <!-- Dropdown / Slider wrapper -->
+                    <div class="relative w-full">
+                        <input type="range" id="tuner" min="0" max="0" value="0" class="w-full hidden">
+                        <select id="station-select" class="w-full glass rounded-full px-4 py-2 pr-10 text-sm focus:outline-none bg-white/10 backdrop-blur-md appearance-none">
+                        </select>
+                        <div id="tuner-labels" class="hidden"></div>
+                        <div id="tuner-markers" class="hidden"></div>
+                    </div>
                 </div>
-                <div id="band-labels" class="flex justify-between text-xs mt-2 px-1"></div>
             </div>
 
             <!-- Controls -->
-            <div class="flex justify-center items-center mb-6">
-                <button id="play-btn" class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center shadow-lg transform active:scale-95 transition">
-                    <i data-lucide="play" class="w-8 h-8 text-white"></i>
-                </button>
+            <div class="flex justify-center items-center md:items-start">
+                <div class="glass rounded-3xl p-4 flex justify-center items-center backdrop-blur-md">
+                    <button id="play-btn" class="p-4 rounded-full flex items-center justify-center shadow-lg transform active:scale-95 transition">
+                        <i data-lucide="play" class="w-8 h-8 text-white"></i>
+                    </button>
+                </div>
             </div>
+
+            </div> <!-- end radio-controls-wrapper -->
         </main>
 
         <!-- Footer -->
-        <footer class="text-center text-xs text-gray-500 p-4 flex-shrink-0">
-            <p>Glz Technical Systems :: Ver 6.5 :: Build: <span id="build-timestamp"></span></p>
+        <footer class="text-center text-xs text-gray-500 py-2 px-6 flex-shrink-0">
+            <p>Glz Technical Systems :: Ver 7.0 :: Build: <span id="build-timestamp"></span></p>
         </footer>
     </div>
 

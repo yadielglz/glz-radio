@@ -2,6 +2,18 @@
 
 A modern, responsive Progressive Web App (PWA) for streaming Puerto Rican radio stations with a sleek glassmorphism design.
 
+## 🌟 Current Features (v7.0)
+
+* **Live Streaming** – 20+ Puerto-Rican AM/FM/Satellite stations.
+* **One-Tap Band Select** – AM · FM · SAT buttons directly above the tuner dropdown.
+* **Dropdown Tuner** – "frequency · name" list synced to the current band.
+* **Dynamic Play-Box** – Idle (24-h clock) vs. Now-Playing (logo, name, freq, call-sign) with adaptive glow sampled from the logo.
+* **Weather** – Local temperature °F + icon (idle: under clock, playing: in header).
+* **Live Clock & RDS** – 12-h clock in header; RDS scrolls while playing and shows selected band when idle.
+* **Media Session API** – System-level play/pause and metadata.
+* **PWA** – Installable, offline cache of static assets, service-worker powered.
+* **Modern Dark Glass UI** – Tailwind + custom CSS, Manrope font, radial gradient background.
+
 ## 🌟 Features
 
 ### Core Features

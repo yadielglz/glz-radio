@@ -22,7 +22,11 @@ export const dom = {
     // Tuner
     tuner: document.getElementById('tuner'),
     tunerLabels: document.getElementById('tuner-labels'),
-    bandLabels: document.getElementById('band-labels'),
+    tunerMarkers: document.getElementById('tuner-markers'),
+    bandButtons: document.querySelectorAll('.band-btn'),
+    prevBtn: document.getElementById('prev-btn'),
+    nextBtn: document.getElementById('next-btn'),
+    stationSelect: document.getElementById('station-select'),
 
     // Controls
     playBtn: document.getElementById('play-btn'),
@@ -32,4 +36,8 @@ export const dom = {
 
     // Audio
     audioPlayer: document.getElementById('audio-player'),
+
+    // New additions
+    idleWeather: document.getElementById('idle-weather'),
+    headerWeather: document.getElementById('header-weather'),
 }; 

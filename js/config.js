@@ -183,7 +183,7 @@ const ANIMATION_DURATIONS = {
     POWER_ON: 800,
     PLAYER_STARTUP: 1500,
     PLAYER_SHUTDOWN: 300
-};
+}; 
 
 export const STATIONS = Object.keys(RADIO_STATIONS).map(stationName => {
     return {

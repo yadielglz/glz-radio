@@ -1,92 +1,68 @@
 // Weather functionality
 
-const updateWeatherDisplay = () => {
-    if (!state.weatherData) return;
-    
-    const { temperature, weathercode } = state.weatherData;
-    const temp = state.isCelsius ? temperature : celsiusToFahrenheit(temperature);
-    const icon = getWeatherIcon(weathercode);
-    
-    const weatherHTML = `<i data-lucide="${icon}" class="w-5 h-5"></i><span>${Math.round(temp)}°${state.isCelsius ? 'C' : 'F'}</span>`;
-    dom.weatherDisplaySettings.innerHTML = weatherHTML;
-    
-    lucide.createIcons();
-    if (window.ui && window.ui.updateStatusBar) {
-        window.ui.updateStatusBar();
-    }
-    
-    dom.tempC.classList.toggle('font-bold', state.isCelsius);
-    dom.tempC.classList.toggle('opacity-50', !state.isCelsius);
-    dom.tempF.classList.toggle('font-bold', !state.isCelsius);
-    dom.tempF.classList.toggle('opacity-50', state.isCelsius);
+import { dom } from './dom.js';
+
+const weatherState = {
+    data: null,
+    isPlaying: false,
 };
 
-const getIPLocationAndWeather = async () => {
-    try {
-        const response = await fetch('https://ipapi.co/json/');
-        if (!response.ok) throw new Error('IP Geolocation failed');
-        
-        const locationData = await response.json();
-        fetchWeather(locationData.latitude, locationData.longitude);
-    } catch (error) {
-        console.error("IP Geolocation failed:", error);
-        // Fallback to San Juan, Puerto Rico
-        fetchWeather(18.22, -66.59);
-    }
-};
+function mapCodeToIcon(code) {
+    // Map weathercode to lucide icon names (approximate)
+    if (code === 0) return 'sun'; // Clear sky
+    if ([1, 2].includes(code)) return 'cloud-sun'; // Mainly clear / partly cloudy
+    if (code === 3) return 'cloud'; // Overcast
+    if ([45, 48].includes(code)) return 'cloud-fog'; // Fog
+    if ([51, 53, 55, 56, 57].includes(code)) return 'cloud-drizzle'; // Drizzle
+    if ([61, 63, 65, 80, 81, 82].includes(code)) return 'cloud-rain'; // Rain
+    if ([71, 73, 75, 77, 85, 86].includes(code)) return 'cloud-snow'; // Snow
+    if ([95, 96, 99].includes(code)) return 'cloud-lightning'; // Thunderstorm
+    return 'cloud';
+}
 
-const fetchWeather = async (lat, lon) => {
-    try {
-        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
-        const data = await response.json();
-        
-        state.weatherData = data.current_weather;
-        updateWeatherDisplay();
-        
-        // Show weather notification on first load
-        if (window.pwa && window.pwa.showNotification && !state.weatherData) {
-            const temp = state.isCelsius ? data.current_weather.temperature : celsiusToFahrenheit(data.current_weather.temperature);
-            const icon = getWeatherIcon(data.current_weather.weathercode);
-            
-            window.pwa.showNotification('Weather Update', {
-                body: `${Math.round(temp)}°${state.isCelsius ? 'C' : 'F'} - ${getWeatherDescription(data.current_weather.weathercode)}`,
-                icon: `/icons/weather/${icon}.png`,
-                tag: 'weather-update'
-            });
+function render() {
+    if (!weatherState.data) return;
+    const temp = Math.round(weatherState.data.temperature);
+    const icon = mapCodeToIcon(weatherState.data.weathercode);
+    const html = `<i data-lucide="${icon}" class="w-4 h-4 inline-block"></i><span>${temp}°F</span>`;
+
+    if (dom.idleWeather) dom.idleWeather.innerHTML = html;
+    if (dom.headerWeather) dom.headerWeather.innerHTML = html;
+
+    // Toggle visibility based on play state
+    if (dom.idleWeather) dom.idleWeather.classList.toggle('hidden', weatherState.isPlaying);
+    if (dom.headerWeather) dom.headerWeather.classList.toggle('hidden', !weatherState.isPlaying);
+
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+export function setPlayState(isPlaying) {
+    weatherState.isPlaying = isPlaying;
+    render();
+}
+
+export async function initWeather() {
+    if (!navigator.geolocation) {
+        console.warn('Geolocation not available; weather disabled');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=fahrenheit`;
+            const res = await fetch(url);
+            const json = await res.json();
+            if (json && json.current_weather) {
+                weatherState.data = json.current_weather;
+                render();
+            }
+        } catch (e) {
+            console.error('Weather fetch failed', e);
         }
-        
-    } catch (error) {
-        console.error("Failed to fetch weather:", error);
-        dom.weatherDisplaySettings.innerHTML = `<span>Weather N/A</span>`;
-    }
-};
-
-const getWeatherDescription = (code) => {
-    switch (code) {
-        case 0: return 'Clear sky';
-        case 1: case 2: case 3: return 'Partly cloudy';
-        case 45: case 48: return 'Foggy';
-        case 51: case 53: case 55: return 'Drizzle';
-        case 61: case 63: case 65: return 'Rain';
-        case 66: case 67: return 'Sleet';
-        case 71: case 73: case 75: return 'Snow';
-        case 80: case 81: case 82: return 'Rain showers';
-        case 85: case 86: return 'Snow showers';
-        case 95: case 96: case 99: return 'Thunderstorm';
-        default: return 'Cloudy';
-    }
-};
-
-const toggleTemperatureUnit = () => {
-    state.isCelsius = !state.isCelsius;
-    storage.set('glz-radio-temp-unit', state.isCelsius ? 'C' : 'F');
-    updateWeatherDisplay();
-};
-
-// Export functions
-window.weather = {
-    updateWeatherDisplay,
-    getIPLocationAndWeather,
-    fetchWeather,
-    toggleTemperatureUnit
-};
+    }, (err) => {
+        console.warn('Geolocation error:', err);
+    });
+}
