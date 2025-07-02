@@ -22,11 +22,12 @@ function init() {
         player.setStation(initialStation);
         
         // Initial UI update for the idle state
-        ui.updatePlayerUI(null, false);
+        ui.updatePlayerUI(initialStation, false);
 
         // Setup the rest of the UI
         ui.setAppFooter();
         setupEventListeners();
+        ui.updateNetworkStatus();
         
         // Start clocks
         ui.updateClock(new Date()); // Initial call
@@ -82,6 +83,10 @@ function setupEventListeners() {
         state.isPlaying = false;
         ui.updatePlayerUI(state.currentStation, false);
     });
+
+    // Listen for network status changes
+    window.addEventListener('online', ui.updateNetworkStatus);
+    window.addEventListener('offline', ui.updateNetworkStatus);
 }
 
 // The 'module' type script in HTML will run when it's parsed.

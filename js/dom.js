@@ -10,7 +10,9 @@ export const dom = {
 
     // Main Display
     playerDisplay: document.getElementById('player-display'),
+    idleDisplay: document.getElementById('idle-display'),
     bigClock: document.getElementById('big-clock'),
+    idleStationInfo: document.getElementById('idle-station-info'),
     nowPlaying: document.getElementById('now-playing'),
     stationLogo: document.getElementById('station-logo'),
     stationName: document.getElementById('station-name'),

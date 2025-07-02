@@ -26,38 +26,36 @@ export function updateTuner(index) {
 }
 
 export function updatePlayerUI(station, isPlaying) {
-    const playIcon = dom.playBtn.querySelector('i');
-
+    const iconName = isPlaying ? 'pause' : 'play';
+    dom.playBtn.innerHTML = `<i data-lucide="${iconName}" class="w-8 h-8 text-white"></i>`;
+    
     if (isPlaying && station) {
-        // State: Playing a station
-        dom.bigClock.classList.add('hidden');
+        // State: Playing
+        dom.idleDisplay.classList.add('hidden');
         dom.nowPlaying.classList.remove('hidden');
-        dom.clock.classList.remove('hidden');
+        dom.clock.classList.remove('invisible');
 
         dom.stationLogo.src = station.logo;
         dom.stationName.textContent = station.name;
         dom.stationFrequency.textContent = station.frequency;
         dom.stationCallsign.textContent = station.callSign;
-
-        if (playIcon) {
-            playIcon.setAttribute('data-lucide', 'pause');
-        }
     } else {
-        // State: Idle or stopped
-        dom.bigClock.classList.remove('hidden');
+        // State: Idle
+        dom.idleDisplay.classList.remove('hidden');
         dom.nowPlaying.classList.add('hidden');
-        dom.clock.classList.add('hidden');
+        dom.clock.classList.add('invisible');
         
-        if (playIcon) {
-            playIcon.setAttribute('data-lucide', 'play');
+        if (station) {
+            dom.idleStationInfo.textContent = station.name;
+        } else {
+            dom.idleStationInfo.textContent = '---';
         }
     }
     
     if (window.lucide) {
-        window.lucide.createIcons();
+        lucide.createIcons();
     }
     
-    updateConnectionStatus(isPlaying);
     updateRds(station, isPlaying);
 }
 
@@ -81,6 +79,20 @@ export function updateRds(station, isPlaying) {
         dom.rdsText.textContent = station.frequency;
     } else {
         dom.rdsText.textContent = 'GLZ Radio';
+    }
+}
+
+export function updateNetworkStatus() {
+    const isOnline = navigator.onLine;
+    if (dom.connectionStatus) {
+        if (isOnline) {
+            dom.connectionStatus.innerHTML = '<i data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>';
+        } else {
+            dom.connectionStatus.innerHTML = '<i data-lucide="wifi-off" class="w-4 h-4 text-red-400 inline-block"></i>';
+        }
+        if (window.lucide) {
+            lucide.createIcons();
+        }
     }
 }
 
@@ -113,17 +125,6 @@ export function createTunerLabels(stations) {
             label.classList.add('text-center');
             dom.tunerLabels.appendChild(label);
         }
-    }
-}
-
-export function updateConnectionStatus(isConnected) {
-    if (isConnected) {
-        dom.connectionStatus.innerHTML = '<i data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>';
-    } else {
-        dom.connectionStatus.innerHTML = '<i data-lucide="wifi-off" class="w-4 h-4 text-red-400 inline-block"></i>';
-    }
-    if (window.lucide) {
-        window.lucide.createIcons();
     }
 }
 

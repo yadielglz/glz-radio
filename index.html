@@ -154,7 +154,7 @@
 
         <!-- Header -->
         <header class="flex items-center justify-between p-4 text-sm flex-shrink-0">
-            <div id="clock" class="w-20 text-left font-mono hidden"></div>
+            <div id="clock" class="w-20 text-left font-mono invisible"></div>
             <div id="rds-display" class="flex-1 text-center font-semibold truncate px-2">
                 <span id="rds-text">GLZ Radio</span>
             </div>
@@ -166,8 +166,11 @@
         <!-- Main Content -->
         <main class="flex-grow flex flex-col justify-center p-4">
             <div id="player-display" class="glass rounded-3xl p-6 h-48 flex flex-col justify-center items-center relative text-white w-full mb-6">
-                <!-- Big Clock Display -->
-                <div id="big-clock" class="text-6xl font-bold w-full text-center"></div>
+                <!-- Idle Display -->
+                <div id="idle-display" class="text-center">
+                    <div id="big-clock" class="text-6xl font-bold"></div>
+                    <div id="idle-station-info" class="text-lg text-gray-400 mt-2 h-7"></div>
+                </div>
                 
                 <!-- Now Playing Display (Initially Hidden) -->
                 <div id="now-playing" class="hidden w-full h-full flex items-center justify-start">
@@ -196,7 +199,7 @@
 
         <!-- Footer -->
         <footer class="text-center text-xs text-gray-500 p-4 flex-shrink-0">
-            <p>Glz Technical Systems :: Ver 6.1 :: Build: <span id="build-timestamp"></span></p>
+            <p>Glz Technical Systems :: Ver 6.2 :: Build: <span id="build-timestamp"></span></p>
         </footer>
     </div>
 
