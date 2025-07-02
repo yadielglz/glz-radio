@@ -1,1 +1,27 @@
-{"name":"Glz Radio","short_name":"Glz Radio","description":"Puerto Rico Radio App","start_url":"/","display":"standalone","background_color":"#1a1a1a","theme_color":"#f7931e"}
+{
+  "name": "Glz Radio",
+  "short_name": "Glz Radio",
+  "description": "Puerto Rico's Premier Radio Streaming App with Modern Design",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["music", "entertainment", "radio"],
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMzgiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM2MzY2ZjE7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6IzRmNDZhNDtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cGF0aCBkPSJNNjQgNDhIMTI4VjE0NEg2NFY0OFoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ijc0IDU4SDExOFYxMzRINzRWNThaIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9IjE4IiBmaWxsPSIjNjM2NmYxIi8+CjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9IjEwIiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNzQgMTY4SDExOFYxNzZIOThWMjAwSDk2VjE3NloiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTAwIiBmaWxsPSJ1cmwoI2dyYWRpZW50KSIvPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJncmFkaWVudCIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgo8c3RvcCBvZmZzZXQ9IjAlIiBzdHlsZT0ic3RvcC1jb2xvcjojNjM2NmYxO3N0b3Atb3BhY2l0eToxIiAvPgo8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiM0ZjQ2YTQ7c3RvcC1vcGFjaXR5OjEiIC8+CjwvbGluZWFyR3JhZGllbnQ+CjwvZGVmcz4KPHBhdGggZD0iTTE3MCAxMjhIMzQyVjM4NEgxNzBWMTI4WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTE5NyAxNDVIMzE1VjM2N0gxOTdWMTQ1WiIgZmlsbD0iIzFhMWExYSIvPgo8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjQ4IiBmaWxsPSIjNjM2NmYxIi8+CjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMjYiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xOTcgNDQ4SDMxNVY0NzJIMjU2VjUxMkgyNTZWNzJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -114,11 +114,14 @@ const persistState = () => {
         elapsedTime: state.elapsedTime
     };
     
-    storage.set('glz-radio-state', stateToPersist);
+    if (window.utils && window.utils.storage) {
+        window.utils.storage.set('glz-radio-state', stateToPersist);
+    }
 };
 
 const restoreState = () => {
-    const persistedState = storage.get('glz-radio-state', {});
+    const persistedState = window.utils && window.utils.storage ? 
+        window.utils.storage.get('glz-radio-state', {}) : {};
     
     if (persistedState.currentStationName) {
         state.currentStationName = persistedState.currentStationName;
@@ -217,8 +220,8 @@ const debugState = () => {
     console.log('Current State:', JSON.stringify(state, null, 2));
 };
 
-// Export state management functions
-window.stateManager = {
+// Export state management functions and state object
+window.state = Object.assign(state, {
     getState,
     setState: setStateWithWatchers,
     watchState,
@@ -229,4 +232,4 @@ window.stateManager = {
     validateState,
     resetState,
     debugState
-};
+});

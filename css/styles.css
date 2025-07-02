@@ -1,59 +1,96 @@
-/* Microsoft Zune Theme Styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Modern Glassmorphism Theme Styles */
 :root {
-    /* Zune Color Palette */
-    --bg-color: #1a1a1a;
+    /* Modern Color Palette */
+    --bg-color: #0f172a;
     --text-color: #ffffff;
-    --text-muted-color: #cccccc;
-    --text-faint-color: #888888;
-    --surface-color: rgba(40, 40, 40, 0.95);
-    --border-color: rgba(100, 100, 100, 0.3);
-    --modal-bg: #1a1a1a;
-    --play-button-bg: linear-gradient(135deg, #f7931e 0%, #d67e1a 100%);
+    --text-muted-color: #94a3b8;
+    --text-faint-color: #64748b;
+    --surface-color: rgba(255, 255, 255, 0.05);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --modal-bg: rgba(15, 23, 42, 0.95);
+    --play-button-bg: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
     --play-button-text: #ffffff;
-    --accent-color: #f7931e;
-    --player-text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+    --accent-color: #6366f1;
+    --player-text-shadow: 0 2px 4px rgba(0,0,0,0.3);
     
-    /* Zune Specific Colors */
-    --zune-orange: #f7931e;
-    --zune-orange-dark: #d67e1a;
-    --zune-brown: #8b4513;
-    --zune-dark-gray: #2a2a2a;
-    --zune-light-gray: #404040;
-    --zune-border: #555555;
-    --zune-shadow: rgba(0, 0, 0, 0.4);
-    --zune-highlight: rgba(255, 255, 255, 0.1);
-    --zune-glow: rgba(247, 147, 30, 0.3);
+    /* Modern Specific Colors */
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --secondary: #8b5cf6;
+    --accent: #ec4899;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --dark-gray: #1e293b;
+    --light-gray: #334155;
+    --border: rgba(255, 255, 255, 0.1);
+    --shadow: rgba(0, 0, 0, 0.3);
+    --highlight: rgba(255, 255, 255, 0.05);
+    --glow: rgba(99, 102, 241, 0.3);
 }
 
 .theme-light {
-    /* Light Theme - Zune inspired */
-    --bg-color: #f5f5f5;
-    --text-color: #2a2a2a;
-    --text-muted-color: #666666;
-    --text-faint-color: #999999;
-    --surface-color: rgba(255, 255, 255, 0.95);
+    /* Light Theme - Modern */
+    --bg-color: #f8fafc;
+    --text-color: #1e293b;
+    --text-muted-color: #64748b;
+    --text-faint-color: #94a3b8;
+    --surface-color: rgba(255, 255, 255, 0.8);
     --border-color: rgba(0, 0, 0, 0.1);
-    --modal-bg: #f5f5f5;
-    --player-text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    --modal-bg: rgba(248, 250, 252, 0.95);
+    --player-text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .theme-oled {
-    /* Dark Theme - Zune inspired dark */
+    /* Dark Theme - Modern dark */
     --bg-color: #000000;
     --text-color: #ffffff;
-    --text-muted-color: #cccccc;
-    --text-faint-color: #666666;
-    --surface-color: rgba(20, 20, 20, 0.95);
+    --text-muted-color: #a1a1aa;
+    --text-faint-color: #71717a;
+    --surface-color: rgba(0, 0, 0, 0.8);
     --border-color: rgba(255, 255, 255, 0.1);
     --modal-bg: #000000;
 }
 
 body, .font-sans { font-family: 'Inter', 'Segoe UI', sans-serif; }
-.font-mono { font-family: 'Segoe UI Mono', monospace; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
 
-.station-list-scrollbar::-webkit-scrollbar { width: 8px; }
-.station-list-scrollbar::-webkit-scrollbar-track { background: var(--surface-color); }
-.station-list-scrollbar::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 4px; }
+/* Custom Animations */
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+    50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.6); }
+}
+
+@keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+.animate-spin-slow { animation: spin-slow 8s linear infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+
+.station-list-scrollbar::-webkit-scrollbar { width: 6px; }
+.station-list-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.station-list-scrollbar::-webkit-scrollbar-thumb { 
+    background: linear-gradient(to bottom, var(--primary), var(--secondary)); 
+    border-radius: 3px; 
+}
 
 /* Mobile-first viewport handling */
 body {
@@ -65,6 +102,9 @@ body {
     height: 100vh;
     height: 100dvh;
     height: calc(var(--vh, 1vh) * 100);
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 10s ease infinite;
 }
 
 /* Handle mobile browser viewport issues */
@@ -81,7 +121,27 @@ body {
     }
 }
 
-/* Base app container styles - Zune inspired */
+/* Critical UI elements must always be visible */
+#top-bar,
+#bottom-bar,
+#tuner-container,
+#tuner-panel,
+#player-display,
+#controls-container {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#tuner-panel {
+    display: flex !important;
+}
+
+#controls-container {
+    display: flex !important;
+}
+
+/* Base app container styles - Modern glassmorphism */
 #app-container {
     width: 100vw;
     height: 100vh;
@@ -93,9 +153,13 @@ body {
     min-height: 100dvh;
     min-width: 100vw;
     border-radius: 0;
-    background: var(--bg-color);
-    box-shadow: 0 4px 20px 0 var(--zune-shadow);
-    border: 1px solid var(--zune-border);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
     overflow: hidden;
     padding-top: env(safe-area-inset-top);
@@ -131,19 +195,10 @@ body {
         height: calc(var(--vh, 1vh) * 100);
         border-radius: 0;
         margin: 0;
-        padding-top: 0; /* Top bar handles safe area */
-        padding-bottom: 0; /* Bottom bar handles safe area */
+        padding-top: 0;
+        padding-bottom: 0;
         padding-left: env(safe-area-inset-left);
         padding-right: env(safe-area-inset-right);
-    }
-    
-    /* Ensure proper spacing for mobile */
-    #tuner-container {
-        margin-top: 8px;
-    }
-    
-    main {
-        padding-top: 8px;
     }
 }
 
@@ -161,7 +216,7 @@ body {
         max-height: 95vh;
         min-height: auto;
         min-width: auto;
-        border-radius: 16px;
+        border-radius: 24px;
         padding: 0;
         margin: 1rem auto;
         position: relative;
@@ -176,6 +231,7 @@ body {
         max-height: 100vh;
     }
 }
+
 @media (max-width: 640px) {
     #app-container {
         border-radius: 0;
@@ -184,342 +240,625 @@ body {
     }
 }
 
-/* Zune Ambient Background */
+/* Modern Ambient Background */
 #ambient-bg {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-brown) 50%, var(--zune-orange) 100%);
-    background-size: 200% 200%;
-    background-position: 0% 50%;
-    opacity: 0.15;
-    filter: blur(50px) brightness(0.6);
+    position: absolute; 
+    inset: 0; 
+    width: 100%; 
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+    opacity: 0.6;
+    filter: blur(60px);
     transform: scale(1.1);
-    transition: opacity 1000ms ease-in-out, background-position 8s linear;
+    transition: opacity 1000ms ease-in-out;
     z-index: 0;
-    animation: ambientMove 16s linear infinite alternate;
-}
-@keyframes ambientMove {
-    0% { background-position: 0% 50%; }
-    100% { background-position: 100% 50%; }
+    animation: ambientMove 20s linear infinite alternate;
 }
 
-/* Zune Player Display */
+@keyframes ambientMove {
+    0% { 
+        background-position: 0% 0%;
+        opacity: 0.4;
+    }
+    50% { 
+        background-position: 100% 100%;
+        opacity: 0.8;
+    }
+    100% { 
+        background-position: 0% 100%;
+        opacity: 0.6;
+    }
+}
+
+/* Player Display */
 #player-display {
-    background: linear-gradient(135deg, var(--zune-dark-gray), var(--surface-color));
-    border: 2px solid var(--zune-orange);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 
-        0 4px 12px 0 var(--zune-shadow),
-        0 0 20px 0 var(--zune-glow),
-        inset 0 1px 0 0 var(--zune-highlight);
-    border-radius: 16px;
-    position: relative;
-    overflow: hidden;
-    transition: box-shadow 0.3s, border 0.3s;
+        0 8px 32px 0 rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+}
+
+#player-display:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0 12px 40px 0 rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 #player-content img {
-    border: 2px solid var(--zune-orange);
-    border-radius: 12px;
-    box-shadow: 0 0 15px 0 var(--zune-glow);
-    animation: zuneGlow 3s ease-in-out infinite alternate;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
 }
 
-@keyframes zuneGlow {
-    0% { box-shadow: 0 0 10px 0 var(--zune-glow); }
-    100% { box-shadow: 0 0 25px 0 var(--zune-glow), 0 0 35px 0 var(--zune-glow); }
+#player-content img:hover {
+    transform: scale(1.05);
 }
 
-/* Zune Station Items */
+@keyframes modernGlow {
+    0%, 100% { 
+        box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+    50% { 
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.6);
+    }
+}
+
+/* Station Items */
 .station-item {
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
-    background: var(--surface-color);
-    border: 1px solid var(--zune-border);
-    box-shadow: 0 2px 8px 0 var(--zune-shadow);
+    position: relative;
+    overflow: hidden;
 }
+
+.station-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.station-item:hover::before {
+    left: 100%;
+}
+
 .station-item:hover, .station-item.selected {
-    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-orange-dark) 100%) !important;
-    color: var(--play-button-text) !important;
-    box-shadow: 
-        0 4px 16px 0 var(--zune-shadow),
-        0 0 20px 0 var(--zune-glow),
-        inset 0 1px 0 0 var(--zune-highlight);
-    border: 1px solid var(--zune-orange);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(99, 102, 241, 0.5);
     transform: translateY(-2px);
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(99, 102, 241, 0.2);
 }
+
 .station-item:hover p, .station-item.selected p {
-    color: var(--play-button-text) !important;
+    color: var(--text-color);
 }
+
 .station-item img {
-    border: 1px solid var(--zune-orange);
-    border-radius: 8px;
-    background: var(--surface-color);
-}
-
-/* Zune Options Panel */
-#options-panel {
-    background: var(--modal-bg);
-    border-radius: 16px 0 0 16px;
-    box-shadow: 
-        -4px 0 20px 0 var(--zune-shadow),
-        inset 1px 0 0 0 var(--zune-highlight);
-}
-
-/* Zune Button Styles */
-#controls-container button, #options-panel button, #theme-toggle-button, #fullscreen-toggle-button, #random-station-button {
-    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-orange-dark) 100%);
-    color: var(--play-button-text);
-    border: 1px solid var(--zune-orange-dark);
-    box-shadow: 
-        0 2px 8px 0 var(--zune-shadow),
-        0 0 10px 0 var(--zune-glow),
-        inset 0 1px 0 0 var(--zune-highlight);
     border-radius: 12px;
     transition: all 0.3s ease;
+    border: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.station-item:hover img {
+    border-color: rgba(99, 102, 241, 0.8);
+    transform: scale(1.05);
+}
+
+/* Options Panel */
+#options-panel {
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        -8px 0 32px 0 rgba(0, 0, 0, 0.3),
+        inset 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Button Styles */
+#controls-container button, #options-panel button, #theme-toggle-button, #fullscreen-toggle-button, #random-station-button {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#controls-container button::before, #options-panel button::before, #theme-toggle-button::before, #fullscreen-toggle-button::before, #random-station-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+#controls-container button:hover::before, #options-panel button:hover::before, #theme-toggle-button:hover::before, #fullscreen-toggle-button:hover::before, #random-station-button:hover::before {
+    left: 100%;
 }
 
 #controls-container button:active, #options-panel button:active, #theme-toggle-button:active, #fullscreen-toggle-button:active, #random-station-button:active {
-    transform: translateY(2px);
-    box-shadow: 
-        0 1px 4px 0 var(--zune-shadow),
-        inset 0 1px 0 0 var(--zune-highlight);
+    transform: translateY(1px) scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 #play-button, #stop-button {
-    font-size: 1.2rem;
-    font-weight: bold;
-    letter-spacing: 0.05em;
-    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+    box-shadow: 
+        0 8px 32px 0 rgba(99, 102, 241, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* iOS 5 Typography */
+#play-button:hover, #stop-button:hover {
+    background-size: 200% 200%;
+    animation: gradient-shift 1s ease infinite;
+    box-shadow: 
+        0 12px 40px 0 rgba(99, 102, 241, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px) scale(1.05);
+}
+
+#play-button.hidden, #stop-button.hidden {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+}
+
+/* Typography */
 h1, h2, .font-bold {
-    letter-spacing: 0.04em;
-}
-h1 {
-    font-size: 2.5rem;
-    font-weight: 800;
-}
-.station-item p.font-bold {
-    font-size: 1.1rem;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    letter-spacing: -0.025em;
 }
 
-/* Smooth transitions for interactive elements */
+h1 {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
+}
+
+.station-item p.font-bold {
+    font-weight: 600;
+    color: var(--text-color);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Transitions */
 .transition-colors, .transition-all, .transition-transform, .transition-opacity, .transition-shadow {
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Zune Tuner Styles */
+/* Tuner Panel */
 #tuner-panel {
-    background: linear-gradient(135deg, var(--zune-dark-gray), var(--surface-color));
-    border: 1px solid var(--zune-border);
-    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 
-        0 2px 8px 0 var(--zune-shadow),
-        inset 0 1px 0 0 var(--zune-highlight);
+        0 4px 20px 0 rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 #tuner-needle { 
-    background: linear-gradient(to right, var(--zune-orange), var(--zune-orange-dark)); 
-    box-shadow: 0 0 8px 0 var(--zune-glow); 
-    transition: left 0.6s ease-out;
-    border-radius: 2px;
+    background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    transition: all 0.3s ease;
 }
 
-.needle-settle { animation: tuner-needle-settle 0.8s ease-out forwards; }
+.needle-settle { animation: tuner-needle-settle 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+
 @keyframes tuner-needle-settle {
-    0% { transform: translateX(20%); } 40% { transform: translateX(-15%); }
-    70% { transform: translateX(8%); } 90% { transform: translateX(-4%); }
-    100% { transform: translateX(0); }
+    0% { transform: translateX(-20px); opacity: 0; }
+    50% { transform: translateX(5px); opacity: 1; }
+    100% { transform: translateX(0); opacity: 1; }
 }
 
-/* iOS 5 Options Panel Styles */
+/* Modal Animations */
 #options-modal { transition: visibility 0.3s; }
 #options-modal.hidden { visibility: hidden; }
 #options-backdrop { transition: opacity 0.3s ease-in-out; }
-#options-panel { transition: transform 0.3s ease-in-out; }
+#options-panel { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
 #options-modal.is-open #options-backdrop { opacity: 1; }
 #options-modal.is-open #options-panel { transform: translateX(0); }
 
-/* Fade/Slide Animations */
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-.fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+/* Fade In Animation */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
-/* Zune Splash Screen */
+/* Splash Screen */
 #splash-screen {
-    background: linear-gradient(135deg, var(--zune-orange) 0%, var(--zune-brown) 50%, var(--zune-orange) 100%);
-    transition: opacity 0.75s ease-out, visibility 0.75s ease-out;
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    background-size: 200% 200%;
+    animation: gradient-shift 10s ease infinite;
 }
 
-@keyframes splash-pop-in { 0% { transform: scale(0.9); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-#splash-content { animation: splash-pop-in 0.8s ease-out forwards; }
-#splash-logo { filter: drop-shadow(0 0 15px var(--zune-glow)); }
+@keyframes splash-pop-in { 
+    0% { transform: scale(0.9) translateY(20px); opacity: 0; } 
+    100% { transform: scale(1) translateY(0); opacity: 1; } 
+}
 
-/* Zune Aesthetic Styles */
+#splash-content { animation: splash-pop-in 1s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+#splash-logo { 
+    filter: drop-shadow(0 0 20px rgba(99, 102, 241, 0.5));
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Responsive Design */
 #top-bar, #tuner-container, main, #bottom-bar {
-    z-index: 1;
-    transition: transform 0.3s ease-in-out, filter 0.3s ease-in-out, opacity 0.3s ease-in-out;
+    position: relative;
+    z-index: 10;
 }
 
-#controls-container button { transition: all 0.3s ease-out; }
-#controls-container button:active { transform: translateY(2px); opacity: 0.9; }
+#controls-container button { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+#controls-container button:active { transform: translateY(2px) scale(0.98); opacity: 0.9; }
 
 #play-button, #stop-button {
-    will-change: transform, opacity; transition: transform 0.3s ease, opacity 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #play-button.hidden, #stop-button.hidden {
-    transform: scale(0.5); opacity: 0; pointer-events: none;
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
 }
 
+/* Tuner Frequency Labels */
 #am-tuner .relative, #fm-tuner .relative {
-    background-image: repeating-linear-gradient(to right, 
-        var(--text-faint-color), var(--text-faint-color) 1px, 
-        transparent 1px, transparent 10%
-    );
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 8px;
+    padding: 4px 8px;
 }
 
+/* Player Content Text */
 #player-content #rds-text-display, #player-content #station-name-display, #player-content #station-info-display {
-    text-shadow: var(--player-text-shadow);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
 }
 
+/* Options Open State */
 #app-container.options-open > #top-bar, #app-container.options-open > #tuner-container,
 #app-container.options-open > main, #app-container.options-open > #bottom-bar {
-    transform: scale(0.97); filter: blur(3px); opacity: 0.7; pointer-events: none;
+    filter: blur(4px);
+    transition: filter 0.3s ease;
 }
 
-/* Zune Tuner Startup Animation Styles */
-.startup-item { opacity: 0; animation: fadeIn 0.5s ease-in-out forwards; }
+/* Startup Animation */
+.startup-item { opacity: 0; animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 .band-icon { transition: filter 0.4s ease-in-out, color 0.4s ease-in-out; }
 .band-icon-glow {
-    color: var(--zune-orange) !important;
-    filter: drop-shadow(0 0 12px var(--zune-glow));
+    filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.6));
+    color: #6366f1;
 }
 
-/* Zune Tuner Frequency Readability */
+/* Tuner Frequency Labels */
 #am-tuner span, #fm-tuner span {
-    text-shadow: 0px 0px 4px rgba(0, 0, 0, 0.8);
-    color: var(--text-color);
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .theme-light #am-tuner span, .theme-light #fm-tuner span {
-    color: var(--text-color);
+    color: rgba(0, 0, 0, 0.7);
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
-/* Zune Orbital Lock Animation */
+/* Web Tuner Beam Animation */
 .beam-center-container { height: 100%; justify-content: center; align-items: center; display: flex; flex-direction: column; }
 .beam-container { display: flex; align-items: center; flex-grow: 1; padding: 0 8px; position: relative; width: 100%; }
 .beam {
-    width: 0%; height: 2px;
-    background: linear-gradient(to right, var(--zune-orange), var(--zune-orange-dark));
-    box-shadow: 0 0 8px 0 var(--zune-glow);
-    border-radius: 2px;
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+    border-radius: 1px;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
     transition: width 1s ease-out;
 }
+
 .globe-left, .globe-right {
-    color: var(--text-muted-color);
-    font-size: 1.2rem;
-    transition: color 0.3s 1s ease, filter 0.3s 1s ease;
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, #6366f1, #4f46e5);
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
 }
+
 #web-tuner.is-linking .beam { animation: draw-beam 1s ease-out forwards; }
 #web-tuner.is-linking .globe-left, #web-tuner.is-linking .globe-right {
-    color: var(--zune-orange);
-    filter: drop-shadow(0 0 8px var(--zune-glow));
+    animation: pulse-glow 1s ease-in-out infinite;
 }
-.connected-text { color: var(--zune-orange); opacity: 0; transition: opacity 0.4s ease; transition-delay: 1s; pointer-events: none; text-align: center; display: block; margin-bottom: 0.25rem; }
+
+.connected-text { 
+    color: #6366f1; 
+    opacity: 0; 
+    transition: opacity 0.4s ease; 
+    transition-delay: 1s; 
+    pointer-events: none; 
+    text-align: center; 
+    display: block; 
+    margin-bottom: 0.25rem; 
+    font-weight: 600;
+}
 #web-tuner.is-linking .connected-text { opacity: 1; }
+
 @keyframes draw-beam { from { width: 0%; } to { width: 100%; } }
 
+/* Status Bars */
 #top-bar {
-    padding-top: env(safe-area-inset-top);
-}
-#bottom-bar {
-    padding-bottom: env(safe-area-inset-bottom);
-}
-#splash-screen,
-#options-modal {
-    padding-top: env(safe-area-inset-top);
-    padding-bottom: env(safe-area-inset-bottom);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
-/* iOS 5 Mobile-specific adjustments */
+#bottom-bar {
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* Splash Screen Responsive */
+#splash-screen,
+#pwa-install-prompt,
+#offline-indicator,
+#update-indicator {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* Mobile Specific Styles */
 @media (max-width: 639px) {
     #top-bar {
-        padding-top: max(16px, env(safe-area-inset-top));
-        min-height: 70px;
-        display: flex;
-        align-items: center;
+        padding: 16px 24px;
+        font-size: 14px;
     }
     
     #bottom-bar {
-        padding-bottom: max(12px, env(safe-area-inset-bottom));
-        min-height: 50px;
-        display: flex;
-        align-items: center;
+        padding: 16px 24px;
+        font-size: 14px;
     }
     
     #app-container {
-        padding-top: 0; /* Top bar handles safe area */
-        padding-bottom: 0; /* Bottom bar handles safe area */
+        border-radius: 0;
+        min-width: 100vw;
+        min-height: 100vh;
     }
     
-    /* Ensure main content doesn't get hidden behind browser UI */
     main {
-        padding-bottom: env(safe-area-inset-bottom);
-        margin-bottom: 0;
+        padding: 24px;
     }
     
-    /* Adjust controls container for better mobile accessibility */
     #controls-container {
-        margin-bottom: env(safe-area-inset-bottom);
+        gap: 24px;
+    }
+    
+    /* Full width tuner on mobile */
+    #tuner-container {
+        width: 100%;
+        padding-left: 24px;
+        padding-right: 24px;
+        margin-bottom: 24px;
+    }
+    
+    #tuner-panel {
+        width: 100%;
     }
 }
 
-/* iOS 5 Desktop-specific adjustments */
+/* Desktop Specific Styles */
 @media (min-width: 640px) {
     #top-bar {
-        padding-top: 12px;
-        min-height: 60px;
+        padding: 20px 24px;
+        font-size: 16px;
     }
     
     #bottom-bar {
-        padding-bottom: 12px;
-        min-height: 50px;
+        padding: 20px 24px;
+        font-size: 16px;
     }
     
     #app-container {
-        padding: 0;
-        margin: 1rem auto;
-        border-radius: 12px;
-        max-width: 24rem;
-        max-height: 95vh;
-        height: auto;
-        position: relative;
+        border-radius: 24px;
+        min-width: auto;
+        min-height: auto;
+        margin: 20px auto;
+        max-width: 400px;
     }
     
     body {
-        position: static;
-        overflow: auto;
-        height: auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+        background-size: 200% 200%;
+        animation: gradient-shift 15s ease infinite;
     }
 }
 
-/* Zune Station List Toggle */
+/* Station List in Options */
 #station-list-in-options {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out;
+    max-height: 300px;
+    overflow-y: auto;
+    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 #station-list-in-options.expanded {
-    max-height: 400px;
-    overflow-y: auto;
+    max-height: 500px;
 }
 
-/* Chevron rotation animation */
+/* Chevron Rotation */
 .rotate-180 {
     transform: rotate(180deg);
-} 
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Glassmorphism Effects */
+.glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+        0 8px 32px 0 rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.glass-strong {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 
+        0 12px 40px 0 rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: gradient-shift 3s ease infinite;
+}
+
+/* Hover Effects */
+.hover-lift {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 
+        0 12px 40px 0 rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Focus States */
+button:focus-visible {
+    outline: 2px solid #6366f1;
+    outline-offset: 2px;
+    border-radius: 8px;
+}
+
+/* Loading States */
+.loading-shimmer {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Custom Scrollbar for Webkit */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, #8b5cf6, #ec4899);
+}
+
+/* Mobile Performance Optimizations - Targeted for Android vs iOS */
+@media (max-width: 768px) {
+    /* Base mobile optimizations for all devices */
+    * {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Ensure critical UI containers are always visible */
+    #top-bar,
+    #bottom-bar,
+    #tuner-container,
+    #player-content {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    #tuner-panel {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    /* Reduce complex animations on mobile (but don't disable all) */
+    .animate-pulse-glow,
+    .animate-float,
+    .loading-shimmer {
+        animation-duration: 1s !important;
+        animation-iteration-count: 1 !important;
+    }
+    
+    /* Optimize gradients for mobile */
+    body {
+        background-attachment: fixed;
+    }
+}
+
+/* Additional mobile optimizations for better performance */
+@media (max-width: 768px) and (max-height: 900px) {
+    /* Force hardware acceleration for smoother scrolling */
+    #station-list-in-options {
+        transform: translateZ(0);
+        -webkit-transform: translateZ(0);
+        will-change: scroll-position;
+    }
+    
+    /* Optimize image rendering */
+    img {
+        image-rendering: optimizeSpeed;
+        image-rendering: -webkit-optimize-contrast;
+    }
+    
+    /* Reduce paint complexity */
+    #player-display {
+        contain: layout style paint;
+    }
+    
+    /* Disable hover effects entirely on touch devices */
+    .station-item:hover,
+    button:hover,
+    #player-content img:hover {
+        background: initial !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+}

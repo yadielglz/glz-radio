@@ -1,49 +1,156 @@
+// App will handle splash screen properly
+
 // Main application initialization
 
 const init = () => {
     console.log('Initializing Glz Radio PWA...');
     
+    // Wait for DOM to be fully loaded
+    if (document.readyState !== 'complete') {
+        console.log('DOM not ready, waiting...');
+        window.addEventListener('load', init);
+        return;
+    }
+    
+    // Check if required modules are loaded
+    const requiredModules = ['dom', 'state', 'utils', 'ui', 'player', 'tuner', 'weather', 'pwa'];
+    const loadedModules = requiredModules.filter(module => window[module]);
+    const missingModules = requiredModules.filter(module => !window[module]);
+    
+    console.log('Loaded modules:', loadedModules);
+    console.log('Missing modules:', missingModules);
+    
+    if (missingModules.length > 0) {
+        console.warn('Retrying initialization in 100ms...');
+        setTimeout(init, 100); // Retry in 100ms
+        return;
+    }
+    
+    console.log('All modules loaded, initializing...');
+    
     // Initialize Lucide icons
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+        console.log('Lucide icons initialized');
+    } else {
+        console.warn('Lucide not available');
+    }
     
     // Run splash animation
-    runSplashAnimation();
+    const runSplash = () => {
+        if (window.ui && window.ui.runSplashAnimation) {
+            window.ui.runSplashAnimation();
+        } else {
+            // Fallback animation
+            const progressBar = document.getElementById('splash-progress');
+            if (progressBar) {
+                let progress = 0;
+                const animate = () => {
+                    progress += 2;
+                    progressBar.style.width = `${progress}%`;
+                    if (progress < 100) {
+                        requestAnimationFrame(animate);
+                    }
+                };
+                animate();
+            }
+        }
+    };
+    
+    const hideSplash = () => {
+        if (window.ui && window.ui.hideSplashScreen) {
+            window.ui.hideSplashScreen();
+        } else {
+            // Fallback hiding
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                splash.style.opacity = '0';
+                splash.style.visibility = 'hidden';
+                splash.style.pointerEvents = 'none';
+                setTimeout(() => {
+                    if (splash.parentNode) {
+                        splash.parentNode.removeChild(splash);
+                    }
+                }, 1000);
+            }
+        }
+    };
+    
+    // Run splash animation
+    runSplash();
     
     // Hide splash screen after delay
-    setTimeout(() => {
-        hideSplashScreen();
-    }, 2500);
+    setTimeout(hideSplash, 1500);
     
     // Initialize state
-    restoreState();
-    setupStatePersistence();
-    validateState();
+    if (window.state) {
+        if (window.state.restoreState) window.state.restoreState();
+        if (window.state.setupStatePersistence) window.state.setupStatePersistence();
+        if (window.state.validateState) window.state.validateState();
+    }
     
     // Initialize UI
-    updateClocks();
-    setInterval(updateClocks, 10000);
-    setInterval(updateStatusBar, 1000);
-    updateControlButtons();
-    setupEventListeners();
-    setupTheming();
-    setupMediaSessionHandlers();
+    if (window.ui) {
+        window.ui.updateClocks();
+        setInterval(window.ui.updateClocks, 10000);
+        setInterval(window.ui.updateStatusBar, 1000);
+        window.ui.updateControlButtons();
+        window.ui.setupEventListeners();
+        window.ui.setupTheming();
+    } else {
+        // Fallback event listeners if UI module fails
+        console.warn('UI module not loaded, setting up basic event listeners');
+        const optionsBtn = document.getElementById('options-button');
+        const playBtn = document.getElementById('play-button');
+        
+        if (optionsBtn) {
+            optionsBtn.onclick = () => alert('Options clicked - UI module not loaded');
+        }
+        if (playBtn) {
+            playBtn.onclick = () => alert('Play clicked - Player module not loaded');
+        }
+    }
+    if (window.player && window.player.setupMediaSessionHandlers) {
+        window.player.setupMediaSessionHandlers();
+    }
     
     // Initialize tuner
-    setTunerToPowerOff();
+    if (window.tuner && window.tuner.setTunerToPowerOff) {
+        window.tuner.setTunerToPowerOff();
+    }
     
     // Set bottom bar
-    dom.bottomBarStationName.textContent = "Standby";
+    if (dom.bottomBarStationName) {
+        dom.bottomBarStationName.textContent = "Standby";
+    }
     
     // Set version footer
-    dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: ${APP_VERSION} | Build: ${APP_BUILD_DATE.replace(/-/g,'.')}</p>`;
+    if (dom.versionFooter) {
+        dom.versionFooter.innerHTML = `<p>® ©Glz Technical Services | Ver: ${APP_VERSION} | Build: ${APP_BUILD_DATE.replace(/-/g,'.')}</p>`;
+    }
     
     // Initialize weather
-    state.isCelsius = storage.get('glz-radio-temp-unit') === 'C';
-    getIPLocationAndWeather();
-    setInterval(getIPLocationAndWeather, 1000 * 60 * 15); // 15 minutes
+    if (window.utils && window.utils.storage) {
+        state.isCelsius = window.utils.storage.get('glz-radio-temp-unit') === 'C';
+    }
+    if (window.weather && window.weather.getIPLocationAndWeather) {
+        window.weather.getIPLocationAndWeather();
+        setInterval(window.weather.getIPLocationAndWeather, 1000 * 60 * 15); // 15 minutes
+    }
     
     // Initialize station list
-    initializeStationList();
+    try {
+        initializeStationList();
+    } catch (error) {
+        console.error('Failed to initialize station list:', error);
+        // Fallback: add basic station list
+        const stationList = document.getElementById('station-list-in-options');
+        if (stationList && typeof STATIONS_ORDER !== 'undefined') {
+            stationList.innerHTML = STATIONS_ORDER.map(name => 
+                `<div class="p-4 bg-white/5 rounded-2xl cursor-pointer" onclick="alert('Station: ${name}')">${name}</div>`
+            ).join('');
+        }
+    }
     
     // Mark as initialized
     state.isInitialized = true;
@@ -51,22 +158,45 @@ const init = () => {
     console.log('Glz Radio PWA initialized successfully');
 };
 
+// Start initialization immediately
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+} else {
+    init();
+}
+
+// Emergency splash screen fallback - hide after 5 seconds no matter what
+setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if (splash && splash.style.opacity !== '0') {
+        console.log('Emergency splash screen hide - taking too long to initialize');
+        splash.style.opacity = '0';
+        splash.style.visibility = 'hidden';
+        splash.style.pointerEvents = 'none';
+        setTimeout(() => {
+            if (splash.parentNode) {
+                splash.parentNode.removeChild(splash);
+            }
+        }, 1000);
+    }
+}, 5000);
+
 const initializeStationList = () => {
     dom.stationListInOptions.innerHTML = STATIONS_ORDER.map(name => {
         const station = RADIO_STATIONS[name];
-        const isFavorite = favorites.has(name);
+        const isFavorite = window.utils && window.utils.favorites ? window.utils.favorites.has(name) : false;
         
         return `
-            <div data-station-name="${name}" class="station-item flex items-center p-3 space-x-4 cursor-pointer hover:bg-[var(--zune-light-gray)] rounded-xl transition-all duration-300 border border-[var(--zune-border)] shadow-md">
-                <img src="${station.logo}" class="w-10 h-10 object-contain bg-[var(--surface-color)] p-1 rounded-lg border border-[var(--zune-orange)]" 
-                     onerror="this.onerror=null; this.src='https://placehold.co/40x40/1a1a1a/ffffff?text=Logo';">
+            <div data-station-name="${name}" class="station-item flex items-center p-4 space-x-4 cursor-pointer rounded-2xl transition-all duration-300 glass hover-lift">
+                <img src="${station.logo}" class="w-12 h-12 object-contain bg-white/10 backdrop-blur-sm p-2 rounded-xl border-2 border-indigo-500/30" 
+                     onerror="this.onerror=null; this.src='https://placehold.co/48x48/1e293b/ffffff?text=Logo';">
                 <div class="flex-grow truncate">
-                    <p class="font-bold text-[var(--text-color)]">${name}</p>
-                    <p class="text-xs text-[var(--text-muted-color)]">${station.frequency}</p>
+                    <p class="font-semibold text-white text-base">${name}</p>
+                    <p class="text-sm text-gray-300">${station.frequency}</p>
                 </div>
-                <button class="favorite-btn p-1 rounded-full transition-colors ${isFavorite ? 'text-[var(--zune-orange)]' : 'text-[var(--text-muted-color)]'}" 
+                <button class="favorite-btn p-2 rounded-xl transition-all duration-300 ${isFavorite ? 'text-indigo-400 bg-indigo-500/20' : 'text-gray-400 hover:text-indigo-400'}" 
                         onclick="toggleFavorite('${name}', event)">
-                    <i data-lucide="${isFavorite ? 'heart' : 'heart'}" class="w-4 h-4 ${isFavorite ? 'fill-current' : ''}"></i>
+                    <i data-lucide="${isFavorite ? 'heart' : 'heart'}" class="w-5 h-5 ${isFavorite ? 'fill-current' : ''}"></i>
                 </button>
             </div>
         `;
@@ -77,21 +207,27 @@ const initializeStationList = () => {
         item.onclick = (e) => {
             // Don't trigger if clicking favorite button
             if (e.target.closest('.favorite-btn')) return;
-            selectStation(item.dataset.stationName);
+            if (window.player && window.player.selectStation) {
+                window.player.selectStation(item.dataset.stationName);
+            }
         };
     });
     
     // Update Lucide icons
-    lucide.createIcons();
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
 };
 
 const toggleFavorite = (stationName, event) => {
     event.stopPropagation();
     
-    if (favorites.has(stationName)) {
-        favorites.remove(stationName);
+    if (!window.utils || !window.utils.favorites) return;
+    
+    if (window.utils.favorites.has(stationName)) {
+        window.utils.favorites.remove(stationName);
     } else {
-        favorites.add(stationName);
+        window.utils.favorites.add(stationName);
     }
     
     // Update UI
@@ -99,19 +235,19 @@ const toggleFavorite = (stationName, event) => {
     const favoriteBtn = stationItem.querySelector('.favorite-btn');
     const icon = favoriteBtn.querySelector('i');
     
-    if (favorites.has(stationName)) {
-        favoriteBtn.classList.add('text-[var(--zune-orange)]');
-        favoriteBtn.classList.remove('text-[var(--text-muted-color)]');
+    if (window.utils && window.utils.favorites && window.utils.favorites.has(stationName)) {
+        favoriteBtn.classList.add('text-indigo-400', 'bg-indigo-500/20');
+        favoriteBtn.classList.remove('text-gray-400');
         icon.classList.add('fill-current');
     } else {
-        favoriteBtn.classList.remove('text-[var(--zune-orange)]');
-        favoriteBtn.classList.add('text-[var(--text-muted-color)]');
+        favoriteBtn.classList.remove('text-indigo-400', 'bg-indigo-500/20');
+        favoriteBtn.classList.add('text-gray-400');
         icon.classList.remove('fill-current');
     }
     
     // Show notification
     if (window.pwa && window.pwa.showNotification) {
-        const action = favorites.has(stationName) ? 'added to' : 'removed from';
+        const action = (window.utils && window.utils.favorites && window.utils.favorites.has(stationName)) ? 'added to' : 'removed from';
         window.pwa.showNotification('Favorites', {
             body: `${stationName} ${action} favorites`,
             tag: 'favorites-update'
@@ -120,7 +256,7 @@ const toggleFavorite = (stationName, event) => {
 };
 
 const showFavorites = () => {
-    const favoriteStations = favorites.get();
+    const favoriteStations = window.utils && window.utils.favorites ? window.utils.favorites.get() : [];
     if (favoriteStations.length === 0) {
         alert('No favorite stations yet. Add some stations to your favorites!');
         return;
@@ -145,7 +281,9 @@ const showFavorites = () => {
         if (icon) icon.classList.add('rotate-180');
     }
     
-    openOptions();
+    if (window.ui && window.ui.openOptions) {
+        window.ui.openOptions();
+    }
 };
 
 // Handle app shortcuts
@@ -157,7 +295,9 @@ const handleAppShortcuts = () => {
         setTimeout(() => {
             switch (action) {
                 case 'random':
-                    selectRandomStation();
+                    if (window.player && window.player.selectRandomStation) {
+                        window.player.selectRandomStation();
+                    }
                     break;
                 case 'favorites':
                     showFavorites();
@@ -180,8 +320,10 @@ document.addEventListener('visibilitychange', () => {
         console.log('App came to foreground');
         
         // Update clocks and status
-        updateClocks();
-        updateStatusBar();
+        if (window.ui) {
+            window.ui.updateClocks();
+            window.ui.updateStatusBar();
+        }
         
         // Check for updates
         if (window.pwa && window.pwa.checkForUpdates) {
@@ -193,7 +335,9 @@ document.addEventListener('visibilitychange', () => {
 // Handle beforeunload (app closing)
 window.addEventListener('beforeunload', () => {
     // Persist state before closing
-    persistState();
+    if (window.state && window.state.persistState) {
+        window.state.persistState();
+    }
 });
 
 // Handle online/offline events
@@ -201,8 +345,10 @@ window.addEventListener('online', () => {
     console.log('Connection restored');
     state.isOnline = true;
     
-    // Refresh weather data
-    getIPLocationAndWeather();
+            // Refresh weather data
+        if (window.weather && window.weather.getIPLocationAndWeather) {
+            window.weather.getIPLocationAndWeather();
+        }
     
     // Show notification
     if (window.pwa && window.pwa.showNotification) {
@@ -240,16 +386,8 @@ window.addEventListener('unhandledrejection', (event) => {
     state.errorCount++;
 });
 
-// Initialize app when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        handleAppShortcuts();
-        init();
-    });
-} else {
-    handleAppShortcuts();
-    init();
-}
+// Handle app shortcuts when ready
+handleAppShortcuts();
 
 // Export global functions
 window.app = {

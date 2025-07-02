@@ -11,7 +11,9 @@ const updateWeatherDisplay = () => {
     dom.weatherDisplaySettings.innerHTML = weatherHTML;
     
     lucide.createIcons();
-    updateStatusBar();
+    if (window.ui && window.ui.updateStatusBar) {
+        window.ui.updateStatusBar();
+    }
     
     dom.tempC.classList.toggle('font-bold', state.isCelsius);
     dom.tempC.classList.toggle('opacity-50', !state.isCelsius);

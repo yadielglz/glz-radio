@@ -1,6 +1,6 @@
 # Glz Radio PWA
 
-A modern, responsive Progressive Web App (PWA) for streaming Puerto Rican radio stations with a Zune-inspired design.
+A modern, responsive Progressive Web App (PWA) for streaming Puerto Rican radio stations with a sleek glassmorphism design.
 
 ## 🌟 Features
 
@@ -75,7 +75,7 @@ The app includes popular Puerto Rican stations:
 
 ### Architecture
 - **Frontend**: Vanilla JavaScript, HTML5, CSS3
-- **Styling**: Tailwind CSS with custom Zune theme
+- **Styling**: Tailwind CSS with modern glassmorphism theme
 - **Icons**: Lucide Icons
 - **PWA**: Service Worker, Web App Manifest
 - **Caching**: Cache-first strategy with network fallback
@@ -111,16 +111,23 @@ glz-radio/
 
 ## 🎨 Design
 
-### Zune-Inspired Theme
-- **Color Palette**: Orange (#f7931e) and dark grays
-- **Typography**: Inter font family
+### Modern Glassmorphism Theme
+- **Color Palette**: Indigo (#6366f1), Purple (#8b5cf6), Pink (#ec4899)
+- **Typography**: Inter font family with JetBrains Mono for code
 - **Animations**: Smooth transitions and micro-interactions
-- **Layout**: Card-based design with rounded corners
-- **Effects**: Glow effects and ambient backgrounds
+- **Layout**: Glassmorphism cards with backdrop blur effects
+- **Effects**: Gradient backgrounds, glow effects, and ambient lighting
+
+### Design Features
+- **Glassmorphism**: Translucent glass-like elements
+- **Backdrop Blur**: Modern blur effects for depth
+- **Gradient Animations**: Dynamic color transitions
+- **Hover Effects**: Interactive feedback and animations
+- **Responsive**: Adaptive design for all screen sizes
 
 ### Responsive Design
 - **Mobile-First**: Optimized for mobile devices
-- **Desktop**: Centered card layout
+- **Desktop**: Centered card layout with glassmorphism
 - **Tablet**: Adaptive layout
 - **Safe Areas**: iOS notch and Android gesture areas
 
@@ -198,82 +205,70 @@ const RADIO_STATIONS = {
 ### PWA Features by Browser
 - **Install**: Chrome, Edge, Firefox
 - **Notifications**: Chrome, Firefox, Edge
-- **Background Sync**: Chrome, Edge
-- **Media Session**: Chrome, Edge, Firefox
+- **Backdrop Filter**: Chrome, Safari, Edge (partial)
+- **Service Worker**: All modern browsers
 
-## 🐛 Troubleshooting
+## 🎯 Key Features
 
-### Common Issues
+### Modern UI/UX
+- **Glassmorphism Design**: Translucent glass-like interface
+- **Smooth Animations**: 60fps animations and transitions
+- **Gradient Backgrounds**: Dynamic color schemes
+- **Interactive Elements**: Hover effects and feedback
+- **Accessibility**: WCAG compliant design
 
-**App won't install**
-- Ensure HTTPS is enabled
-- Check browser compatibility
-- Clear browser cache
+### Audio Experience
+- **High-Quality Streaming**: Optimized audio streams
+- **Background Playback**: Continue playing when app is minimized
+- **Media Controls**: System-level media controls
+- **Audio Visualization**: Visual feedback during playback
 
-**Audio won't play**
-- Check internet connection
-- Verify station stream URL
-- Try refreshing the page
+### Smart Features
+- **Auto-Detection**: Automatic location and weather
+- **Smart Caching**: Intelligent resource management
+- **Offline Mode**: Core functionality without internet
+- **State Management**: Persistent user preferences
 
-**Weather not showing**
-- Check location permissions
-- Verify internet connection
-- Wait for API response
+## 🔄 Updates
 
-**Offline mode not working**
-- Ensure service worker is registered
-- Check browser console for errors
-- Clear and reinstall the app
+### Version 9.2 (Latest)
+- **Complete UI Overhaul**: Modern glassmorphism design
+- **Enhanced Animations**: Smooth transitions and effects
+- **Improved Performance**: Optimized rendering and caching
+- **Better Accessibility**: Enhanced keyboard navigation
+- **Updated Icons**: Modern Lucide icon set
 
-### Debug Mode
-Enable debug mode by adding `?debug=true` to the URL:
-
-```javascript
-// Access debug functions
-window.stateManager.debugState();
-window.app.debug();
-```
+### Previous Versions
+- **Version 9.1**: Bug fixes and performance improvements
+- **Version 9.0**: Major feature additions and PWA enhancements
+- **Version 8.x**: Core functionality and station additions
 
 ## 🤝 Contributing
 
 ### Development Setup
 1. Clone the repository
-2. Serve files with a local server (HTTPS required for PWA)
-3. Open in browser
-4. Use browser dev tools for debugging
+2. Open `index.html` in a modern browser
+3. Use a local server for PWA features
+4. Test on multiple devices and browsers
 
-### Local Development Server
-```bash
-# Using Python
-python -m http.server 8000
-
-# Using Node.js
-npx serve .
-
-# Using PHP
-php -S localhost:8000
-```
-
-### Testing
-- Test on multiple devices
-- Verify PWA installation
-- Check offline functionality
-- Test all radio stations
+### Code Style
+- **JavaScript**: ES6+ with modern syntax
+- **CSS**: Tailwind CSS with custom properties
+- **HTML**: Semantic markup with accessibility
+- **Comments**: Clear documentation and explanations
 
 ## 📄 License
 
-© Glz Technical Services
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-This project is proprietary software. All rights reserved.
+## 🙏 Acknowledgments
 
-## 📞 Support
-
-For support or questions:
-- **Email**: support@glztech.com
-- **Website**: https://glztech.com
-- **Version**: 9.2
-- **Build**: 2025.06.11
+- **Radio Stations**: All Puerto Rican radio stations for their streams
+- **Weather API**: Open-Meteo for weather data
+- **Icons**: Lucide for the beautiful icon set
+- **Fonts**: Inter and JetBrains Mono font families
+- **Community**: All contributors and users
 
 ---
 
-**Glz Radio PWA** - Bringing Puerto Rican radio to the modern web! 🇵🇷📻 
+**Glz Radio** - Puerto Rico's Premier Radio Streaming App with Modern Design 

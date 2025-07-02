@@ -86,3 +86,6 @@ const dom = {
     splashContent: document.getElementById('splash-content'),
     splashProgress: document.getElementById('splash-progress')
 };
+
+// Export DOM to window
+window.dom = dom;

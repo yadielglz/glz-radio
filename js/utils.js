@@ -198,3 +198,24 @@ const withAsyncErrorHandling = (fn, context = 'Unknown') => {
         }
     };
 };
+
+// Export functions
+window.utils = {
+    delay,
+    getWeatherIcon,
+    formatTime,
+    celsiusToFahrenheit,
+    generateNetworkSpeed,
+    getFormattedDate,
+    getFormattedTime,
+    handleViewportChange,
+    isMobile,
+    isPWA,
+    storage,
+    favorites,
+    playHistory,
+    debounce,
+    throttle,
+    withErrorHandling,
+    withAsyncErrorHandling
+};

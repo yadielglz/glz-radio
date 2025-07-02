@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GLZ Radio - Simple</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="text-white font-sans flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md glass rounded-3xl shadow-2xl p-6">
+        
+        <!-- Top Bar -->
+        <header class="flex items-center justify-between mb-6">
+            <div id="header-time" class="text-sm font-mono text-gray-300">00:00</div>
+            <div id="rds-display" class="text-center font-mono text-xs text-gray-400 max-w-48 overflow-hidden">
+                <div class="whitespace-nowrap">GLZ RADIO • PUERTO RICO</div>
+            </div>
+            <div class="flex items-center">
+                <i data-lucide="wifi" class="w-4 h-4 text-green-400"></i>
+            </div>
+        </header>
+
+        <!-- Tuner Bar -->
+        <div class="w-full mb-6">
+            <div class="glass rounded-2xl p-4 flex items-center">
+                <span id="tuner-band" class="font-bold text-lg mr-4 text-white/80">WEB</span>
+                <div class="flex-1 bg-black/20 rounded-xl p-2 flex items-center justify-center">
+                    <div class="flex items-center space-x-2 text-gray-400">
+                        <i data-lucide="satellite-dish" class="w-5 h-5"></i>
+                        <span class="text-sm">Connected</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Station Carousel Player -->
+        <div class="glass rounded-3xl p-6 mb-6 h-48 relative overflow-hidden">
+            <!-- Station Carousel -->
+            <div id="station-carousel" class="flex transition-transform duration-300 h-full">
+                <!-- Stations will be populated here -->
+            </div>
+            
+            <!-- Carousel Navigation -->
+            <button id="prev-btn" class="absolute left-2 top-1/2 transform -translate-y-1/2 w-8 h-8 glass rounded-full flex items-center justify-center hover:bg-white/20 transition-colors z-10">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+            </button>
+            <button id="next-btn" class="absolute right-2 top-1/2 transform -translate-y-1/2 w-8 h-8 glass rounded-full flex items-center justify-center hover:bg-white/20 transition-colors z-10">
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+            
+            <!-- Status Display -->
+            <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 z-10">
+                <p id="status" class="text-xs text-gray-400 text-center">Swipe or use arrows to browse stations</p>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex justify-center space-x-4 mb-6">
+            <button id="play-btn" class="w-16 h-16 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg">
+                <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+            </button>
+            
+            <button id="stop-btn" class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center hover:scale-105 transition-transform shadow-lg" style="display: none;">
+                <i data-lucide="square" class="w-8 h-8"></i>
+            </button>
+        </div>
+
+        <!-- Bottom Bar -->
+        <footer class="flex items-center justify-between mt-6 text-sm">
+            <span id="station-name">Standby</span>
+            <span id="time-display"></span>
+        </footer>
+
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audio" preload="none"></audio>
+
+    <script>
+        // Station data
+        const stations = [
+            {
+                name: "WKAQ 580",
+                callSign: "WKAQ",
+                frequency: "580 AM",
+                url: "https://tunein.cdnstream1.com/4851_128.mp3",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/WKAQ_logo.png/200px-WKAQ_logo.png"
+            },
+            {
+                name: "Z 93",
+                callSign: "WZNT",
+                frequency: "93.7 FM",
+                url: "https://liveaudio.lamusica.com/PR_WZNT_icy",
+                logo: "https://lamusica.com/img/logos/z93.png"
+            },
+            {
+                name: "La Nueva 94",
+                callSign: "WODA",
+                frequency: "94.7 FM",
+                url: "https://liveaudio.lamusica.com/PR_WODA_icy",
+                logo: "https://lamusica.com/img/logos/lanueva94.png"
+            },
+            {
+                name: "KQ 105",
+                callSign: "WKAQ-FM",
+                frequency: "104.7 FM",
+                url: "https://televicentro.streamguys1.com/wkaqfm-icy",
+                logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/KQ105_logo.png/200px-KQ105_logo.png"
+            },
+            {
+                name: "La Mega 106.9",
+                callSign: "WMEG",
+                frequency: "106.9 FM",
+                url: "https://liveaudio.lamusica.com/PR_WMEG_icy",
+                logo: "https://lamusica.com/img/logos/lamega.png"
+            }
+        ];
+
+        // Simple radio app
+        const app = {
+            audio: document.getElementById('audio'),
+            isPlaying: false,
+            currentStationIndex: 0,
+            currentStation: null
+        };
+
+        const elements = {
+            playBtn: document.getElementById('play-btn'),
+            stopBtn: document.getElementById('stop-btn'),
+            status: document.getElementById('status'),
+            stationName: document.getElementById('station-name'),
+            timeDisplay: document.getElementById('time-display'),
+            headerTime: document.getElementById('header-time'),
+            rdsDisplay: document.getElementById('rds-display'),
+            tunerBand: document.getElementById('tuner-band'),
+            carousel: document.getElementById('station-carousel'),
+            prevBtn: document.getElementById('prev-btn'),
+            nextBtn: document.getElementById('next-btn')
+        };
+
+        // Initialize
+        function init() {
+            console.log('Initializing GLZ Radio Carousel...');
+            
+            // Initialize icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Build carousel
+            buildCarousel();
+            
+            // Setup event listeners
+            elements.playBtn.addEventListener('click', togglePlay);
+            elements.stopBtn.addEventListener('click', stop);
+            elements.prevBtn.addEventListener('click', prevStation);
+            elements.nextBtn.addEventListener('click', nextStation);
+
+            // Audio events
+            app.audio.addEventListener('loadstart', () => updateStatus('Loading...'));
+            app.audio.addEventListener('canplay', () => updateStatus('Ready to play'));
+            app.audio.addEventListener('playing', () => updateStatus('Playing'));
+            app.audio.addEventListener('pause', () => updateStatus('Paused'));
+            app.audio.addEventListener('error', (e) => {
+                console.error('Audio error:', e);
+                updateStatus('Connection error');
+            });
+
+            // Start clocks
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // Select first station by default
+            selectStation(0);
+            
+            updateStatus('Ready - Use arrows to browse stations');
+        }
+
+        function buildCarousel() {
+            elements.carousel.innerHTML = '';
+            
+            stations.forEach((station, index) => {
+                const stationCard = document.createElement('div');
+                stationCard.className = 'min-w-full h-full flex flex-col items-center justify-center text-center px-4';
+                stationCard.innerHTML = `
+                    <img src="${station.logo}" alt="${station.name}" class="w-20 h-20 rounded-2xl object-cover mb-4 shadow-lg bg-white/10">
+                    <h3 class="text-xl font-bold mb-1">${station.name}</h3>
+                    <p class="text-sm text-gray-400 mb-2">${station.frequency}</p>
+                    <div class="text-xs text-gray-500 font-mono">${station.callSign}</div>
+                `;
+                elements.carousel.appendChild(stationCard);
+            });
+        }
+
+        function selectStation(index) {
+            app.currentStationIndex = index;
+            app.currentStation = stations[index];
+            
+            // Update carousel position
+            const translateX = -index * 100;
+            elements.carousel.style.transform = `translateX(${translateX}%)`;
+            
+            // Update RDS display
+            updateRDS();
+            
+            // Update bottom bar
+            elements.stationName.textContent = app.currentStation.name;
+            
+            // Load audio
+            app.audio.src = app.currentStation.url;
+            
+            updateStatus('Station selected - Press play to listen');
+            console.log('Selected:', app.currentStation.name);
+        }
+
+        function prevStation() {
+            const newIndex = app.currentStationIndex > 0 ? app.currentStationIndex - 1 : stations.length - 1;
+            selectStation(newIndex);
+        }
+
+        function nextStation() {
+            const newIndex = app.currentStationIndex < stations.length - 1 ? app.currentStationIndex + 1 : 0;
+            selectStation(newIndex);
+        }
+
+        function updateRDS() {
+            if (!app.currentStation) return;
+            
+            const rdsText = `${app.currentStation.callSign} • ${app.currentStation.frequency} • ${app.currentStation.name}`;
+            elements.rdsDisplay.innerHTML = `<div class="whitespace-nowrap">${rdsText}</div>`;
+        }
+
+        function togglePlay() {
+            if (!app.currentStation) {
+                updateStatus('No station selected');
+                return;
+            }
+
+            if (app.isPlaying) {
+                stop();
+            } else {
+                play();
+            }
+        }
+
+        function play() {
+            if (!app.currentStation) return;
+            
+            updateStatus('Connecting...');
+            
+            app.audio.play().then(() => {
+                app.isPlaying = true;
+                elements.playBtn.style.display = 'none';
+                elements.stopBtn.style.display = 'flex';
+                updateStatus('♪ Playing');
+                console.log('Playback started');
+            }).catch(error => {
+                console.error('Playback failed:', error);
+                updateStatus('Connection failed - Try again');
+                app.isPlaying = false;
+            });
+        }
+
+        function stop() {
+            app.audio.pause();
+            app.audio.currentTime = 0;
+            app.isPlaying = false;
+            
+            elements.playBtn.style.display = 'flex';
+            elements.stopBtn.style.display = 'none';
+            
+            updateStatus('Stopped');
+            console.log('Playback stopped');
+        }
+
+        function updateStatus(message) {
+            elements.status.textContent = message;
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            elements.timeDisplay.textContent = timeString;
+            elements.headerTime.textContent = timeString;
+        }
+
+        // Start the app
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+
+</body>
+</html> 

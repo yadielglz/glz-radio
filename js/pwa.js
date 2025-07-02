@@ -166,8 +166,8 @@ class PWA {
         }
 
         // Update status bar
-        if (typeof updateStatusBar === 'function') {
-            updateStatusBar();
+        if (window.ui && window.ui.updateStatusBar) {
+            window.ui.updateStatusBar();
         }
     }
 
@@ -181,9 +181,9 @@ class PWA {
                 case 'random':
                     // Play random station
                     setTimeout(() => {
-                        if (typeof selectRandomStation === 'function') {
-                            selectRandomStation();
-                        }
+                                if (window.player && window.player.selectRandomStation) {
+            window.player.selectRandomStation();
+        }
                     }, 1000);
                     break;
                 case 'favorites':

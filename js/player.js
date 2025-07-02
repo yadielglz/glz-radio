@@ -5,28 +5,29 @@ const runPlayerStartupAnimation = async (station) => {
     playerContent.innerHTML = '';
     
     const stationHTML = `
-        <div class="flex items-center w-full h-full p-4 space-x-4">
+        <div class="flex items-center w-full h-full p-6 space-x-6">
             <img src="${station.logo}" alt="${state.currentStationName} Logo" 
-                 class="w-24 h-24 object-contain bg-black/10 p-1 rounded-md flex-shrink-0 opacity-0" 
+                 class="w-28 h-28 object-contain bg-white/10 backdrop-blur-sm p-3 rounded-2xl border-2 border-indigo-500/30 flex-shrink-0 opacity-0 shadow-xl" 
                  style="animation: fadeIn 0.5s 0.2s ease-out forwards;"
-                 onerror="this.onerror=null; this.src='https://placehold.co/96x96/1a1a1a/ffffff?text=Logo'; this.style.backgroundColor='transparent';">
+                 onerror="this.onerror=null; this.src='https://placehold.co/112x112/1e293b/ffffff?text=Logo'; this.style.backgroundColor='transparent';">
             <div class="flex flex-col justify-center h-full flex-grow truncate text-left">
-                <div id="rds-text-display" class="font-mono text-xl text-[var(--text-color)] h-8 truncate w-full opacity-0" 
+                <div id="rds-text-display" class="font-mono text-[10px] text-indigo-300 leading-tight mb-1 truncate w-full opacity-0" 
                      style="animation: fadeIn 0.5s 1.2s ease-out forwards;"></div>
-                <p id="station-name-display" class="font-sans font-bold text-lg text-[var(--text-color)] truncate w-full mt-1 opacity-0" 
+                <p id="station-name-display" class="font-sans font-bold text-xl text-white italic truncate w-full opacity-0" 
                    style="animation: fadeIn 0.5s 0.8s ease-out forwards;">${state.currentStationName}</p>
-                <div id="station-info-display" class="flex items-center mt-1 opacity-0" 
-                     style="animation: fadeIn 0.5s 0.5s ease-out forwards;">
-                    ${station.callSign ? `<span class="font-sans text-xs text-[var(--text-muted-color)]">${station.callSign}</span><span class="font-sans text-xs text-[var(--text-muted-color)] mx-1">|</span>` : ''}
-                    <span class="font-sans text-xs text-[var(--text-muted-color)]">${station.frequency}</span>
-                </div>
+                <p id="station-callsign-display" class="font-sans text-sm text-gray-300 font-semibold truncate w-full opacity-0" 
+                   style="animation: fadeIn 0.5s 0.6s ease-out forwards;">${station.callSign || station.name || state.currentStationName}</p>
+                <p id="station-frequency-display" class="font-sans text-xs text-gray-400 truncate w-full opacity-0" 
+                   style="animation: fadeIn 0.5s 0.4s ease-out forwards;">${station.frequency}</p>
             </div>
         </div>
     `;
     
     playerContent.innerHTML = stationHTML;
     await delay(1500);
-    startRdsRotation();
+    if (window.ui && window.ui.startRdsRotation) {
+        window.ui.startRdsRotation();
+    }
 };
 
 const runPlayerShutdownAnimation = (callback) => {
@@ -36,7 +37,7 @@ const runPlayerShutdownAnimation = (callback) => {
         playerContent.style.opacity = 0;
         
         setTimeout(() => {
-            playerContent.innerHTML = `<p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>`;
+            playerContent.innerHTML = `<p class="text-white font-semibold text-xl w-full text-center">Select a Station</p>`;
             playerContent.style.opacity = 1;
             if (callback) callback();
             resolve();
@@ -97,29 +98,41 @@ const playStation = (stationName) => {
     playHistory.add(stationName);
     
     // Close options if open
-    closeOptions();
+    if (window.ui && window.ui.closeOptions) {
+        window.ui.closeOptions();
+    }
 };
 
 const togglePlay = () => {
     if (!state.currentStationName) {
-        openOptions();
-        const list = dom.stationListInOptions;
-        if (!list.classList.contains('expanded')) {
-            list.classList.add('expanded');
-            const icon = dom.toggleStationListButton.querySelector('i[data-lucide="chevron-down"]');
-            if (icon) icon.classList.add('rotate-180');
+        if (window.ui && window.ui.openOptions) {
+            window.ui.openOptions();
+            const list = dom.stationListInOptions;
+            if (!list.classList.contains('expanded')) {
+                list.classList.add('expanded');
+                const icon = dom.toggleStationListButton.querySelector('i[data-lucide="chevron-down"]');
+                if (icon) icon.classList.add('rotate-180');
+            }
         }
         return;
     }
     
     if (!state.isPrimed) {
-        dom.primerAudio.play().then(() => {
+        // Try primer audio first, but don't let it block playback
+        if (dom.primerAudio) {
+            dom.primerAudio.play().then(() => {
+                state.isPrimed = true;
+                dom.audioPlayer.play();
+            }).catch(e => {
+                console.warn("Primer audio failed, attempting main play anyway.", e);
+                state.isPrimed = true; // Mark as primed to avoid future attempts
+                dom.audioPlayer.play();
+            });
+        } else {
+            console.warn("Primer audio element not found, proceeding with main audio");
             state.isPrimed = true;
             dom.audioPlayer.play();
-        }).catch(e => {
-            console.warn("Primer audio failed, attempting main play anyway.", e);
-            dom.audioPlayer.play();
-        });
+        }
     } else {
         state.isPlaying ? dom.audioPlayer.pause() : dom.audioPlayer.play();
     }
@@ -142,15 +155,21 @@ const stopPlayer = async (withAnimation = true) => {
         await runPlayerShutdownAnimation();
     }
     
-    setTunerToPowerOff();
-    updateControlButtons();
-    
-    if (!withAnimation) {
-        dom.playerContent.innerHTML = `<p class="text-[var(--text-color)] font-bold text-xl w-full text-center">Select a Station</p>`;
+    if (window.tuner && window.tuner.setTunerToPowerOff) {
+        window.tuner.setTunerToPowerOff();
+    }
+    if (window.ui && window.ui.updateControlButtons) {
+        window.ui.updateControlButtons();
     }
     
-    stopRdsRotation();
-    stopFlicker();
+    if (!withAnimation) {
+        dom.playerContent.innerHTML = `<p class="text-white font-semibold text-xl w-full text-center">Select a Station</p>`;
+    }
+    
+    if (window.ui) {
+        if (window.ui.stopRdsRotation) window.ui.stopRdsRotation();
+        if (window.ui.stopFlicker) window.ui.stopFlicker();
+    }
     
     if(dom.optionsRdsDisplay) dom.optionsRdsDisplay.textContent = '';
     
@@ -158,10 +177,12 @@ const stopPlayer = async (withAnimation = true) => {
     clearInterval(state.networkSpeedInterval);
     state.networkSpeedInterval = null;
     
-    updateNetworkSpeed();
-    state.elapsedTime = 0;
-    updateStopwatch();
-    updateStatusBar();
+    if (window.ui) {
+        if (window.ui.updateNetworkSpeed) window.ui.updateNetworkSpeed();
+        state.elapsedTime = 0;
+        if (window.ui.updateStopwatch) window.ui.updateStopwatch();
+        if (window.ui.updateStatusBar) window.ui.updateStatusBar();
+    }
     
     dom.bottomBarStationName.textContent = "Standby";
     
@@ -211,25 +232,37 @@ dom.audioPlayer.onplay = () => {
         runPlayerStartupAnimation(RADIO_STATIONS[state.currentStationName]);
     }
     
-    updateControlButtons();
-    updateStatusBar();
-    updateTunerDisplay(RADIO_STATIONS[state.currentStationName], state.isFirstPlay);
+    if (window.ui) {
+        if (window.ui.updateControlButtons) window.ui.updateControlButtons();
+        if (window.ui.updateStatusBar) window.ui.updateStatusBar();
+    }
+    if (window.tuner && window.tuner.updateTunerDisplay) {
+        window.tuner.updateTunerDisplay(RADIO_STATIONS[state.currentStationName], state.isFirstPlay);
+    }
     
     state.isFirstPlay = false;
-    startFlicker();
+    if (window.ui && window.ui.startFlicker) {
+        window.ui.startFlicker();
+    }
     
     clearInterval(state.stopwatchInterval);
     clearInterval(state.networkSpeedInterval);
     state.elapsedTime = 0;
-    updateStopwatch();
-    updateNetworkSpeed();
+    if (window.ui) {
+        if (window.ui.updateStopwatch) window.ui.updateStopwatch();
+        if (window.ui.updateNetworkSpeed) window.ui.updateNetworkSpeed();
+    }
     
     state.stopwatchInterval = setInterval(() => {
         state.elapsedTime++;
-        updateStopwatch();
+        if (window.ui && window.ui.updateStopwatch) {
+            window.ui.updateStopwatch();
+        }
     }, 1000);
     
-    state.networkSpeedInterval = setInterval(updateNetworkSpeed, 2000);
+    if (window.ui && window.ui.updateNetworkSpeed) {
+        state.networkSpeedInterval = setInterval(window.ui.updateNetworkSpeed, 2000);
+    }
     
     updateMediaSession();
     
@@ -245,16 +278,22 @@ dom.audioPlayer.onpause = () => {
     if (!state.currentStationName) return;
     
     state.isPlaying = false;
-    stopRdsRotation();
-    updateStatusBar();
-    updateControlButtons();
-    updateTunerDisplay();
-    stopFlicker();
+    if (window.ui) {
+        if (window.ui.stopRdsRotation) window.ui.stopRdsRotation();
+        if (window.ui.updateStatusBar) window.ui.updateStatusBar();
+        if (window.ui.updateControlButtons) window.ui.updateControlButtons();
+        if (window.ui.stopFlicker) window.ui.stopFlicker();
+    }
+    if (window.tuner && window.tuner.updateTunerDisplay) {
+        window.tuner.updateTunerDisplay();
+    }
     
     clearInterval(state.stopwatchInterval);
     clearInterval(state.networkSpeedInterval);
     state.networkSpeedInterval = null;
-    updateNetworkSpeed();
+    if (window.ui && window.ui.updateNetworkSpeed) {
+        window.ui.updateNetworkSpeed();
+    }
     
     if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = "paused";

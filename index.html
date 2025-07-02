@@ -1,236 +1,585 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Glz Radio</title>
-    
-    <!-- PWA Meta Tags -->
-    <meta name="description" content="Puerto Rico's Premier Radio Streaming App with Zune-inspired Design">
-    <meta name="theme-color" content="#f7931e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Glz Radio">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="msapplication-TileColor" content="#f7931e">
-    <meta name="msapplication-config" content="/browserconfig.xml">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="dark">
+    <title>GLZ Radio</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
     
-    <!-- Apple Touch Icons -->
-    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMzYiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNzkzMWU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Q2N2UxYTtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cGF0aCBkPSJNNjAgNDVIMTIwVjEzNUg2MFY0NVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik03MCA1NUgxMTBWMTI1SDcwVjU1WiIgZmlsbD0iIzFhMWExYSIvPgo8Y2lyY2xlIGN4PSI5MCIgY3k9IjkwIiByPSIxNSIgZmlsbD0iI2Y3OTMxZSIvPgo8Y2lyY2xlIGN4PSI5MCIgY3k9IjkwIiByPSI4IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNzAgMTQ1SDExMFYxNTVIOTBWMjAwSDkwVjE1NVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=">
-    <link rel="apple-touch-icon" sizes="152x152" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUyIiBoZWlnaHQ9IjE1MiIgdmlld0JveD0iMCAwIDE1MiAxNTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTIiIGhlaWdodD0iMTUyIiByeD0iMzAiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNzkzMWU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Q2N2UxYTtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cGF0aCBkPSJNNTEgMzguMjVIMTAxVjExNC43NUg1MVYzOC4yNVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ijo1OS41IDQ2Ljc1SDkyLjVWMTA2LjI1SDU5LjVWNDYuNzVaIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9Ijc2IiBjeT0iNzYuNSIgcj0iMTIuNzUiIGZpbGw9IiNmNzkzMWUiLz4KPGNpcmNsZSBjeD0iNzYiIGN5PSI3Ni41IiByPSI2LjgiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ijo1OS41IDEyMy4yNUg5Mi41VjEzMS43NUg3NlYxNzBINzZWMzEuNzVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
-    <link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgdmlld0JveD0iMCAwIDE4MCAxODAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiByeD0iMzYiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNzkzMWU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Q2N2UxYTtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cGF0aCBkPSJNNjAgNDVIMTIwVjEzNUg2MFY0NVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik03MCA1NUgxMTBWMTI1SDcwVjU1WiIgZmlsbD0iIzFhMWExYSIvPgo8Y2lyY2xlIGN4PSI5MCIgY3k9IjkwIiByPSIxNSIgZmlsbD0iI2Y3OTMxZSIvPgo8Y2lyY2xlIGN4PSI5MCIgY3k9IjkwIiByPSI4IiBmaWxsPSJ3aGl0ZSIvPgo8cGF0aCBkPSJNNzAgMTQ1SDExMFYxNTVIOTBWMjAwSDkwVjE1NVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=">
-    <link rel="apple-touch-icon" sizes="167x167" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTY3IiBoZWlnaHQ9IjE2NyIgdmlld0JveD0iMCAwIDE2NyAxNjciIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNjciIGhlaWdodD0iMTY3IiByeD0iMzMiIGZpbGw9InVybCgjZ3JhZGllbnQpIi8+CjxkZWZzPgo8bGluZWFyR3JhZGllbnQgaWQ9ImdyYWRpZW50IiB4MT0iMCIgeTE9IjAiIHgyPSIxIiB5Mj0iMSI+CjxzdG9wIG9mZnNldD0iMCUiIHN0eWxlPSJzdG9wLWNvbG9yOiNmNzkzMWU7c3RvcC1vcGFjaXR5OjEiIC8+CjxzdG9wIG9mZnNldD0iMTAwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Q2N2UxYTtzdG9wLW9wYWNpdHk6MSIgLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8cGF0aCBkPSJNNTUuNjcgNDEuNzVIMTExLjMzVjEyNS4yNUg1NS42N1Y0MS43NVoiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ijo2NC4xNyA0OS4yNUgxMDIuODNWMTE3Ljc1SDY0LjE3VjQ5LjI1WiIgZmlsbD0iIzFhMWExYSIvPgo8Y2lyY2xlIGN4PSI4My41IiBjeT0iODMuNSIgcj0iMTMuOTIiIGZpbGw9IiNmNzkzMWUiLz4KPGNpcmNsZSBjeD0iODMuNSIgY3k9IjgzLjUiIHI9IjcuNDYiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ijo2NC4xNyAxMzQuNzVIMTAyLjgzVjE0NC4yNUg4My41VjE4My41SDgzLjVWMzQuNzVaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K">
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0idXJsKCNncmFkaWVudCkiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Y3OTMxZTtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZDY3ZTFhO3N0b3Atb3BhY2l0eToxIiAvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxwYXRoIGQ9Ik04IDlIMjRWMjNIOFY5WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTEwIDExSDIyVjIxSDEwVjExWiIgZmlsbD0iIzFhMWExYSIvPgo8Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIzIiBmaWxsPSIjZjc5MzFlIi8+CjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjEuNSIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTEwIDI3SDIyVjI5SDE2VjMySDE2VjI5WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==">
-    <link rel="icon" type="image/png" sizes="32x32" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0idXJsKCNncmFkaWVudCkiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Y3OTMxZTtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZDY3ZTFhO3N0b3Atb3BhY2l0eToxIiAvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxwYXRoIGQ9Ik04IDlIMjRWMjNIOFY5WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTEwIDExSDIyVjIxSDEwVjExWiIgZmlsbD0iIzFhMWExYSIvPgo8Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIzIiBmaWxsPSIjZjc5MzFlIi8+CjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjEuNSIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTEwIDI3SDIyVjI5SDE2VjMySDE2VjI5WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==">
-    <link rel="icon" type="image/png" sizes="16x16" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjE2IiBoZWlnaHQ9IjE2IiByeD0iMyIgZmlsbD0idXJsKCNncmFkaWVudCkiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Y3OTMxZTtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZDY3ZTFhO3N0b3Atb3BhY2l0eToxIiAvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxwYXRoIGQ9Ik0yIDQuNUgxNFYxMS41SDJWNi41WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTMgNkgxM1YxMUgzVjZaIiBmaWxsPSIjMWExYTFhIi8+CjxjaXJjbGUgY3g9IjgiIGN5PSI4IiByPSIxLjUiIGZpbGw9IiNmNzkzMWUiLz4KPGNpcmNsZSBjeD0iOCIgY3k9IjgiIHI9IjAuNzUiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0yIDEzLjVIMTRWMTQuNUg4VjE2SDhWMTQuNVoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo=">
-    <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0idXJsKCNncmFkaWVudCkiLz4KPGRlZnM+CjxsaW5lYXJHcmFkaWVudCBpZD0iZ3JhZGllbnQiIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj4KPHN0b3Agb2Zmc2V0PSIwJSIgc3R5bGU9InN0b3AtY29sb3I6I2Y3OTMxZTtzdG9wLW9wYWNpdHk6MSIgLz4KPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdHlsZT0ic3RvcC1jb2xvcjojZDY3ZTFhO3N0b3Atb3BhY2l0eToxIiAvPgo8L2xpbmVhckdyYWRpZW50Pgo8L2RlZnM+CjxwYXRoIGQ9Ik04IDlIMjRWMjNIOFY5WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTEwIDExSDIyVjIxSDEwVjExWiIgZmlsbD0iIzFhMWExYSIvPgo8Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIzIiBmaWxsPSIjZjc5MzFlIi8+CjxjaXJjbGUgY3g9IjE2IiBjeT0iMTYiIHI9IjEuNSIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTEwIDI3SDIyVjI5SDE2VjMySDE2VjI5WiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==">
-    
-    <!-- External Resources -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Segoe+UI+Mono&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .app-container {
+            max-width: 400px;
+            min-height: 600px;
+        }
+        
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        
+        #splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #station-carousel-container {
+            perspective: 1000px;
+        }
+
+        #station-carousel {
+            transform-style: preserve-3d;
+        }
+        
+        .station-item {
+            flex: 0 0 100px;
+            text-align: center;
+            margin: 0 10px;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .station-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 1.5rem; /* rounded-3xl */
+            object-fit: contain;
+            margin: 0 auto 8px;
+            transition: filter 0.3s ease;
+        }
+
+        .station-item.active .station-logo {
+            filter: drop-shadow(0 0 10px rgba(199, 210, 254, 0.7)); /* indigo-200 glow */
+        }
+
+        .station-name {
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+            color: #d1d5db; /* text-gray-300 */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .display-view {
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        .display-view.hidden {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            transform: scale(0.95);
+        }
+
+        /* Custom Tuner Slider */
+        #tuner-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+            outline: none;
+            transition: opacity .2s;
+        }
+
+        #tuner-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #a5b4fc; /* indigo-300 */
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #1e1b4b;
+        }
+
+        #tuner-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #a5b4fc; /* indigo-300 */
+            cursor: pointer;
+            border-radius: 50%;
+            border: 2px solid #1e1b4b;
+        }
+    </style>
 </head>
-<body class="w-full min-h-screen bg-[var(--bg-color)] text-[var(--text-color)] font-sans transition-colors duration-300 flex items-center justify-center">
+<body class="text-white font-sans flex items-center justify-center p-4">
 
     <!-- Splash Screen -->
-    <div id="splash-screen" class="fixed inset-0 z-[300] flex items-center justify-center bg-[var(--bg-color)] transition-opacity duration-500">
-        <div id="splash-content" class="flex flex-col items-center justify-center">
-            <div id="splash-logo" class="w-24 h-24 mb-4 flex items-center justify-center bg-gradient-to-br from-[var(--zune-orange)] to-[var(--zune-orange-dark)] rounded-2xl shadow-2xl">
-                <svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <!-- Simple radio icon -->
-                    <rect x="4" y="8" width="16" height="12" rx="2" fill="white"/>
-                    <rect x="6" y="10" width="12" height="8" rx="1" fill="#f7931e"/>
-                    <circle cx="12" cy="14" r="2" fill="white"/>
-                    <path d="M8 6h8M10 4h4" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                </svg>
+    <div id="splash-screen">
+        <div class="text-center">
+            <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center">
+                <i data-lucide="radio" class="w-8 h-8 text-white"></i>
             </div>
-            <h1 class="text-2xl font-bold text-[var(--zune-orange)] mb-2">Glz Radio</h1>
-            <p class="text-sm text-[var(--text-muted-color)] mb-4">Puerto Rico's Premier Radio</p>
-            <div id="splash-progress" class="w-40 h-2 bg-[var(--surface-color)] rounded-full overflow-hidden">
-                <div class="h-full bg-[var(--zune-orange)] transition-all duration-500" style="width: 0%"></div>
-            </div>
+            <h1 class="text-2xl font-bold mb-2">GLZ Radio</h1>
+            <p class="text-gray-400">Loading...</p>
         </div>
     </div>
 
-    <!-- PWA Install Prompt -->
-    <div id="pwa-install-prompt" class="hidden fixed top-4 left-4 right-4 z-[200] bg-[var(--surface-color)] border border-[var(--zune-orange)] rounded-xl p-4 shadow-lg max-w-md mx-auto">
-        <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <i data-lucide="download" class="w-6 h-6 text-[var(--zune-orange)]"></i>
-                <div>
-                    <h3 class="font-bold text-[var(--text-color)]">Install Glz Radio</h3>
-                    <p class="text-sm text-[var(--text-muted-color)]">Add to home screen for the best experience</p>
-                </div>
+    <!-- Main App -->
+    <div id="app" class="app-container w-full glass rounded-3xl shadow-2xl p-6 relative" style="display: none;">
+        
+        <!-- Top Bar -->
+        <header class="flex items-center justify-between mb-6 text-sm">
+            <div id="time-display" class="w-20 text-left"></div>
+            <div id="rds-display" class="flex-1 text-center font-semibold truncate">
+                <span id="rds-text">GLZ Radio</span>
             </div>
-            <div class="flex space-x-2">
-                <button id="pwa-install-btn" class="bg-[var(--zune-orange)] text-white px-4 py-2 rounded-lg font-bold hover:bg-[var(--zune-orange-dark)] transition-colors">
-                    Install
-                </button>
-                <button id="pwa-dismiss-btn" class="text-[var(--text-muted-color)] hover:text-[var(--text-color)] transition-colors">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
+            <div id="connection-status" class="w-20 text-right">
+                <i data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>
+            </div>
+        </header>
+
+        <!-- Tuner Bar -->
+        <div class="w-full mb-6 relative">
+            <input type="range" id="tuner-slider" min="0" value="0">
+            <div id="tuner-labels" class="w-full h-4 flex mt-1">
+                <!-- Labels will be generated here -->
             </div>
         </div>
-    </div>
 
-    <!-- Offline Indicator -->
-    <div id="offline-indicator" class="hidden fixed top-4 left-4 right-4 z-[200] bg-red-600 text-white rounded-xl p-3 text-center font-bold max-w-md mx-auto">
-        <i data-lucide="wifi-off" class="w-5 h-5 inline mr-2"></i>
-        You're offline - Some features may be limited
-    </div>
-
-    <!-- Update Available Indicator -->
-    <div id="update-indicator" class="hidden fixed top-4 left-4 right-4 z-[200] bg-[var(--zune-orange)] text-white rounded-xl p-3 text-center font-bold max-w-md mx-auto">
-        <i data-lucide="refresh-cw" class="w-5 h-5 inline mr-2"></i>
-        Update available - Click to refresh
-    </div>
-
-    <div class="w-full min-h-screen flex items-center justify-center p-0 sm:p-4 bg-[var(--bg-color)]">
-        <div id="app-container" class="w-full max-w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl min-h-[80vh] sm:min-h-[600px] rounded-none sm:rounded-2xl shadow-2xl flex flex-col bg-[var(--bg-color)] transition-colors duration-300 relative overflow-hidden mx-auto">
-            <div id="ambient-bg"></div>
-
-            <header id="top-bar" class="w-full px-2 sm:px-4 py-3 flex flex-row items-center justify-between text-[var(--text-color)] z-20 bg-transparent flex-shrink-0 relative">
-                <div id="status-left" class="w-1/3 text-left flex items-center h-full text-xs sm:text-sm"></div>
-                <div id="status-center" class="w-1/3 text-center font-bold text-xs sm:text-base"></div>
-                <div id="status-right" class="w-1/3 flex justify-end"></div>
-            </header>
-
-            <div id="tuner-container" class="w-full flex-shrink-0 mb-2 sm:mb-4 px-2 sm:px-4">
-                <div id="tuner-panel" class="w-full h-10 sm:h-12 flex items-center p-1 sm:p-2 relative">
-                    <div id="power-animation" class="absolute inset-0 bg-transparent z-30 flex items-center justify-center transition-opacity duration-300"></div>
-                    <div id="tuner-content" class="w-full h-full flex items-center z-10 opacity-0 transition-opacity duration-300">
-                        <span id="tuner-band-indicator" class="w-10 text-center font-bold text-base sm:text-lg text-[var(--text-color)] opacity-75"></span>
-                        <div class="relative flex-grow h-full bg-black/20 border-y border-black/30 overflow-hidden">
-                            <div id="tuner-needle" class="absolute top-0 bottom-0 w-0.5" style="left: -10px;"></div>
-                            <div id="am-tuner" class="w-full h-full hidden">
-                                <div class="relative w-full h-full flex justify-between items-end px-2 text-xs text-[var(--text-muted-color)] pb-1">
-                                    <span>530</span><span></span><span>800</span><span></span><span>1100</span><span></span><span>1600</span>
-                                </div>
-                                <div class="absolute inset-x-4 top-1/2 h-px bg-[var(--text-muted-color)] opacity-50"></div>
-                            </div>
-                            <div id="fm-tuner" class="w-full h-full hidden">
-                               <div class="relative w-full h-full flex justify-between items-end px-2 text-xs text-[var(--text-muted-color)] pb-1">
-                                    <span>88</span><span>92</span><span>96</span><span>100</span><span>104</span><span>108</span>
-                                </div>
-                                <div class="absolute inset-x-4 top-1/2 h-px bg-[var(--text-muted-color)] opacity-50"></div>
-                            </div>
-                            <div id="web-tuner" class="w-full h-full hidden items-center justify-center text-[var(--text-muted-color)]">
-                               <div class="flex items-center space-x-3">
-                                   <i data-lucide="satellite-dish" class="w-6 h-6"></i>
-                                   <span class="text-sm font-bold">Connected</span>
-                               </div>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Player Display -->
+        <div class="glass rounded-3xl p-6 mb-6 h-48 flex flex-col justify-center relative">
+            <div id="station-carousel-container" class="display-view w-full overflow-hidden">
+                <div id="station-carousel" class="flex transition-transform duration-300 ease-in-out">
+                    <!-- Station items will be injected here -->
                 </div>
             </div>
+            <div id="now-playing-container" class="display-view hidden w-full text-center">
+                <!-- Now playing info will be injected here -->
+            </div>
+            <p id="status-display" class="text-sm text-center text-gray-400 mt-2 absolute bottom-4 left-0 right-0"></p>
+        </div>
 
-            <main class="z-10 w-full px-2 sm:px-4 flex flex-col items-center space-y-4 flex-grow justify-center bg-transparent">
-                <div id="player-display" class="w-full h-32 sm:h-36 rounded-xl flex items-center flex-shrink-0">
-                    <div id="player-content" class="w-full h-full flex items-center justify-center">
-                        <p class="text-[var(--text-color)] font-bold text-lg sm:text-xl w-full text-center">Select a Station</p>
-                    </div>
-                </div>
-
-                <div id="controls-container" class="w-full flex flex-col sm:flex-row items-center justify-center gap-4 flex-shrink-0">
-                    <button id="options-button" class="bg-[var(--surface-color)] p-4 rounded-xl text-[var(--text-color)] hover:bg-[var(--zune-light-gray)] transition-all duration-300 border border-[var(--zune-border)] shadow-md flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16">
-                        <i data-lucide="settings-2" class="w-7 h-7 sm:w-8 sm:h-8"></i>
-                    </button>
-                    <button id="play-button" class="bg-gradient-to-br from-[var(--zune-orange)] to-[var(--zune-orange-dark)] text-[var(--play-button-text)] p-5 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 border border-[var(--zune-orange-dark)] flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20" aria-label="Play">
-                        <i data-lucide="play" class="w-10 h-10 sm:w-12 sm:h-12 fill-current ml-1"></i>
-                    </button>
-                    <button id="stop-button" class="hidden bg-gradient-to-br from-red-500 to-red-600 text-white p-5 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 border border-red-600 flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20" aria-label="Stop player">
-                        <i data-lucide="square" class="w-10 h-10 sm:w-12 sm:h-12 fill-current"></i>
-                    </button>
-                </div>
-            </main>
+        <!-- Controls -->
+        <div class="flex items-center justify-center space-x-6 mb-6">
+            <button id="play-btn" class="w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center hover:scale-105 transition-transform">
+                <i data-lucide="play" class="w-8 h-8 ml-1"></i>
+            </button>
             
-            <footer id="bottom-bar" class="w-full px-2 sm:px-4 py-3 flex justify-between items-center text-[var(--text-color)] z-20 bg-transparent flex-shrink-0 text-xs sm:text-sm">
-                <span id="bottom-bar-station-name" class="font-bold h-5 truncate"></span>
-                <div id="network-speed-container" class="flex items-center space-x-1 text-xs text-[var(--text-muted-color)]"></div>
-            </footer>
+            <button id="stop-btn" class="w-16 h-16 bg-gradient-to-br from-red-500 to-red-600 rounded-full flex items-center justify-center hover:scale-105 transition-transform" style="display: none;">
+                <i data-lucide="square" class="w-8 h-8"></i>
+            </button>
+        </div>
 
-            <div id="modals-container">
-                <div id="options-modal" class="hidden fixed inset-0 z-50">
-                    <div id="options-backdrop" class="absolute inset-0 bg-black/50 transition-opacity duration-300 opacity-0"></div>
-                    <div id="options-panel" class="absolute inset-y-0 right-0 w-full max-w-sm bg-[var(--modal-bg)] flex flex-col transform translate-x-full transition-transform duration-300 ease-in-out">
-                        <header class="flex items-center justify-between p-4 border-b border-[var(--border-color)] flex-shrink-0">
-                            <h2 class="text-xl font-bold text-[var(--text-color)]">Options</h2>
-                            <button id="close-options-button" class="p-2 rounded-xl hover:bg-[var(--zune-light-gray)] text-[var(--text-color)] border border-[var(--zune-border)] shadow-md transition-all duration-300">
-                                <i data-lucide="x" class="w-6 h-6"></i>
-                            </button>
-                        </header>
-                        <div id="options-container" class="p-4 space-y-3 text-[var(--text-color)] flex-grow overflow-y-auto station-list-scrollbar">
-                             <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-xl border border-[var(--zune-border)] shadow-md">
-                                 <span id="options-date"></span>
-                                 <span id="options-clock" class="font-mono"></span>
-                             </div>
-                             <div class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] rounded-xl border border-[var(--zune-border)] shadow-md">
-                                 <div id="weather-display-options" class="flex items-center space-x-2">
-                                     <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
-                                     <span>Loading Weather...</span>
-                                 </div>
-                                 <div id="temp-toggle" class="flex items-center space-x-1 text-sm cursor-pointer">
-                                     <span id="temp-c" class="opacity-50">°C</span>
-                                     <span>/</span>
-                                     <span id="temp-f" class="font-bold">°F</span>
-                                 </div>
-                             </div>
-                            <button id="theme-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
-                                <span>Toggle Theme</span>
-                                <span id="theme-icon-container">
-                                   <i data-lucide="moon" class="w-5 h-5"></i>
-                                </span>
-                            </button>
-                            <button id="fullscreen-toggle-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
-                                <span>Fullscreen</span>
-                                <span id="fullscreen-icon-container">
-                                   <i data-lucide="maximize" class="w-5 h-5"></i>
-                                </span>
-                            </button>
-                            <button id="toggle-station-list-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
-                                <span>Station List</span>
-                                <i data-lucide="chevron-down" class="w-5 h-5 transition-transform"></i>
-                            </button>
-                            <div id="station-list-in-options" class="station-list-scrollbar space-y-2 pr-2">
-                            </div>
-                            <button id="random-station-button" class="w-full flex justify-between items-center p-3 bg-[var(--surface-color)] hover:bg-[var(--zune-light-gray)] rounded-xl border border-[var(--zune-border)] shadow-md transition-all duration-300">
-                                <span>Random Station</span>
-                                <i data-lucide="dice-5" class="w-5 h-5"></i>
-                            </button>
-                            <div class="w-full grid grid-cols-3 gap-2 items-center p-3 bg-[var(--surface-color)] rounded-xl text-sm border border-[var(--zune-border)] shadow-md">
-                                <span class="text-left">Stream Time</span>
-                                <span id="options-rds-display" class="font-bold truncate text-center"></span>
-                                <span id="stopwatch-display" class="font-mono text-right">00:00</span>
-                            </div>
-                        </div>
-                         <div id="version-footer" class="text-center text-[var(--text-faint-color)] text-xs p-4 border-t border-[var(--border-color)] flex-shrink-0"></div>
+        <footer id="app-footer" class="text-center text-xs text-gray-500 absolute bottom-4 left-0 right-0"></footer>
+    </div>
+
+    <!-- Audio Element -->
+    <audio id="audio-player" preload="none"></audio>
+
+    <!-- Load Configuration -->
+    <script src="js/config.js"></script>
+
+    <!-- Simple App Script -->
+    <script>
+        // Simple app state
+        const app = {
+            isPlaying: false,
+            currentStation: null,
+            audio: document.getElementById('audio-player'),
+            rdsInterval: null,
+            rdsTextIndex: 0,
+        };
+
+        // DOM elements
+        const elements = {
+            splash: document.getElementById('splash-screen'),
+            app: document.getElementById('app'),
+            playBtn: document.getElementById('play-btn'),
+            stopBtn: document.getElementById('stop-btn'),
+            statusDisplay: document.getElementById('status-display'),
+            timeDisplay: document.getElementById('time-display'),
+            rdsDisplay: document.getElementById('rds-display'),
+            rdsText: document.getElementById('rds-text'),
+            connectionStatus: document.getElementById('connection-status'),
+            tunerSlider: document.getElementById('tuner-slider'),
+            stationCarousel: document.getElementById('station-carousel'),
+            tunerTicks: document.getElementById('tuner-ticks'),
+            carouselContainer: document.getElementById('station-carousel-container'),
+            nowPlayingContainer: document.getElementById('now-playing-container'),
+            tunerLabels: document.getElementById('tuner-labels'),
+            appFooter: document.getElementById('app-footer'),
+        };
+
+        // Initialize app
+        function init() {
+            console.log('Initializing GLZ Radio...');
+            
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Setup tuner
+            elements.tunerSlider.max = STATIONS_ORDER.length - 1;
+            createTunerLabels();
+
+            // Populate carousel
+            populateCarousel();
+
+            // Set footer
+            setAppFooter();
+
+            // Setup event listeners
+            setupEventListeners();
+            
+            // Start clock
+            updateTime();
+            setInterval(updateTime, 1000);
+
+            // Set initial RDS display
+            clearRdsDisplay();
+
+            // Hide splash screen
+            setTimeout(() => {
+                elements.splash.classList.add('hidden');
+                elements.app.style.display = 'block';
+                console.log('App loaded successfully');
+            }, 1500);
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            elements.playBtn.addEventListener('click', togglePlay);
+            elements.stopBtn.addEventListener('click', stopPlayer);
+
+            elements.tunerSlider.addEventListener('input', (e) => {
+                const stationIndex = parseInt(e.target.value, 10);
+                const stationName = STATIONS_ORDER[stationIndex];
+                selectStation(stationName);
+                updateCarousel(stationIndex);
+            });
+
+            // Audio events
+            app.audio.addEventListener('loadstart', () => updateStatus('Loading...'));
+            app.audio.addEventListener('canplay', () => updateStatus('Ready'));
+            app.audio.addEventListener('playing', () => updateStatus('Playing'));
+            app.audio.addEventListener('error', () => updateStatus('Error'));
+        }
+
+        // Select station
+        function selectStation(stationName) {
+            if (!RADIO_STATIONS[stationName]) return;
+            
+            app.currentStation = stationName;
+            const station = RADIO_STATIONS[stationName];
+            setRdsFrequency(station);
+
+            // Update tuner slider
+            const stationIndex = STATIONS_ORDER.indexOf(stationName);
+            if (stationIndex > -1) {
+                elements.tunerSlider.value = stationIndex;
+                updateCarousel(stationIndex);
+            }
+
+            // If playing, start new station
+            if (app.isPlaying) {
+                playPlayer();
+            }
+        }
+
+        // Toggle play/pause
+        function togglePlay() {
+            if (app.isPlaying) {
+                pausePlayer();
+            } else {
+                if (app.currentStation) {
+                    playPlayer();
+                }
+            }
+        }
+
+        // Play player
+        function playPlayer() {
+            const station = RADIO_STATIONS[app.currentStation];
+            if (!station) return;
+
+            app.audio.src = station.streamUrl;
+            app.audio.play().catch(e => {
+                console.error('Error playing audio:', e);
+                updateStatus('Playback Error');
+            });
+            
+            app.isPlaying = true;
+            elements.playBtn.style.display = 'none';
+            elements.stopBtn.style.display = 'flex';
+            updateStatus('Connecting...');
+            showNowPlayingView(station);
+            startRdsRotation(station);
+        }
+
+        // Pause player (for now, same as stop)
+        function pausePlayer() {
+            app.audio.pause();
+            app.isPlaying = false;
+            elements.playBtn.innerHTML = '<i data-lucide="play" class="w-8 h-8 ml-1"></i>';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            elements.playBtn.style.display = 'flex';
+            elements.stopBtn.style.display = 'none';
+            updateStatus('Paused');
+            
+            const station = RADIO_STATIONS[app.currentStation];
+            if (station) {
+                setRdsFrequency(station);
+            }
+        }
+
+        // Stop player
+        function stopPlayer() {
+            app.audio.pause();
+            app.audio.src = '';
+            app.isPlaying = false;
+            elements.playBtn.style.display = 'flex';
+            elements.stopBtn.style.display = 'none';
+            updateStatus('Select a Station');
+            app.currentStation = null;
+            clearRdsDisplay();
+            showCarouselView();
+        }
+
+        // Update status display
+        function updateStatus(message) {
+            elements.statusDisplay.textContent = message;
+        }
+
+        // Update time display
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            if (elements.timeDisplay) {
+                elements.timeDisplay.textContent = timeString;
+            }
+        }
+
+        function setRdsFrequency(station) {
+            clearInterval(app.rdsInterval);
+            let frequency = station.frequency;
+            if (frequency === 'Satellite Radio') {
+                frequency = 'Internet';
+            }
+            elements.rdsText.textContent = frequency;
+        }
+
+        function startRdsRotation(station) {
+            clearInterval(app.rdsInterval);
+
+            if (station.rdsText && station.rdsText.length > 0) {
+                app.rdsTextIndex = 0;
+                elements.rdsText.textContent = station.rdsText[app.rdsTextIndex];
+
+                if (station.rdsText.length > 1) {
+                    app.rdsInterval = setInterval(() => {
+                        app.rdsTextIndex = (app.rdsTextIndex + 1) % station.rdsText.length;
+                        elements.rdsText.textContent = station.rdsText[app.rdsTextIndex];
+                    }, 4000);
+                }
+            } else {
+                // Fallback to frequency if no rdsText is available
+                setRdsFrequency(station);
+            }
+        }
+
+        function clearRdsDisplay() {
+            clearInterval(app.rdsInterval);
+            elements.rdsText.textContent = 'GLZ Radio';
+        }
+
+        // Carousel functions
+        function populateCarousel() {
+            const carousel = elements.stationCarousel;
+            carousel.innerHTML = '';
+            STATIONS_ORDER.forEach((stationName, index) => {
+                const station = RADIO_STATIONS[stationName];
+                const item = document.createElement('div');
+                item.className = 'station-item';
+                item.dataset.index = index;
+                item.innerHTML = `
+                    <img src="${station.logo}" alt="${stationName}" class="station-logo">
+                    <p class="station-name">${stationName}</p>
+                `;
+                item.addEventListener('click', () => {
+                    selectStation(stationName);
+                });
+                carousel.appendChild(item);
+            });
+        }
+
+        function updateCarousel(activeIndex) {
+            const carousel = elements.stationCarousel;
+            const items = carousel.querySelectorAll('.station-item');
+            if (items.length === 0) return;
+            
+            // Center the active item
+            const container = elements.stationCarousel.parentElement;
+            const targetItem = items[activeIndex];
+            const scrollLeft = targetItem.offsetLeft + (targetItem.offsetWidth / 2) - (container.offsetWidth / 2);
+            
+            container.scrollTo({
+                left: scrollLeft,
+                behavior: 'smooth'
+            });
+
+            // Apply 3D transforms
+            items.forEach((item, index) => {
+                const distance = index - activeIndex;
+                const absDistance = Math.abs(distance);
+                
+                const scale = 1 - (absDistance * 0.15);
+                const rotateY = distance * -20;
+                const translateX = distance * 20;
+                const opacity = 1 - (absDistance * 0.3);
+                
+                item.style.transform = `translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`;
+                item.style.opacity = opacity;
+
+                if (index === activeIndex) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+        }
+
+        // Tuner ticks and labels
+        function getBandRanges() {
+            const ranges = { am: { start: -1, end: -1 }, fm: { start: -1, end: -1 }, sat: { start: -1, end: -1 } };
+            
+            STATIONS_ORDER.forEach((stationName, index) => {
+                const station = RADIO_STATIONS[stationName];
+                let band;
+                if (station.frequency.includes('AM')) {
+                    band = 'am';
+                } else if (station.frequency.includes('FM')) {
+                    band = 'fm';
+                } else {
+                    band = 'sat';
+                }
+
+                if (ranges[band].start === -1) {
+                    ranges[band].start = index;
+                }
+                ranges[band].end = index;
+            });
+            return ranges;
+        }
+
+        function createTunerLabels() {
+            const labelsContainer = elements.tunerLabels;
+            labelsContainer.innerHTML = '';
+            const totalStations = STATIONS_ORDER.length;
+
+            const bandRanges = getBandRanges();
+
+            const bands = [
+                { key: 'am', label: 'AM' },
+                { key: 'fm', label: 'FM' },
+                { key: 'sat', label: 'SAT' },
+            ];
+
+            bands.forEach(bandInfo => {
+                const range = bandRanges[bandInfo.key];
+                if (range.start !== -1) {
+                    const stationCount = range.end - range.start + 1;
+                    const percentage = (stationCount / totalStations) * 100;
+
+                    const labelEl = document.createElement('div');
+                    labelEl.className = 'text-xs font-mono text-center text-gray-400 border-r border-gray-600 last:border-r-0';
+                    labelEl.style.width = `${percentage}%`;
+                    labelEl.textContent = bandInfo.label;
+                    labelsContainer.appendChild(labelEl);
+                }
+            });
+        }
+
+        function showCarouselView() {
+            elements.carouselContainer.classList.remove('hidden');
+            elements.nowPlayingContainer.classList.add('hidden');
+        }
+
+        function showNowPlayingView(station) {
+            elements.carouselContainer.classList.add('hidden');
+            elements.nowPlayingContainer.classList.remove('hidden');
+
+            const stationName = app.currentStation;
+            const callSign = station.callSign || 'none';
+            let frequency = station.frequency;
+            if (frequency === 'Satellite Radio') {
+                frequency = 'Internet';
+            }
+
+            elements.nowPlayingContainer.innerHTML = `
+                <div class="flex items-center w-full h-full">
+                    <img src="${station.logo}" alt="${stationName}" class="w-24 h-24 rounded-2xl object-contain bg-black/20 p-1 flex-shrink-0">
+                    <div class="ml-4 text-left flex-1 truncate">
+                        <p class="text-lg font-bold truncate">${stationName}</p>
+                        <p class="text-base text-gray-300">${frequency}</p>
+                        <p class="text-sm font-mono text-gray-400">${callSign}</p>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    
-    <audio id="radio-player" preload="none" playsinline></audio>
-    <audio id="primer-audio" src="data:audio/mp3;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSUNSAAAACgAAADIZMDI1AQ==" class="hidden"></audio>
+            `;
+        }
 
-    <script src="js/config.js"></script>
-    <script src="js/utils.js"></script>
-    <script src="js/dom.js"></script>
-    <script src="js/state.js"></script>
-    <script src="js/player.js"></script>
-    <script src="js/tuner.js"></script>
-    <script src="js/weather.js"></script>
-    <script src="js/ui.js"></script>
-    <script src="js/pwa.js"></script>
-    <script src="js/app.js"></script>
+        function setAppFooter() {
+            const now = new Date();
+            const year = String(now.getFullYear()).slice(-2);
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const buildTimestamp = `${year}.${month}.${day}-${hours}${minutes}`;
+            const version = '6.1';
+            
+            elements.appFooter.textContent = `Glz Technical Systems : Ver ${version} : Build: ${buildTimestamp}`;
+        }
+
+        // Start the app
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+
 </body>
 </html>
