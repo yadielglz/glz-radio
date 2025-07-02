@@ -19,129 +19,6 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <link rel="stylesheet" href="css/styles.css">
-    
-    <style>
-        body {
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-            min-height: 100vh;
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .glass {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        }
-        
-        .app-container {
-            max-width: 400px;
-            min-height: 600px;
-        }
-        
-        #splash-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease;
-        }
-        
-        #splash-screen.hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        #station-carousel-container {
-            perspective: 1000px;
-        }
-
-        #station-carousel {
-            transform-style: preserve-3d;
-        }
-        
-        .station-item {
-            flex: 0 0 100px;
-            text-align: center;
-            margin: 0 10px;
-            transition: transform 0.4s ease, opacity 0.4s ease;
-            background: transparent;
-            border: none;
-            padding: 0;
-        }
-
-        .station-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 1.5rem; /* rounded-3xl */
-            object-fit: contain;
-            margin: 0 auto 8px;
-            transition: filter 0.3s ease;
-        }
-
-        .station-item.active .station-logo {
-            filter: drop-shadow(0 0 10px rgba(199, 210, 254, 0.7)); /* indigo-200 glow */
-        }
-
-        .station-name {
-            font-size: 0.875rem; /* text-sm */
-            font-weight: 600; /* font-semibold */
-            color: #d1d5db; /* text-gray-300 */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .display-view {
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
-        }
-
-        .display-view.hidden {
-            opacity: 0;
-            pointer-events: none;
-            position: absolute;
-            transform: scale(0.95);
-        }
-
-        /* Custom Tuner Slider */
-        #tuner-slider {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-            outline: none;
-            transition: opacity .2s;
-        }
-
-        #tuner-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            background: #a5b4fc; /* indigo-300 */
-            cursor: pointer;
-            border-radius: 50%;
-            border: 2px solid #1e1b4b;
-        }
-
-        #tuner-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            background: #a5b4fc; /* indigo-300 */
-            cursor: pointer;
-            border-radius: 50%;
-            border: 2px solid #1e1b4b;
-        }
-    </style>
 </head>
 <body class="bg-black text-white font-sans overflow-hidden">
 
@@ -153,7 +30,7 @@
         </div>
 
         <!-- Header -->
-        <header class="flex items-center justify-between p-4 text-sm flex-shrink-0">
+        <header class="flex items-center justify-between p-4 text-sm flex-shrink-0 glass rounded-b-3xl">
             <div id="clock" class="w-20 text-left font-mono invisible"></div>
             <div id="rds-display" class="flex-1 text-center font-semibold truncate px-2">
                 <span id="rds-text">GLZ Radio</span>
@@ -184,9 +61,12 @@
             </div>
 
             <!-- Tuner -->
-            <div class="w-full mb-6">
-                <input type="range" id="tuner" min="0" max="100" value="0" class="w-full">
-                <div id="tuner-labels" class="flex justify-between text-xs mt-1 px-1"></div>
+            <div class="w-full mb-6 glass rounded-3xl p-4">
+                <div class="relative">
+                    <input type="range" id="tuner" min="0" max="100" value="0" class="w-full">
+                    <div id="tuner-labels" class="absolute w-full flex justify-between text-xs -top-3.5 px-1 pointer-events-none"></div>
+                </div>
+                <div id="band-labels" class="flex justify-between text-xs mt-2 px-1"></div>
             </div>
 
             <!-- Controls -->
@@ -199,7 +79,7 @@
 
         <!-- Footer -->
         <footer class="text-center text-xs text-gray-500 p-4 flex-shrink-0">
-            <p>Glz Technical Systems :: Ver 6.2 :: Build: <span id="build-timestamp"></span></p>
+            <p>Glz Technical Systems :: Ver 6.5 :: Build: <span id="build-timestamp"></span></p>
         </footer>
     </div>
 

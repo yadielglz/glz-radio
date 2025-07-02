@@ -96,10 +96,21 @@ export function updateNetworkStatus() {
     }
 }
 
-export function createTunerLabels(stations) {
+export function createTunerMarkers(markerCount = 10) {
     if (!dom.tunerLabels) return;
+    dom.tunerLabels.innerHTML = '';
+    
+    for (let i = 0; i <= markerCount; i++) {
+        const marker = document.createElement('span');
+        marker.textContent = '|';
+        dom.tunerLabels.appendChild(marker);
+    }
+}
 
-    dom.tunerLabels.innerHTML = ''; // Clear existing labels
+export function createBandLabels(stations) {
+    if (!dom.bandLabels) return;
+
+    dom.bandLabels.innerHTML = ''; // Clear existing labels
 
     const bands = stations.reduce((acc, station) => {
         let band = 'SAT'; // Default to SAT
@@ -123,7 +134,7 @@ export function createTunerLabels(stations) {
             label.textContent = bandName;
             label.style.width = `${percentage}%`;
             label.classList.add('text-center');
-            dom.tunerLabels.appendChild(label);
+            dom.bandLabels.appendChild(label);
         }
     }
 }

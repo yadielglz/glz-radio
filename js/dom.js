@@ -22,6 +22,7 @@ export const dom = {
     // Tuner
     tuner: document.getElementById('tuner'),
     tunerLabels: document.getElementById('tuner-labels'),
+    bandLabels: document.getElementById('band-labels'),
 
     // Controls
     playBtn: document.getElementById('play-btn'),

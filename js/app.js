@@ -15,7 +15,8 @@ function init() {
     loadStations().then(() => {
         // Setup UI components that depend on station data
         dom.tuner.max = state.stations.length - 1;
-        ui.createTunerLabels(state.stations);
+        ui.createBandLabels(state.stations);
+        ui.createTunerMarkers(10); // Add 10 markers for a 0-100 feel
         
         // Set initial state
         const initialStation = state.stations[0];
