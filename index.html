@@ -35,7 +35,7 @@
         <!-- Header -->
         <header class="flex items-center justify-between py-2 px-6 text-sm flex-shrink-0 glass rounded-b-3xl">
             <div class="flex items-center space-x-2">
-                <div id="clock" class="text-left font-mono invisible"></div>
+                <div id="clock" class="text-left invisible"></div>
             </div>
             <div id="rds-display" class="flex-1 text-center font-semibold truncate px-2">
                 <span id="rds-text">GLZ Radio</span>
@@ -63,6 +63,7 @@
                         <div id="station-name" class="text-2xl font-bold"></div>
                         <div id="station-frequency" class="text-lg"></div>
                         <div id="station-callsign" class="text-sm text-gray-400"></div>
+                        <div id="play-status" class="text-xs text-gray-400 mt-2 h-5"></div>
                     </div>
                 </div>
             </div>
@@ -96,7 +97,6 @@
                     <i data-lucide="play" class="w-6 h-6 text-white"></i>
                     <span id="play-btn-text" class="font-medium">Play</span>
                 </button>
-                <div id="play-status" class="text-xs text-gray-400 mt-2 h-5"></div>
             </div>
 
             </div> <!-- end radio-controls-wrapper -->
