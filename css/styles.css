@@ -755,15 +755,20 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 /* Extra small mobile devices */
 @media (max-width: 480px) {
     #idle-display {
-        flex-direction: row;
-        gap: 0.5rem;
-        min-height: 120px;
-        padding: 1rem;
+        flex-direction: row !important;
+        gap: 0.5rem !important;
+        min-height: 120px !important;
+        padding: 1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
     }
     
     #big-clock {
-        font-size: clamp(2rem, 8vw, 2.5rem);
-        flex: 1;
+        font-size: clamp(2rem, 8vw, 2.5rem) !important;
+        flex: 1 !important;
+        display: block !important;
+        width: auto !important;
     }
     
     .band-btn {
@@ -782,11 +787,14 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     
     /* Mobile weather widget adjustments */
     #idle-weather {
-        padding: 0.5rem 0.75rem;
-        min-width: 100px;
-        max-width: 120px;
-        gap: 0.25rem;
-        flex-shrink: 0;
+        padding: 0.5rem 0.75rem !important;
+        min-width: 100px !important;
+        max-width: 120px !important;
+        gap: 0.25rem !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
     }
     
     .weather-icon {
