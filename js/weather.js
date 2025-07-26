@@ -22,12 +22,25 @@ function mapCodeToIcon(code) {
 
 function render() {
     if (!weatherState.data) return;
+    
     const temp = Math.round(weatherState.data.temperature);
     const icon = mapCodeToIcon(weatherState.data.weathercode);
-    const html = `<i data-lucide="${icon}" class="w-4 h-4 inline-block"></i><span>${temp}°F</span>`;
+    const condition = getWeatherCondition(weatherState.data.weathercode);
+    
+    // Enhanced idle weather widget
+    const idleHtml = `
+        <i data-lucide="${icon}" class="weather-icon"></i>
+        <div class="weather-details">
+            <div class="weather-temp">${temp}°F</div>
+            <div class="weather-condition">${condition}</div>
+        </div>
+    `;
+    
+    // Simple header weather (compact)
+    const headerHtml = `<i data-lucide="${icon}" class="w-4 h-4 inline-block"></i><span>${temp}°F</span>`;
 
-    if (dom.idleWeather) dom.idleWeather.innerHTML = html;
-    if (dom.headerWeather) dom.headerWeather.innerHTML = html;
+    if (dom.idleWeather) dom.idleWeather.innerHTML = idleHtml;
+    if (dom.headerWeather) dom.headerWeather.innerHTML = headerHtml;
 
     // Toggle visibility based on play state
     if (dom.idleWeather) dom.idleWeather.classList.toggle('hidden', weatherState.isPlaying);
@@ -36,6 +49,38 @@ function render() {
     if (window.lucide) {
         lucide.createIcons();
     }
+}
+
+function getWeatherCondition(code) {
+    const conditions = {
+        0: 'Clear Sky',
+        1: 'Mainly Clear',
+        2: 'Partly Cloudy',
+        3: 'Overcast',
+        45: 'Foggy',
+        48: 'Depositing Rime Fog',
+        51: 'Light Drizzle',
+        53: 'Moderate Drizzle',
+        55: 'Dense Drizzle',
+        56: 'Light Freezing Drizzle',
+        57: 'Dense Freezing Drizzle',
+        61: 'Slight Rain',
+        63: 'Moderate Rain',
+        65: 'Heavy Rain',
+        71: 'Slight Snow',
+        73: 'Moderate Snow',
+        75: 'Heavy Snow',
+        77: 'Snow Grains',
+        80: 'Slight Rain Showers',
+        81: 'Moderate Rain Showers',
+        82: 'Violent Rain Showers',
+        85: 'Slight Snow Showers',
+        86: 'Heavy Snow Showers',
+        95: 'Thunderstorm',
+        96: 'Thunderstorm with Slight Hail',
+        99: 'Thunderstorm with Heavy Hail'
+    };
+    return conditions[code] || 'Unknown';
 }
 
 export function setPlayState(isPlaying) {
@@ -52,7 +97,7 @@ export async function initWeather() {
     navigator.geolocation.getCurrentPosition(async (pos) => {
         const { latitude, longitude } = pos.coords;
         try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=fahrenheit`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=fahrenheit&timezone=auto`;
             const res = await fetch(url);
             const json = await res.json();
             if (json && json.current_weather) {

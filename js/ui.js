@@ -33,11 +33,25 @@ export function updatePlayerUI(station, isPlaying) {
     const iconName = isPlaying ? 'pause' : 'play';
     dom.playBtn.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6 text-white"></i><span id="play-btn-text" class="font-medium ml-2">${isPlaying ? 'Pause' : 'Play'}</span>`;
     
+    // Smooth transitions for station selection elements
     if (dom.stationSelect) {
-        dom.stationSelect.classList.toggle('hidden', isPlaying);
+        if (isPlaying) {
+            dom.stationSelect.classList.add('hidden');
+        } else {
+            dom.stationSelect.classList.remove('hidden');
+        }
     }
+    
     if (dom.tunerContainer) {
-        dom.tunerContainer.classList.toggle('hidden', isPlaying);
+        if (isPlaying) {
+            dom.tunerContainer.classList.add('hidden');
+        } else {
+            // Smooth transition back to visible state
+            setTimeout(() => {
+                dom.tunerContainer.classList.remove('hidden');
+                dom.tunerContainer.classList.add('visible');
+            }, 300); // Delay to allow other transitions to complete
+        }
     }
 
     if (dom.playStatus) {
@@ -51,7 +65,11 @@ export function updatePlayerUI(station, isPlaying) {
         dom.clock.classList.remove('invisible');
 
         dom.playerDisplay.classList.add('playing');
-        dom.playBtn.classList.add('playing');
+        
+        // Smooth play button transition
+        setTimeout(() => {
+            dom.playBtn.classList.add('playing');
+        }, 200);
 
         dom.stationLogo.src = station.logo;
         dom.stationName.textContent = station.name;
@@ -99,6 +117,12 @@ export function updatePlayerUI(station, isPlaying) {
     }
     
     updateRds(station, isPlaying);
+
+    // Update band button playing state
+    updateBandButton(state.currentBand, isPlaying);
+
+    // Update playing mode indicator
+    updatePlayingModeIndicator(isPlaying);
 
     // Sync weather placements
     weatherSetPlayState(isPlaying);
@@ -240,18 +264,46 @@ export function createTunerScale(stations, band) {
     updateStationDropdown(stations);
 }
 
-export function updateBandButton(band) {
+export function updateBandButton(band, isPlaying = false) {
     if (dom.bandButtons && dom.bandButtons.length) {
         dom.bandButtons.forEach(btn => {
             const isActive = btn.dataset.band === band;
-            if (isActive) {
+            const isPlayingBand = isActive && isPlaying;
+            
+            // Remove all state classes
+            btn.classList.remove('bg-white/20', 'bg-white/10', 'playing');
+            
+            if (isPlayingBand) {
+                // Playing state - green glow and animation
+                btn.classList.add('playing');
+            } else if (isActive) {
+                // Active but not playing
                 btn.classList.add('bg-white/20');
-                btn.classList.remove('bg-white/10');
             } else {
+                // Inactive
                 btn.classList.add('bg-white/10');
-                btn.classList.remove('bg-white/20');
             }
         });
+    }
+}
+
+export function updatePlayingModeIndicator(isPlaying) {
+    if (!dom.playingModeIndicator || !dom.playingModeText) return;
+    
+    if (isPlaying) {
+        // Show the playing mode indicator with smooth transition
+        dom.playingModeText.textContent = state.currentBand;
+        dom.playingModeIndicator.classList.add('active');
+        
+        // Ensure lucide icons are created
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    } else {
+        // Hide the playing mode indicator with smooth transition
+        setTimeout(() => {
+            dom.playingModeIndicator.classList.remove('active');
+        }, 100); // Small delay to ensure smooth transition
     }
 }
 

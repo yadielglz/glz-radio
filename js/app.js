@@ -13,7 +13,7 @@ function applyBand(band) {
     // Update UI elements
     dom.tuner.max = state.filteredStations.length - 1;
     ui.createTunerScale(state.filteredStations, band);
-    ui.updateBandButton(band);
+    ui.updateBandButton(band, state.isPlaying);
 
     // Select first station of the new band if current station is not in filtered list
     let targetStation = state.currentStation;
@@ -68,14 +68,17 @@ function init() {
         // Initialize weather (geolocation)
         initWeather();
 
-        // All ready, hide splash screen
+        // All ready, hide splash screen with enhanced animation
         setTimeout(() => {
-            dom.splash.style.opacity = '0';
+            dom.splash.classList.add('fade-out');
             // The 'app' container is already visible, we just hide the splash over it.
             setTimeout(() => {
+                dom.splash.classList.add('hidden');
                 dom.splash.style.display = 'none';
-            }, 500); // Wait for fade out to complete
-        }, 500); // Give a moment for initial render
+                dom.splash.style.visibility = 'hidden';
+                dom.splash.style.pointerEvents = 'none';
+            }, 800); // Wait for enhanced fade out to complete
+        }, 2000); // Show splash for 2 seconds to appreciate the green light effect
 
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();

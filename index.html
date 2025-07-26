@@ -28,12 +28,23 @@
     <div id="app" class="flex flex-col h-dvh max-w-md mx-auto bg-black relative">
 
     <!-- Splash Screen -->
-        <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center z-50 transition-opacity duration-500">
-            <h1 class="text-4xl font-bold">GLZ Radio</h1>
+        <div id="splash-screen" class="fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-500">
+            <div class="text-center">
+                <h1>GLZ Radio</h1>
+                <div class="subtitle">Technical Systems</div>
+                <div class="splash-loading">
+                    <span class="text-xs text-green-400">Initializing</span>
+                    <div class="loading-dots">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Header -->
-        <header class="flex items-center justify-between py-2 px-6 text-sm flex-shrink-0 glass rounded-b-3xl">
+        <header class="flex items-center justify-between text-sm flex-shrink-0 glass rounded-b-3xl">
             <div class="flex items-center space-x-2">
                 <div id="clock" class="text-left invisible"></div>
             </div>
@@ -47,8 +58,8 @@
         </header>
 
         <!-- Main Content -->
-        <main class="flex-grow flex flex-col justify-center px-6 py-4 space-y-6">
-            <div id="player-display" class="glass rounded-3xl p-6 h-48 flex flex-col justify-center items-center relative text-white w-full mb-6">
+        <main class="flex-grow flex flex-col justify-center px-6 py-4">
+            <div id="player-display" class="glass rounded-3xl p-6 flex flex-col justify-center items-center relative text-white w-full mb-8">
                 <!-- Idle Display -->
                 <div id="idle-display" class="text-center">
                     <div id="big-clock" class="text-6xl font-bold"></div>
@@ -68,16 +79,25 @@
                 </div>
             </div>
 
-            <div id="radio-controls-wrapper" class="space-y-6 w-full flex flex-col items-center">
+            <div id="radio-controls-wrapper" class="w-full flex flex-col items-center">
 
             <!-- Tuner -->
-            <div id="tuner-container" class="glass rounded-3xl p-3 w-full">
-                <div class="flex flex-col space-y-2 items-stretch">
+            <div id="tuner-container" class="glass rounded-3xl w-full">
+                <div class="flex flex-col items-stretch">
                     <!-- Band Selection Buttons -->
-                    <div id="band-btn-group" class="self-start flex space-x-2">
-                        <button class="band-btn glass rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md bg-white/10" data-band="AM">AM</button>
-                        <button class="band-btn glass rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md bg-white/10" data-band="FM">FM</button>
-                        <button class="band-btn glass rounded-full px-3 py-1 text-xs font-medium backdrop-blur-md bg-white/10" data-band="SAT">SAT</button>
+                    <div id="band-btn-group" class="flex justify-center mb-4 gap-3">
+                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10" data-band="AM">
+                            AM
+                            <i data-lucide="radio" class="radio-icon text-green-400"></i>
+                        </button>
+                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10" data-band="FM">
+                            FM
+                            <i data-lucide="radio" class="radio-icon text-green-400"></i>
+                        </button>
+                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10" data-band="SAT">
+                            SAT
+                            <i data-lucide="radio" class="radio-icon text-green-400"></i>
+                        </button>
                     </div>
 
                     <!-- Dropdown / Slider wrapper -->
@@ -93,10 +113,21 @@
 
             <!-- Controls -->
             <div id="controls-container" class="flex flex-col items-center">
-                <button id="play-btn" class="glass rounded-full px-8 py-3 flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md">
-                    <i data-lucide="play" class="w-6 h-6 text-white"></i>
-                    <span id="play-btn-text" class="font-medium">Play</span>
-                </button>
+                <!-- Controls Row -->
+                <div id="controls-row" class="flex items-center gap-4">
+                    <!-- Playing Mode Indicator -->
+                    <div id="playing-mode-indicator" class="playing-mode-indicator">
+                        <div class="playing-mode-content">
+                            <i data-lucide="radio" class="playing-mode-icon"></i>
+                            <span id="playing-mode-text" class="playing-mode-text">FM</span>
+                        </div>
+                    </div>
+                    
+                    <button id="play-btn" class="glass rounded-full flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md">
+                        <i data-lucide="play" class="w-6 h-6 text-white"></i>
+                        <span id="play-btn-text" class="font-medium">Play</span>
+                    </button>
+                </div>
             </div>
 
             </div> <!-- end radio-controls-wrapper -->

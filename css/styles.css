@@ -23,8 +23,186 @@ body {
     display: none !important;
 }
 
+/* Creative Splash Screen with Green Light Effect */
+#splash-screen {
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.9) 0%, #000 100%);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    z-index: 9999;
+}
+
+#splash-screen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, 
+        rgba(34, 197, 94, 0.1) 0%, 
+        rgba(34, 197, 94, 0.05) 25%, 
+        rgba(34, 197, 94, 0.1) 50%, 
+        rgba(34, 197, 94, 0.05) 75%, 
+        rgba(34, 197, 94, 0.1) 100%);
+    animation: green-scan 3s ease-in-out infinite;
+    z-index: 1;
+}
+
+#splash-screen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 30%, rgba(34, 197, 94, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(34, 197, 94, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+    animation: green-pulse 4s ease-in-out infinite;
+    z-index: 2;
+}
+
 #splash-screen h1 {
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    position: relative;
+    z-index: 3;
+    font-size: clamp(2rem, 8vw, 4rem);
+    font-weight: 800;
+    color: #22c55e;
+    text-shadow: 
+        0 0 20px rgba(34, 197, 94, 0.8),
+        0 0 40px rgba(34, 197, 94, 0.6),
+        0 0 60px rgba(34, 197, 94, 0.4);
+    animation: title-glow 2s ease-in-out infinite alternate;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
+
+#splash-screen .subtitle {
+    position: relative;
+    z-index: 3;
+    color: rgba(34, 197, 94, 0.7);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 1rem;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+    animation: subtitle-fade 3s ease-in-out infinite;
+    letter-spacing: 0.05em;
+}
+
+/* Green light animations */
+@keyframes green-scan {
+    0%, 100% { 
+        transform: translateX(-100%) skewX(-15deg);
+        opacity: 0;
+    }
+    50% { 
+        transform: translateX(100%) skewX(-15deg);
+        opacity: 1;
+    }
+}
+
+@keyframes green-pulse {
+    0%, 100% { 
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% { 
+        opacity: 0.6;
+        transform: scale(1.05);
+    }
+}
+
+@keyframes title-glow {
+    0% { 
+        text-shadow: 
+            0 0 20px rgba(34, 197, 94, 0.8),
+            0 0 40px rgba(34, 197, 94, 0.6),
+            0 0 60px rgba(34, 197, 94, 0.4);
+    }
+    100% { 
+        text-shadow: 
+            0 0 30px rgba(34, 197, 94, 1),
+            0 0 60px rgba(34, 197, 94, 0.8),
+            0 0 90px rgba(34, 197, 94, 0.6);
+    }
+}
+
+@keyframes subtitle-fade {
+    0%, 100% { 
+        opacity: 0.7;
+        transform: translateY(0);
+    }
+    50% { 
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+
+/* Loading indicator */
+.splash-loading {
+    position: relative;
+    z-index: 3;
+    margin-top: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.loading-dots {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.loading-dot {
+    width: 8px;
+    height: 8px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: loading-bounce 1.4s ease-in-out infinite both;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+}
+
+.loading-dot:nth-child(1) { animation-delay: -0.32s; }
+.loading-dot:nth-child(2) { animation-delay: -0.16s; }
+.loading-dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes loading-bounce {
+    0%, 80%, 100% { 
+        transform: scale(0);
+        opacity: 0.5;
+    }
+    40% { 
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Splash screen exit animation */
+#splash-screen.fade-out {
+    animation: splash-exit 0.8s ease-out forwards;
+}
+
+#splash-screen.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+}
+
+@keyframes splash-exit {
+    0% { 
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% { 
+        opacity: 0;
+        transform: scale(1.1);
+    }
 }
 
 #big-clock {
@@ -40,6 +218,198 @@ body {
     pointer-events: none;
     position: absolute;
     transform: scale(0.95);
+}
+
+/* Enhanced Band Buttons - Mobile Optimized */
+.band-btn {
+    min-height: 44px; /* iOS touch target minimum */
+    min-width: 60px;
+    font-size: 0.875rem; /* 14px */
+    font-weight: 600;
+    letter-spacing: 0.025em;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    margin: 0 0.5rem; /* Add horizontal margin for separation */
+}
+
+/* Radio icon for active band button */
+.band-btn .radio-icon {
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.band-btn.playing .radio-icon {
+    opacity: 1;
+    animation: radio-pulse 1.5s ease-in-out infinite;
+}
+
+/* Radio pulse animation */
+@keyframes radio-pulse {
+    0%, 100% {
+        transform: translateY(-50%) scale(1);
+        filter: brightness(1);
+    }
+    50% {
+        transform: translateY(-50%) scale(1.2);
+        filter: brightness(1.3);
+    }
+}
+
+/* Enhanced active state for playing band */
+.band-btn.playing {
+    background: rgba(34, 197, 94, 0.2) !important;
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    box-shadow: 
+        0 0 15px rgba(34, 197, 94, 0.3),
+        inset 0 0 10px rgba(34, 197, 94, 0.1);
+}
+
+.band-btn.playing::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(34, 197, 94, 0.1) 0%, transparent 70%);
+    animation: playing-glow 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes playing-glow {
+    0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: scale(1.05);
+    }
+}
+
+/* Playing mode indicator next to play button */
+.playing-mode-indicator {
+    display: none;
+    position: relative;
+    background: rgba(34, 197, 94, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 1rem;
+    padding: 0.75rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+    animation: playing-mode-pulse 2s ease-in-out infinite;
+    min-width: 80px;
+}
+
+.playing-mode-indicator.active {
+    display: block;
+}
+
+.playing-mode-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-weight: 600;
+    color: #22c55e;
+    text-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+
+.playing-mode-icon {
+    width: 20px;
+    height: 20px;
+    animation: icon-text-cycle 3s ease-in-out infinite;
+}
+
+.playing-mode-text {
+    animation: icon-text-cycle 3s ease-in-out infinite reverse;
+}
+
+@keyframes playing-mode-pulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+        transform: scale(1);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+        transform: scale(1.02);
+    }
+}
+
+@keyframes icon-text-cycle {
+    0%, 45% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50%, 95% {
+        opacity: 0.3;
+        transform: scale(0.8);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.band-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.band-btn:hover::before {
+    left: 100%;
+}
+
+.band-btn:active {
+    transform: scale(0.95);
+}
+
+/* Mobile-specific band button sizing */
+@media (max-width: 768px) {
+    .band-btn {
+        min-height: 48px;
+        min-width: 70px;
+        font-size: 1rem; /* 16px */
+        padding: 0.75rem 1.25rem;
+    }
+    
+    #band-btn-group {
+        gap: 1rem;
+    }
+    
+    /* Mobile radio icon adjustments */
+    .band-btn .radio-icon {
+        width: 18px;
+        height: 18px;
+        right: 0.75rem;
+    }
+    
+    /* Mobile playing mode indicator adjustments */
+    .playing-mode-indicator {
+        padding: 1rem 2rem;
+        min-width: 100px;
+    }
+    
+    .playing-mode-icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    #controls-row {
+        gap: 1.5rem;
+    }
 }
 
 /* Custom Tuner Slider */
@@ -108,7 +478,9 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 #player-display {
     position: relative;
     overflow: hidden;
+    min-height: 200px; /* Ensure minimum height */
 }
+
 /* Existing inset shadow preserved */
 #player-display::before {
     content: '';
@@ -118,6 +490,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     box-shadow: inset 0 0 15px rgba(0,0,0,0.6);
     pointer-events: none;
 }
+
 /* Grain texture overlay */
 #player-display::after {
     content: '';
@@ -129,6 +502,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     mix-blend-mode: overlay;
     opacity: 0.6;
 }
+
 /* Dynamic glow using CSS variable */
 #player-display.playing {
     --glow-color: rgba(165,180,252,0.4); /* default */
@@ -140,6 +514,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     0% { transform: translateX(-100%); }
     100% { transform: translateX(100%); }
 }
+
 #player-display.playing::after {
     animation: sheen 15s linear infinite, grain-shift 8s steps(2) infinite;
     opacity: 0.8; /* stronger grain visibility */
@@ -154,18 +529,35 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     -webkit-backdrop-filter: blur(4px);
     transition: opacity 0.4s ease, transform 0.4s ease;
 }
+
 #now-playing.hidden {
     opacity: 0;
     transform: scale(0.96);
 }
 
-/* Play button style */
+/* Enhanced Play Button */
 #play-btn {
     position: relative;
     background: rgba(99,102,241,0.25);
     border: 2px solid rgba(99,102,241,0.6);
     border-radius: 9999px;
+    min-height: 56px; /* Larger touch target */
+    min-width: 140px;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+#play-btn:hover {
+    background: rgba(99,102,241,0.4);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(99,102,241,0.3);
+}
+
+#play-btn:active {
+    transform: translateY(0);
+}
+
 #play-btn.playing {
     background: rgba(99,102,241,0.35);
 }
@@ -199,39 +591,106 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     }
 }
 
-#play-btn:hover {
-    background: rgba(99,102,241,0.4);
-}
-
 /* Gradient text */
 #station-name {
     background: linear-gradient(90deg, #ffffff 0%, #c7d2fe 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
 #station-frequency {
     font-weight: 300;
     letter-spacing: 0.02em;
     color: #9ca3af; /* gray-400 */
 }
+
 #station-callsign {
     text-transform: uppercase;
     letter-spacing: 0.1em;
     opacity: 0.8;
 }
 
-/* Custom Select */
+/* Enhanced Custom Select */
 #station-select {
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6H0z' fill='%23ffffff'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 0.6rem;
+    min-height: 44px; /* iOS touch target */
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    color: #ffffff;
+    text-align: center;
+    text-align-last: center;
+}
+
+#station-select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(99,102,241,0.5);
+}
+
+/* Dropdown Options Styling */
+#station-select option {
+    background-color: rgba(30, 41, 59, 0.95);
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    border: none;
+    text-align: center;
+}
+
+#station-select option:hover {
+    background-color: rgba(99, 102, 241, 0.3);
+}
+
+#station-select option:checked {
+    background-color: rgba(99, 102, 241, 0.5);
+    color: #ffffff;
+}
+
+/* For Webkit browsers (Chrome, Safari, Edge) */
+#station-select::-webkit-listbox {
+    background-color: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+#station-select::-webkit-option {
+    background-color: rgba(30, 41, 59, 0.95);
+    color: #ffffff;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+#station-select::-webkit-option:hover {
+    background-color: rgba(99, 102, 241, 0.3);
+}
+
+#station-select::-webkit-option:checked {
+    background-color: rgba(99, 102, 241, 0.5);
+    color: #ffffff;
+}
+
+/* For Firefox */
+#station-select:-moz-focusring {
+    color: transparent;
+    text-shadow: 0 0 0 #ffffff;
+}
+
+#station-select:-moz-listbox {
+    background-color: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* Logo bounce */
 .logo-bounce {
     animation: logo-bounce 0.6s cubic-bezier(0.28,1.25,0.32,1);
 }
+
 @keyframes logo-bounce {
     0% { transform: scale(0.95); }
     40% { transform: scale(1.02); }
@@ -245,6 +704,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     position: relative;
     overflow: hidden;
 }
+
 #station-logo::after {
     content: '';
     position: absolute;
@@ -268,6 +728,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     white-space: nowrap;
     animation: marquee 15s linear infinite;
 }
+
 @keyframes marquee {
     0% { transform: translateX(100%); }
     100% { transform: translateX(-100%); }
@@ -284,6 +745,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     opacity: 0;
     transition: opacity 0.6s ease;
 }
+
 #bg-blur.active {
     opacity: 0.25;
     animation: bg-zoom 30s ease-in-out infinite alternate;
@@ -299,7 +761,338 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     0% { background-position: 0 0; }
     100% { background-position: 60px 30px; }
 }
+
 #player-display.playing::after {
     animation: sheen 15s linear infinite, grain-shift 8s steps(2) infinite;
     opacity: 0.8; /* stronger grain visibility */
+}
+
+/* Enhanced Layout Spacing */
+#radio-controls-wrapper {
+    gap: 1.5rem;
+}
+
+#tuner-container {
+    padding: 1.25rem;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#controls-container {
+    padding: 0.5rem 0;
+}
+
+/* Station selection and play transitions */
+#tuner-container.hidden {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    pointer-events: none;
+}
+
+#tuner-container.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+/* Play button transitions */
+#play-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#play-btn.playing {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
+}
+
+/* Controls row transitions */
+#controls-row {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Playing mode indicator transitions */
+.playing-mode-indicator {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(-20px);
+    opacity: 0;
+}
+
+.playing-mode-indicator.active {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+/* Station dropdown transitions */
+#station-select {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#station-select.hidden {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+/* Band buttons transitions */
+.band-btn {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.band-btn.playing {
+    animation: band-playing-enter 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes band-playing-enter {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 rgba(34, 197, 94, 0.3);
+    }
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
+    }
+}
+
+/* Band Button Group Styling */
+#band-btn-group {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem; /* Consistent gap between buttons */
+    margin-bottom: 1.5rem;
+    padding: 0.5rem 0;
+}
+
+/* Smooth transitions for all interactive elements */
+.band-btn, #play-btn, #station-select {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus states for accessibility */
+.band-btn:focus-visible,
+#play-btn:focus-visible,
+#station-select:focus-visible {
+    outline: 2px solid rgba(99,102,241,0.8);
+    outline-offset: 2px;
+}
+
+/* Improved glass effect for better contrast */
+.glass {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    #app {
+        padding: 0 0.5rem;
+    }
+    
+    #player-display {
+        min-height: 220px;
+        margin-bottom: 1.5rem;
+    }
+    
+    #radio-controls-wrapper {
+        gap: 1.75rem;
+    }
+    
+    #tuner-container {
+        padding: 1.5rem;
+    }
+    
+    main {
+        padding: 1rem 1.5rem;
+    }
+    
+    #play-btn {
+        min-height: 60px;
+        min-width: 160px;
+        font-size: 1.125rem;
+    }
+    
+    /* Ensure proper touch targets on mobile */
+    .band-btn {
+        touch-action: manipulation;
+    }
+    
+    #play-btn {
+        touch-action: manipulation;
+    }
+    
+    #station-select {
+        touch-action: manipulation;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    #player-display {
+        min-height: 200px;
+        padding: 1.5rem;
+    }
+    
+    #big-clock {
+        font-size: clamp(2.5rem, 10vw, 3.5rem);
+    }
+    
+    .band-btn {
+        min-height: 52px;
+        min-width: 80px;
+        font-size: 1.125rem;
+        padding: 1rem 1.5rem;
+        margin: 0 0.75rem; /* More separation on small screens */
+    }
+    
+    #play-btn {
+        min-height: 64px;
+        min-width: 180px;
+        font-size: 1.25rem;
+    }
+    
+    /* Mobile weather widget adjustments */
+    #idle-weather {
+        padding: 0.75rem 1rem;
+        min-width: 120px;
+        gap: 0.5rem;
+    }
+    
+    .weather-icon {
+        font-size: 1.25rem;
+    }
+    
+    .weather-temp {
+        font-size: 1.125rem;
+    }
+    
+    .weather-condition {
+        font-size: 0.625rem;
+    }
+    
+    /* Enhanced band button spacing on small screens */
+    #band-btn-group {
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Small screen radio icon adjustments */
+    .band-btn .radio-icon {
+        width: 20px;
+        height: 20px;
+        right: 1rem;
+    }
+    
+    /* Small screen controls adjustments */
+    .playing-mode-indicator {
+        padding: 0.75rem 1.5rem;
+        min-width: 90px;
+    }
+    
+    .playing-mode-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    #controls-row {
+        gap: 1rem;
+    }
+}
+
+/* Enhanced Visual Hierarchy */
+#idle-display {
+    text-align: center;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}
+
+#big-clock {
+    font-size: clamp(3rem, 8vw, 4.5rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+#idle-station-info {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+/* Enhanced Weather Widget */
+#idle-weather {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 140px;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+#idle-weather:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.3);
+}
+
+.weather-icon {
+    font-size: 1.5rem;
+    color: #fbbf24;
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4));
+}
+
+.weather-temp {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+.weather-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+}
+
+.weather-condition {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    text-transform: capitalize;
+    font-weight: 500;
+}
+
+.weather-location {
+    font-size: 0.625rem;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+/* Improved Header Spacing */
+header {
+    padding: 0.75rem 1.5rem;
+}
+
+@media (max-width: 768px) {
+    header {
+        padding: 1rem 1.5rem;
+    }
 } 
