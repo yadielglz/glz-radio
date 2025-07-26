@@ -36,187 +36,7 @@ body {
     display: none !important;
 }
 
-/* Creative Splash Screen with Green Light Effect */
-#splash-screen {
-    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.9) 0%, #000 100%);
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    z-index: 9999;
-}
 
-#splash-screen::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, 
-        var(--purple-soft) 0%, 
-        var(--purple-faint) 25%, 
-        var(--purple-soft) 50%, 
-        var(--purple-faint) 75%, 
-        var(--purple-soft) 100%);
-    animation: green-scan 3s ease-in-out infinite;
-    z-index: 1;
-}
-
-#splash-screen::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-        radial-gradient(circle at 20% 30%, var(--purple-faint) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, var(--purple-faint) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, var(--purple-bg) 0%, transparent 70%);
-    animation: green-pulse 4s ease-in-out infinite;
-    z-index: 2;
-}
-
-#splash-screen h1 {
-    position: relative;
-    z-index: 3;
-    font-size: clamp(2rem, 8vw, 4rem);
-    font-weight: 800;
-    color: var(--purple-primary);
-    text-shadow: 
-        0 0 20px var(--purple-light),
-        0 0 40px var(--purple-medium),
-        0 0 60px var(--purple-soft);
-    animation: title-glow 2s ease-in-out infinite alternate;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-}
-
-#splash-screen .subtitle {
-    position: relative;
-    z-index: 3;
-    color: var(--purple-light);
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-top: 1rem;
-    text-shadow: 0 0 10px var(--purple-glow);
-    animation: subtitle-fade 3s ease-in-out infinite;
-    letter-spacing: 0.05em;
-}
-
-/* Green light animations */
-@keyframes green-scan {
-    0%, 100% { 
-        transform: translateX(-100%) skewX(-15deg);
-        opacity: 0;
-    }
-    50% { 
-        transform: translateX(100%) skewX(-15deg);
-        opacity: 1;
-    }
-}
-
-@keyframes green-pulse {
-    0%, 100% { 
-        opacity: 0.3;
-        transform: scale(1);
-    }
-    50% { 
-        opacity: 0.6;
-        transform: scale(1.05);
-    }
-}
-
-@keyframes title-glow {
-    0% { 
-        text-shadow: 
-            0 0 20px var(--purple-light),
-            0 0 40px var(--purple-medium),
-            0 0 60px var(--purple-soft);
-    }
-    100% { 
-        text-shadow: 
-            0 0 30px var(--purple-primary),
-            0 0 60px var(--purple-light),
-            0 0 90px var(--purple-medium);
-    }
-}
-
-@keyframes subtitle-fade {
-    0%, 100% { 
-        opacity: 0.7;
-        transform: translateY(0);
-    }
-    50% { 
-        opacity: 1;
-        transform: translateY(-2px);
-    }
-}
-
-/* Loading indicator */
-.splash-loading {
-    position: relative;
-    z-index: 3;
-    margin-top: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.loading-dots {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.loading-dot {
-    width: 8px;
-    height: 8px;
-    background: var(--purple-primary);
-    border-radius: 50%;
-    animation: loading-bounce 1.4s ease-in-out infinite both;
-    box-shadow: 0 0 10px var(--purple-medium);
-}
-
-.loading-dot:nth-child(1) { animation-delay: -0.32s; }
-.loading-dot:nth-child(2) { animation-delay: -0.16s; }
-.loading-dot:nth-child(3) { animation-delay: 0s; }
-
-@keyframes loading-bounce {
-    0%, 80%, 100% { 
-        transform: scale(0);
-        opacity: 0.5;
-    }
-    40% { 
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
-/* Splash screen exit animation */
-#splash-screen.fade-out {
-    animation: splash-exit 0.8s ease-out forwards;
-}
-
-#splash-screen.hidden {
-    display: none !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    opacity: 0 !important;
-}
-
-@keyframes splash-exit {
-    0% { 
-        opacity: 1;
-        transform: scale(1);
-    }
-    100% { 
-        opacity: 0;
-        transform: scale(1.1);
-    }
-}
 
 #big-clock {
     line-height: 1;
@@ -331,17 +151,16 @@ body {
     gap: 0.5rem;
     font-weight: 600;
     color: var(--purple-primary);
-    text-shadow: 0 0 10px var(--purple-glow);
 }
 
 .playing-mode-icon {
     width: 20px;
     height: 20px;
-    animation: playing-mode-pulse 2s ease-in-out infinite;
+    /* No animation on icon to prevent highlighting effect */
 }
 
 .playing-mode-text {
-    animation: playing-mode-pulse 2s ease-in-out infinite;
+    /* No animation on text to prevent highlighting effect */
 }
 
 @keyframes playing-mode-pulse {
@@ -405,7 +224,7 @@ body {
     .playing-mode-icon {
         width: 24px;
         height: 24px;
-        animation: playing-mode-pulse 2s ease-in-out infinite;
+        /* No animation on icon to prevent highlighting effect */
     }
     
     #controls-row {
@@ -561,6 +380,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 
 #play-btn.playing {
     background: rgba(99,102,241,0.35);
+    animation: playing-mode-pulse 2s ease-in-out infinite;
 }
 
 /* Pulsing ring while playing */
@@ -934,9 +754,10 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 
 /* Extra small mobile devices */
 @media (max-width: 480px) {
-    #player-display {
-        min-height: 200px;
-        padding: 1.5rem;
+    #idle-display {
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 140px;
     }
     
     #big-clock {
@@ -1007,42 +828,30 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 
 /* Enhanced Visual Hierarchy */
 #idle-display {
-    text-align: center;
-    padding: 1rem 0;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    height: 100%;
+    justify-content: space-between;
+    min-height: 120px;
 }
 
 #big-clock {
     font-size: clamp(3rem, 8vw, 4.5rem);
     font-weight: 800;
     letter-spacing: -0.02em;
-    margin-bottom: 1rem;
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
-#idle-station-info {
-    font-size: 1.125rem;
-    font-weight: 500;
-    color: #d1d5db;
-    margin-bottom: 1rem;
-}
-
-/* Enhanced Weather Widget */
 #idle-weather {
     background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 1rem;
-    padding: 1rem 1.5rem;
+    padding: 0.75rem 1rem;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    min-width: 140px;
+    gap: 0.5rem;
+    min-width: 120px;
     justify-content: center;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;

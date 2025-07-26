@@ -40,7 +40,7 @@ function init() {
     console.log('Initializing GLZ Radio...');
     
     // This is a critical check. If dom elements are missing, we can't proceed.
-    if (!dom.app || !dom.splash || !dom.tuner) {
+    if (!dom.app || !dom.tuner) {
         console.error('Fatal Error: Essential DOM elements are missing. App cannot start.');
         return;
     }
@@ -68,18 +68,6 @@ function init() {
         // Initialize weather (geolocation)
         initWeather();
 
-        // All ready, hide splash screen with enhanced animation
-        setTimeout(() => {
-            dom.splash.classList.add('fade-out');
-            // The 'app' container is already visible, we just hide the splash over it.
-            setTimeout(() => {
-                dom.splash.classList.add('hidden');
-                dom.splash.style.display = 'none';
-                dom.splash.style.visibility = 'hidden';
-                dom.splash.style.pointerEvents = 'none';
-            }, 800); // Wait for enhanced fade out to complete
-        }, 2000); // Show splash for 2 seconds to appreciate the green light effect
-
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
@@ -103,7 +91,7 @@ function setupEventListeners() {
     });
 
     // Optional: Clicking the whole display could also toggle play/pause
-    dom.playerDisplay.addEventListener('click', player.togglePlay);
+    // dom.playerDisplay.addEventListener('click', player.togglePlay); // Removed - element doesn't exist
     
     // Listen to the audio element's state changes to keep the UI in sync
     dom.audioPlayer.addEventListener('playing', () => {

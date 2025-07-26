@@ -1,7 +1,6 @@
 export const dom = {
     // App containers
     app: document.getElementById('app'),
-    splash: document.getElementById('splash-screen'),
 
     // Header
     header: document.querySelector('header'),
@@ -11,10 +10,8 @@ export const dom = {
     networkIcon: document.getElementById('network-icon'),
 
     // Main Display
-    playerDisplay: document.getElementById('player-display'),
     idleDisplay: document.getElementById('idle-display'),
     bigClock: document.getElementById('big-clock'),
-    idleStationInfo: document.getElementById('idle-station-info'),
     nowPlaying: document.getElementById('now-playing'),
     stationLogo: document.getElementById('station-logo'),
     stationName: document.getElementById('station-name'),

@@ -21,7 +21,9 @@ function mapCodeToIcon(code) {
 }
 
 function render() {
-    if (!weatherState.data) return;
+    if (!weatherState.data) {
+        return;
+    }
     
     const temp = Math.round(weatherState.data.temperature);
     const icon = mapCodeToIcon(weatherState.data.weathercode);
@@ -39,12 +41,14 @@ function render() {
     // Simple header weather (compact)
     const headerHtml = `<i data-lucide="${icon}" class="w-4 h-4 inline-block"></i><span>${temp}°F</span>`;
 
-    if (dom.idleWeather) dom.idleWeather.innerHTML = idleHtml;
+    if (dom.idleWeather) {
+        dom.idleWeather.innerHTML = idleHtml;
+    }
     if (dom.headerWeather) dom.headerWeather.innerHTML = headerHtml;
 
-    // Toggle visibility based on play state
-    if (dom.idleWeather) dom.idleWeather.classList.toggle('hidden', weatherState.isPlaying);
-    if (dom.headerWeather) dom.headerWeather.classList.toggle('hidden', !weatherState.isPlaying);
+    // Keep weather visible at all times (both idle and playing states)
+    if (dom.idleWeather) dom.idleWeather.classList.remove('hidden');
+    if (dom.headerWeather) dom.headerWeather.classList.add('hidden'); // Always hide header weather
 
     if (window.lucide) {
         lucide.createIcons();
@@ -90,7 +94,6 @@ export function setPlayState(isPlaying) {
 
 export async function initWeather() {
     if (!navigator.geolocation) {
-        console.warn('Geolocation not available; weather disabled');
         return;
     }
 

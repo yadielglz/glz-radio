@@ -60,11 +60,12 @@ export function updatePlayerUI(station, isPlaying) {
 
     if (isPlaying && station) {
         // State: Playing
-        dom.idleDisplay.classList.add('hidden');
+        // Keep idle display visible (clock and weather stay)
+        // dom.idleDisplay.classList.add('hidden'); // REMOVED - keep clock/weather visible
         dom.nowPlaying.classList.remove('hidden');
-        dom.clock.classList.remove('invisible');
-
-        dom.playerDisplay.classList.add('playing');
+        if (dom.clock) {
+            dom.clock.classList.remove('invisible');
+        }
         
         // Smooth play button transition
         setTimeout(() => {
@@ -81,7 +82,7 @@ export function updatePlayerUI(station, isPlaying) {
         setTimeout(() => dom.stationLogo.classList.remove('logo-bounce'), 700);
 
         // Apply dynamic glow color
-        applyGlowFromLogo(station.logo);
+        // applyGlowFromLogo(station.logo); // Removed - function no longer needed
 
         // Activate blurred background
         if (dom.bgBlur) {
@@ -90,17 +91,16 @@ export function updatePlayerUI(station, isPlaying) {
         }
     } else {
         // State: Idle
-        dom.idleDisplay.classList.remove('hidden');
+        // Keep idle display visible (clock and weather stay)
+        // dom.idleDisplay.classList.remove('hidden'); // REMOVED - already visible
         dom.nowPlaying.classList.add('hidden');
-        dom.clock.classList.add('invisible');
+        if (dom.clock) {
+            dom.clock.classList.add('invisible');
+        }
         
-        dom.playerDisplay.classList.remove('playing');
-        dom.playBtn.classList.remove('playing');
-        
-        dom.idleStationInfo.textContent = '';
-
-        // Reset glow color to default (CSS handles default)
-        dom.playerDisplay.style.removeProperty('--glow-color');
+        if (dom.playBtn) {
+            dom.playBtn.classList.remove('playing');
+        }
         if (dom.header) {
             dom.header.style.removeProperty('--glow-color');
         }
@@ -391,22 +391,6 @@ function computeAverageColor(img) {
 }
 
 async function applyGlowFromLogo(logoSrc) {
-    if (!dom.playerDisplay) return;
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.src = logoSrc;
-
-    const color = await computeAverageColor(img);
-    if (color) {
-        const glow = `rgba(${color.r},${color.g},${color.b},0.45)`;
-        dom.playerDisplay.style.setProperty('--glow-color', glow);
-        if (dom.header) {
-            dom.header.style.setProperty('--glow-color', glow);
-        }
-    } else {
-        dom.playerDisplay.style.removeProperty('--glow-color');
-        if (dom.header) {
-            dom.header.style.removeProperty('--glow-color');
-        }
-    }
+    // Function removed - playerDisplay element doesn't exist
+    // This function was used for dynamic glow effects on the player display
 } 
