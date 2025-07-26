@@ -290,9 +290,25 @@ export function updateBandButton(band, isPlaying = false) {
 export function updatePlayingModeIndicator(isPlaying) {
     if (!dom.playingModeIndicator || !dom.playingModeText) return;
     
-    if (isPlaying) {
+    if (isPlaying && state.currentStation) {
         // Show the playing mode indicator with smooth transition
-        dom.playingModeText.textContent = state.currentBand;
+        let displayText = state.currentBand;
+        
+        // For AM/FM modes, show frequency instead of mode name
+        if (state.currentBand === 'AM' || state.currentBand === 'FM') {
+            // Extract frequency from station data
+            const frequency = state.currentStation.frequency;
+            if (frequency) {
+                // Clean up frequency display (remove "AM:" or "FM:" prefix)
+                const cleanFreq = frequency
+                    .replace('AM:', '')
+                    .replace('FM:', '')
+                    .trim();
+                displayText = cleanFreq;
+            }
+        }
+        
+        dom.playingModeText.textContent = displayText;
         dom.playingModeIndicator.classList.add('active');
         
         // Ensure lucide icons are created

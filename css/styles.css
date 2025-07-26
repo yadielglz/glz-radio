@@ -324,11 +324,11 @@ body {
 .playing-mode-icon {
     width: 20px;
     height: 20px;
-    animation: icon-text-cycle 3s ease-in-out infinite;
+    animation: playing-mode-pulse 2s ease-in-out infinite;
 }
 
 .playing-mode-text {
-    animation: icon-text-cycle 3s ease-in-out infinite reverse;
+    animation: playing-mode-pulse 2s ease-in-out infinite;
 }
 
 @keyframes playing-mode-pulse {
@@ -342,20 +342,7 @@ body {
     }
 }
 
-@keyframes icon-text-cycle {
-    0%, 45% {
-        opacity: 1;
-        transform: scale(1);
-    }
-    50%, 95% {
-        opacity: 0.3;
-        transform: scale(0.8);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
+
 
 .band-btn::before {
     content: '';
@@ -405,6 +392,7 @@ body {
     .playing-mode-icon {
         width: 24px;
         height: 24px;
+        animation: playing-mode-pulse 2s ease-in-out infinite;
     }
     
     #controls-row {
