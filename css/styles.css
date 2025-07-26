@@ -755,13 +755,15 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 /* Extra small mobile devices */
 @media (max-width: 480px) {
     #idle-display {
-        flex-direction: column;
-        gap: 1rem;
-        min-height: 140px;
+        flex-direction: row;
+        gap: 0.5rem;
+        min-height: 120px;
+        padding: 1rem;
     }
     
     #big-clock {
-        font-size: clamp(2.5rem, 10vw, 3.5rem);
+        font-size: clamp(2rem, 8vw, 2.5rem);
+        flex: 1;
     }
     
     .band-btn {
@@ -780,21 +782,23 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     
     /* Mobile weather widget adjustments */
     #idle-weather {
-        padding: 0.75rem 1rem;
-        min-width: 120px;
-        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        min-width: 100px;
+        max-width: 120px;
+        gap: 0.25rem;
+        flex-shrink: 0;
     }
     
     .weather-icon {
-        font-size: 1.25rem;
+        font-size: 1rem;
     }
     
     .weather-temp {
-        font-size: 1.125rem;
+        font-size: 0.875rem;
     }
     
     .weather-condition {
-        font-size: 0.625rem;
+        font-size: 0.5rem;
     }
     
     /* Enhanced band button spacing on small screens */
