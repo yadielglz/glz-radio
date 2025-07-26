@@ -8,6 +8,9 @@ function updateMediaSessionMetadata() {
 
     const s = state.currentStation;
     
+    // iOS Safari requires specific handling for Media Session API
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
     // Extract mode and frequency for album field
     let albumText = '';
     if (s.frequency.startsWith('AM:')) {
@@ -20,18 +23,41 @@ function updateMediaSessionMetadata() {
         albumText = s.frequency;
     }
 
-    navigator.mediaSession.metadata = new MediaMetadata({
-        title: 'Station',
+    // Create metadata object with iOS-compatible settings
+    const metadata = {
+        title: s.name,
         artist: 'GLZ Radio',
-        album: albumText,
-        artwork: [
-            { src: s.logo,   sizes: '96x96',  type: 'image/png' },
-            { src: s.logo,   sizes: '128x128',  type: 'image/png' },
-            { src: s.logo,   sizes: '192x192', type: 'image/png' },
-            { src: s.logo,   sizes: '256x256', type: 'image/png' },
-            { src: s.logo,   sizes: '512x512', type: 'image/png' }
-        ]
-    });
+        album: albumText
+    };
+    
+    // iOS Safari has specific requirements for artwork
+    if (s.logo && s.logo.trim() !== '') {
+        metadata.artwork = [
+            { src: s.logo, sizes: '96x96', type: 'image/png' },
+            { src: s.logo, sizes: '128x128', type: 'image/png' },
+            { src: s.logo, sizes: '192x192', type: 'image/png' },
+            { src: s.logo, sizes: '256x256', type: 'image/png' },
+            { src: s.logo, sizes: '512x512', type: 'image/png' }
+        ];
+    }
+    
+    try {
+        navigator.mediaSession.metadata = new MediaMetadata(metadata);
+    } catch (e) {
+        console.warn('Error setting Media Session metadata:', e);
+        // Fallback for iOS Safari
+        if (isIOS) {
+            try {
+                // iOS Safari sometimes needs a simpler approach
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: s.name,
+                    artist: 'GLZ Radio'
+                });
+            } catch (fallbackError) {
+                console.warn('iOS Media Session fallback also failed:', fallbackError);
+            }
+        }
+    }
 }
 
 export function updateMediaSessionPlaybackState() {
@@ -42,11 +68,16 @@ export function updateMediaSessionPlaybackState() {
         
         // Set position state for better mobile integration
         if (state.isPlaying) {
-            navigator.mediaSession.setPositionState({
-                duration: Infinity, // Radio streams are continuous
-                position: 0,
-                playbackRate: 1.0
-            });
+            try {
+                navigator.mediaSession.setPositionState({
+                    duration: Infinity, // Radio streams are continuous
+                    position: 0,
+                    playbackRate: 1.0
+                });
+            } catch (positionError) {
+                // iOS Safari sometimes doesn't support setPositionState
+                console.warn('Position state not supported:', positionError);
+            }
         }
     } catch (e) {
         console.warn('Error updating Media Session playback state:', e);
@@ -73,6 +104,9 @@ export function previousStation() {
 // Register media session action handlers once
 function setupMediaSessionHandlers() {
     if (!('mediaSession' in navigator)) return;
+    
+    // iOS Safari detection
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     
     try {
         // Clear existing handlers first
@@ -108,24 +142,31 @@ function setupMediaSessionHandlers() {
             nextStation();
         });
         
-        // Handle seek action for mobile compatibility
-        navigator.mediaSession.setActionHandler('seekto', (details) => {
-            console.log('Media Session: Seek action triggered', details);
-            // For radio streams, we don't seek but this helps with mobile compatibility
-        });
-        
-        // Handle seekbackward/seekforward for mobile compatibility
-        navigator.mediaSession.setActionHandler('seekbackward', (details) => {
-            console.log('Media Session: Seek backward action triggered', details);
-            // Could be used for previous station
-            previousStation();
-        });
-        
-        navigator.mediaSession.setActionHandler('seekforward', (details) => {
-            console.log('Media Session: Seek forward action triggered', details);
-            // Could be used for next station
-            nextStation();
-        });
+        // iOS Safari doesn't support seek actions, so we'll skip them
+        if (!isIOS) {
+            // Handle seek action for mobile compatibility
+            try {
+                navigator.mediaSession.setActionHandler('seekto', (details) => {
+                    console.log('Media Session: Seek action triggered', details);
+                    // For radio streams, we don't seek but this helps with mobile compatibility
+                });
+                
+                // Handle seekbackward/seekforward for mobile compatibility
+                navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+                    console.log('Media Session: Seek backward action triggered', details);
+                    // Could be used for previous station
+                    previousStation();
+                });
+                
+                navigator.mediaSession.setActionHandler('seekforward', (details) => {
+                    console.log('Media Session: Seek forward action triggered', details);
+                    // Could be used for next station
+                    nextStation();
+                });
+            } catch (seekError) {
+                console.warn('Seek actions not supported:', seekError);
+            }
+        }
         
         console.log('Media Session handlers registered successfully');
     } catch (e) {
@@ -135,6 +176,34 @@ function setupMediaSessionHandlers() {
 
 // Initialize Media Session handlers
 setupMediaSessionHandlers();
+
+// Ensure Media Session is properly initialized for iOS
+function ensureMediaSessionInitialization() {
+    if (!('mediaSession' in navigator)) return;
+    
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    
+    if (isIOS) {
+        // iOS Safari sometimes needs explicit initialization
+        try {
+            // Set basic metadata to ensure Media Session is active
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: 'GLZ Radio',
+                artist: 'Loading...'
+            });
+            
+            // Set playback state
+            navigator.mediaSession.playbackState = 'none';
+            
+            console.log('Media Session initialized for iOS');
+        } catch (e) {
+            console.warn('iOS Media Session initialization failed:', e);
+        }
+    }
+}
+
+// Call initialization
+ensureMediaSessionInitialization();
 
 export function setStation(station) {
     if (!station) return;
@@ -152,6 +221,9 @@ export function setStation(station) {
             ui.updateTuner(stationIndex);
         }
         ui.updatePlayerUI(station, false);
+        
+        // Ensure Media Session is updated even when not playing
+        updateMediaSessionPlaybackState();
     }
 }
 
@@ -240,6 +312,11 @@ function setupAudioEventListeners() {
             } catch (e) {
                 console.warn('Error setting Media Session position state:', e);
             }
+        }
+        
+        // Ensure Media Session metadata is updated on iOS
+        if (state.currentStation) {
+            updateMediaSessionMetadata();
         }
     });
 }
