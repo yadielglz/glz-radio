@@ -13,10 +13,11 @@ export function updateClock(date) {
       dom.clock.textContent = `${displayHours}:${minutes} ${ampm}`;
     }
 
-    // Update big clock (24-hour format)
-    const bigClockHours = hours.toString().padStart(2, '0');
+    // Update big clock (AM/PM format as requested)
+    const bigClockAmpm = hours >= 12 ? 'PM' : 'AM';
+    const bigClockDisplayHours = ((hours + 11) % 12 + 1); // Converts 24h to 12h, 0 to 12
     if(dom.bigClock) {
-      dom.bigClock.textContent = `${bigClockHours}:${minutes}`;
+      dom.bigClock.textContent = `${bigClockDisplayHours}:${minutes} ${bigClockAmpm}`;
     }
 }
 
@@ -69,9 +70,16 @@ export function updatePlayerUI(station, isPlaying) {
 
     if (isPlaying && station) {
         // State: Playing
-        // Keep idle display visible (clock and weather stay)
-        // dom.idleDisplay.classList.add('hidden'); // REMOVED - keep clock/weather visible
+        // Upper card (clock + weather) stays visible
+        // Lower card shows now-playing display
         dom.nowPlaying.classList.remove('hidden');
+        
+        // Hide station controls when playing
+        const stationControls = document.getElementById('station-controls');
+        if (stationControls) {
+            stationControls.classList.add('hidden');
+        }
+        
         if (dom.clock) {
             dom.clock.classList.remove('invisible');
         }
@@ -111,9 +119,6 @@ export function updatePlayerUI(station, isPlaying) {
         dom.stationLogo.classList.add('logo-bounce');
         setTimeout(() => dom.stationLogo.classList.remove('logo-bounce'), 700);
 
-        // Apply dynamic glow color
-        // applyGlowFromLogo(station.logo); // Removed - function no longer needed
-
         // Activate blurred background
         if (dom.bgBlur) {
             dom.bgBlur.style.backgroundImage = `url('${station.logo}')`;
@@ -121,9 +126,16 @@ export function updatePlayerUI(station, isPlaying) {
         }
     } else {
         // State: Idle
-        // Keep idle display visible (clock and weather stay)
-        // dom.idleDisplay.classList.remove('hidden'); // REMOVED - already visible
+        // Upper card (clock + weather) stays visible
+        // Lower card shows station controls
         dom.nowPlaying.classList.add('hidden');
+        
+        // Show station controls when idle
+        const stationControls = document.getElementById('station-controls');
+        if (stationControls) {
+            stationControls.classList.remove('hidden');
+        }
+        
         if (dom.clock) {
             dom.clock.classList.add('invisible');
         }
