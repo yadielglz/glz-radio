@@ -31,7 +31,6 @@ export const dom = {
     playBtn: document.getElementById('play-btn'),
     controlsContainer: document.getElementById('controls-container'),
     controlsRow: document.getElementById('controls-row'),
-    playStatus: document.getElementById('play-status'),
     playingModeIndicator: document.getElementById('playing-mode-indicator'),
     playingModeText: document.getElementById('playing-mode-text'),
 

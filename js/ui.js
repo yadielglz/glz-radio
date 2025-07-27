@@ -100,9 +100,7 @@ export function updatePlayerUI(station, isPlaying) {
         }
     }
 
-    if (dom.playStatus) {
-        dom.playStatus.textContent = isPlaying ? 'Playing' : 'Paused';
-    }
+    // Note: Removed redundant play status text
 
     if (isPlaying && station) {
         // State: Playing
