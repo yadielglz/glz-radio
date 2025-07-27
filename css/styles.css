@@ -814,6 +814,286 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
         0 0 16px rgba(16, 185, 129, 0.1);
 }
 
+/* Desktop-First Layout Styles */
+@media (min-width: 1024px) {
+    #app {
+        max-width: 1200px;
+        background: rgba(4, 20, 15, 0.3);
+        border-radius: 2rem;
+        margin: 2rem auto;
+        min-height: calc(100vh - 4rem);
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        box-shadow: 
+            0 20px 80px rgba(0, 0, 0, 0.5),
+            0 0 40px rgba(16, 185, 129, 0.1);
+    }
+
+    header {
+        padding: 1.5rem 3rem;
+        border-radius: 2rem 2rem 0 0;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(16, 185, 129, 0.05));
+    }
+
+    main {
+        padding: 2rem 3rem;
+        display: grid;
+        grid-template-rows: auto auto 1fr;
+        gap: 2.5rem;
+    }
+
+    /* Desktop Grid Layout for Info Displays */
+    .desktop-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 0;
+    }
+
+    #idle-display {
+        grid-column: 1;
+        padding: 2.5rem;
+        min-height: 200px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    #big-clock {
+        font-size: clamp(4rem, 6vw, 6rem);
+        margin-bottom: 1.5rem;
+    }
+
+    #idle-weather {
+        padding: 1.5rem 2rem;
+        min-width: 200px;
+        flex-direction: row;
+        gap: 1rem;
+    }
+
+    #now-playing {
+        grid-column: 2;
+        padding: 2.5rem;
+        min-height: 200px;
+        margin-bottom: 0;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    #station-logo {
+        height: 8rem;
+        width: 8rem;
+        margin-right: 2rem;
+        margin-bottom: 0;
+    }
+
+    #station-name {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    #station-frequency {
+        font-size: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    #station-callsign {
+        font-size: 1.125rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Desktop Controls Layout */
+    #radio-controls-wrapper {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2.5rem;
+        align-items: start;
+    }
+
+    #tuner-container {
+        padding: 2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.05));
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    #band-btn-group {
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+
+    .band-btn {
+        min-height: 60px;
+        min-width: 120px;
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+    }
+
+    #station-select {
+        min-height: 60px;
+        font-size: 1.125rem;
+        padding: 1.25rem 1.75rem;
+    }
+
+    #controls-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+        padding: 2rem;
+    }
+
+    #play-btn {
+        min-height: 80px;
+        min-width: 240px;
+        font-size: 1.5rem;
+        padding: 1.5rem 3rem;
+    }
+
+    .playing-mode-indicator {
+        padding: 1.25rem 2.5rem;
+        min-width: 140px;
+        font-size: 1.125rem;
+    }
+
+    .playing-mode-icon {
+        width: 28px;
+        height: 28px;
+    }
+
+    #controls-row {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    /* Desktop Header Enhancements */
+    #clock {
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    #rds-text {
+        font-size: 1.25rem;
+        font-weight: 800;
+    }
+
+    #network-icon {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    /* Desktop Footer */
+    footer {
+        padding: 1.5rem 3rem;
+        font-size: 0.875rem;
+        border-radius: 0 0 2rem 2rem;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(16, 185, 129, 0.03));
+        border-top: 1px solid rgba(16, 185, 129, 0.1);
+    }
+}
+
+/* Large Desktop Enhancements */
+@media (min-width: 1440px) {
+    #app {
+        max-width: 1400px;
+        margin: 3rem auto;
+    }
+
+    header {
+        padding: 2rem 4rem;
+    }
+
+    main {
+        padding: 3rem 4rem;
+        gap: 3rem;
+    }
+
+    .desktop-info-grid {
+        gap: 3rem;
+    }
+
+    #idle-display,
+    #now-playing {
+        padding: 3rem;
+        min-height: 240px;
+    }
+
+    #big-clock {
+        font-size: clamp(5rem, 7vw, 7rem);
+        margin-bottom: 2rem;
+    }
+
+    #station-logo {
+        height: 10rem;
+        width: 10rem;
+        margin-right: 2.5rem;
+    }
+
+    #station-name {
+        font-size: 3rem;
+    }
+
+    #station-frequency {
+        font-size: 1.75rem;
+    }
+
+    #radio-controls-wrapper {
+        gap: 3rem;
+    }
+
+    #tuner-container {
+        padding: 2.5rem;
+    }
+
+    #controls-container {
+        padding: 2.5rem;
+    }
+
+    #play-btn {
+        min-height: 90px;
+        min-width: 280px;
+        font-size: 1.75rem;
+        padding: 1.75rem 3.5rem;
+    }
+
+    footer {
+        padding: 2rem 4rem;
+        font-size: 1rem;
+    }
+}
+
+/* Ultra-wide Desktop (1920px+) */
+@media (min-width: 1920px) {
+    #app {
+        max-width: 1600px;
+    }
+
+    main {
+        padding: 4rem 5rem;
+        gap: 4rem;
+    }
+
+    .desktop-info-grid {
+        gap: 4rem;
+    }
+
+    #big-clock {
+        font-size: clamp(6rem, 8vw, 8rem);
+    }
+
+    #station-name {
+        font-size: 3.5rem;
+    }
+
+    #play-btn {
+        min-height: 100px;
+        min-width: 320px;
+        font-size: 2rem;
+        padding: 2rem 4rem;
+    }
+}
+
 /* Mobile Optimizations */
 @media (max-width: 768px) {
     #app {
