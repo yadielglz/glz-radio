@@ -1395,7 +1395,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 }
 
 .desktop-dropdown-container {
-    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: none;
 }
 
 .mobile-dropdown,
@@ -1426,6 +1426,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 .desktop-dropdown.show {
     transform: scale(1) !important;
     opacity: 1 !important;
+    transition: none !important;
 }
 
 /* Search Input */

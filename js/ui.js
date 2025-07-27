@@ -733,16 +733,7 @@ export function setupDesktopDropdown() {
     const desktopDropdownClose = document.getElementById('desktop-dropdown-close');
     const desktopStationSearch = document.getElementById('desktop-station-search');
     
-    console.log('Setting up desktop dropdown:', {
-        desktopCurrentStation: !!desktopCurrentStation,
-        desktopDropdownOverlay: !!desktopDropdownOverlay,
-        desktopDropdown: !!desktopDropdown,
-        desktopDropdownClose: !!desktopDropdownClose,
-        desktopStationSearch: !!desktopStationSearch
-    });
-    
     if (!desktopCurrentStation || !desktopDropdownOverlay || !desktopDropdown) {
-        console.warn('Desktop dropdown elements not found');
         return;
     }
     
@@ -752,7 +743,6 @@ export function setupDesktopDropdown() {
     
     // Toggle dropdown on trigger click
     newDesktopCurrentStation.addEventListener('click', (e) => {
-        console.log('Desktop dropdown trigger clicked!');
         e.preventDefault();
         e.stopPropagation();
         showDesktopStationPicker();
@@ -879,36 +869,23 @@ function hideMobileStationPicker() {
 }
 
 function showDesktopStationPicker() {
-    console.log('showDesktopStationPicker called');
     const overlay = document.getElementById('desktop-dropdown-overlay');
     const dropdown = document.getElementById('desktop-station-picker');
     const trigger = document.getElementById('desktop-current-station');
     
-    console.log('Desktop dropdown elements:', {
-        overlay: !!overlay,
-        dropdown: !!dropdown,
-        trigger: !!trigger
-    });
-    
     if (overlay && dropdown && trigger) {
-        // Show overlay
+        // Show overlay and dropdown immediately
         overlay.classList.remove('hidden');
         overlay.classList.add('show');
-        
-        // Show dropdown with animation
-        setTimeout(() => {
-            dropdown.classList.add('show');
-        }, 50);
+        dropdown.classList.add('show');
         
         // Update trigger state
         trigger.classList.add('active');
         
-        // Focus search input if available
+        // Focus search input immediately
         const searchInput = document.getElementById('desktop-station-search');
         if (searchInput) {
-            setTimeout(() => {
-                searchInput.focus();
-            }, 300);
+            searchInput.focus();
         }
     }
 }
@@ -919,14 +896,10 @@ function hideDesktopStationPicker() {
     const trigger = document.getElementById('desktop-current-station');
     
     if (overlay && dropdown && trigger) {
-        // Hide dropdown with animation
+        // Hide dropdown and overlay immediately
         dropdown.classList.remove('show');
-        
-        // Hide overlay after animation
-        setTimeout(() => {
-            overlay.classList.remove('show');
-            overlay.classList.add('hidden');
-        }, 300);
+        overlay.classList.remove('show');
+        overlay.classList.add('hidden');
         
         // Update trigger state
         trigger.classList.remove('active');
