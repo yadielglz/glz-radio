@@ -27,16 +27,14 @@
 
     <div id="app" class="flex flex-col h-dvh max-w-md mx-auto bg-black relative">
 
-
-
         <!-- Header -->
-        <header class="flex items-center justify-between text-sm flex-shrink-0 glass rounded-b-3xl">
+        <header class="flex items-center justify-between text-sm flex-shrink-0 glass rounded-b-3xl px-6 py-4">
             <div class="flex items-center space-x-2">
-                <div id="clock" class="text-left invisible"></div>
+                <div id="clock" class="text-left invisible font-semibold"></div>
             </div>
-            <div id="rds-display" class="flex-1 text-center font-semibold truncate px-2">
-                <span id="rds-text">GLZ Radio</span>
-    </div>
+            <div id="rds-display" class="flex-1 text-center font-bold truncate px-2">
+                <span id="rds-text" class="text-base">GLZ Radio</span>
+            </div>
             <div id="connection-status" class="flex items-center space-x-2">
                 <div id="header-weather" class="hidden text-xs flex items-center space-x-1"></div>
                 <i id="network-icon" data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>
@@ -44,20 +42,20 @@
         </header>
 
         <!-- Main Content -->
-        <main class="flex-grow flex flex-col justify-center px-6 py-4">
+        <main class="flex-grow flex flex-col justify-center px-6 py-6">
             <!-- Idle Display with Clock and Weather -->
-            <div id="idle-display" class="glass rounded-3xl p-6 flex items-center justify-between text-white w-full mb-8">
+            <div id="idle-display" class="glass rounded-3xl p-8 flex items-center justify-between text-white w-full mb-8">
                 <div id="big-clock" class="text-6xl font-bold"></div>
-                <div id="idle-weather" class="text-sm text-gray-300 flex items-center space-x-1"></div>
+                <div id="idle-weather" class="text-sm text-gray-300 flex items-center space-x-2"></div>
             </div>
             
             <!-- Now Playing Display (Initially Hidden) -->
             <div id="now-playing" class="hidden glass rounded-3xl p-6 flex items-center justify-start text-white w-full mb-8">
-                <img id="station-logo" src="" alt="Station Logo" class="h-24 w-24 object-contain rounded-md mr-4">
-                <div class="flex flex-col justify-center">
-                    <div id="station-name" class="text-2xl font-bold"></div>
-                    <div id="station-frequency" class="text-lg"></div>
-                    <div id="station-callsign" class="text-sm text-gray-400"></div>
+                <img id="station-logo" src="" alt="Station Logo" class="h-28 w-28 object-contain rounded-md mr-6">
+                <div class="flex flex-col justify-center flex-1">
+                    <div id="station-name" class="text-2xl font-bold mb-2"></div>
+                    <div id="station-frequency" class="text-lg mb-1"></div>
+                    <div id="station-callsign" class="text-sm text-gray-400 mb-2"></div>
                     <div id="play-status" class="text-xs text-gray-400 mt-2 h-5"></div>
                 </div>
             </div>
@@ -68,17 +66,17 @@
             <div id="tuner-container" class="glass rounded-3xl w-full">
                 <div class="flex flex-col items-stretch">
                     <!-- Band Selection Buttons -->
-                    <div id="band-btn-group" class="flex justify-center mb-4 gap-3">
-                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10" data-band="AM">
-                            AM
+                    <div id="band-btn-group" class="flex justify-center mb-6 gap-4">
+                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10 px-6 py-3" data-band="AM">
+                            <span class="font-bold">AM</span>
                             <i data-lucide="radio" class="radio-icon text-green-400"></i>
                         </button>
-                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10" data-band="FM">
-                            FM
+                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10 px-6 py-3" data-band="FM">
+                            <span class="font-bold">FM</span>
                             <i data-lucide="radio" class="radio-icon text-green-400"></i>
                         </button>
-                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10" data-band="SAT">
-                            SAT
+                        <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10 px-6 py-3" data-band="SAT">
+                            <span class="font-bold">SAT</span>
                             <i data-lucide="radio" class="radio-icon text-green-400"></i>
                         </button>
                     </div>
@@ -86,7 +84,7 @@
                     <!-- Dropdown / Slider wrapper -->
                     <div class="relative w-full">
                         <input type="range" id="tuner" min="0" max="0" value="0" class="w-full hidden">
-                        <select id="station-select" class="w-full glass rounded-full px-4 py-2 pr-10 text-sm focus:outline-none bg-white/10 backdrop-blur-md appearance-none">
+                        <select id="station-select" class="w-full glass rounded-full px-4 py-3 pr-10 text-sm focus:outline-none bg-white/10 backdrop-blur-md appearance-none">
                         </select>
                         <div id="tuner-labels" class="hidden"></div>
                         <div id="tuner-markers" class="hidden"></div>
@@ -97,7 +95,7 @@
             <!-- Controls -->
             <div id="controls-container" class="flex flex-col items-center">
                 <!-- Controls Row -->
-                <div id="controls-row" class="flex items-center gap-4">
+                <div id="controls-row" class="flex items-center gap-6">
                     <!-- Playing Mode Indicator -->
                     <div id="playing-mode-indicator" class="playing-mode-indicator">
                         <div class="playing-mode-content">
@@ -106,7 +104,7 @@
                         </div>
                     </div>
                     
-                    <button id="play-btn" class="glass rounded-full flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md">
+                    <button id="play-btn" class="glass rounded-full flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md px-8 py-4">
                         <i data-lucide="play" class="w-6 h-6 text-white"></i>
                         <span id="play-btn-text" class="font-medium">Play</span>
                     </button>
@@ -117,8 +115,8 @@
         </main>
 
         <!-- Footer -->
-        <footer class="text-center text-xs text-gray-500 py-2 px-6 flex-shrink-0">
-            <p>Glz Technical Systems :: Ver 7.0 :: Build: <span id="build-timestamp"></span></p>
+        <footer class="text-center text-xs text-gray-500 py-3 px-6 flex-shrink-0">
+            <p class="font-medium">Glz Technical Systems :: Ver 7.0 :: Build: <span id="build-timestamp"></span></p>
         </footer>
     </div>
 
