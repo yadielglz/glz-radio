@@ -38,6 +38,17 @@ function applyBand(band) {
     // Ensure RDS reflects current band when not playing
     ui.updateRds(state.currentStation, state.isPlaying);
     
+    // Update frequency indicators
+    const desktopFreqText = document.getElementById('desktop-frequency-text');
+    const mobileFreqText = document.getElementById('mobile-frequency-text');
+    
+    if (desktopFreqText) {
+        desktopFreqText.textContent = band;
+    }
+    if (mobileFreqText) {
+        mobileFreqText.textContent = band;
+    }
+    
     // Update mobile station display
     if (window.innerWidth <= 1024) {
         ui.updateMobileStationDisplay(targetStation);

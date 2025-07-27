@@ -136,6 +136,9 @@ export function updatePlayerUI(station, isPlaying) {
         // Update desktop frequency indicator
         const desktopFreqIndicator = document.getElementById('desktop-frequency-indicator');
         const desktopFreqText = document.getElementById('desktop-frequency-text');
+        const mobileFreqIndicator = document.getElementById('mobile-frequency-indicator');
+        const mobileFreqText = document.getElementById('mobile-frequency-text');
+        
         if (desktopFreqIndicator && desktopFreqText) {
             desktopFreqIndicator.classList.add('active');
             
@@ -149,6 +152,22 @@ export function updatePlayerUI(station, isPlaying) {
                 displayText = cleanFreq;
             }
             desktopFreqText.textContent = displayText;
+        }
+        
+        // Update mobile frequency indicator
+        if (mobileFreqIndicator && mobileFreqText) {
+            mobileFreqIndicator.classList.add('active');
+            
+            // Extract clean frequency for display
+            let displayText = state.currentBand;
+            if (state.currentBand === 'AM' || state.currentBand === 'FM') {
+                const cleanFreq = station.frequency
+                    .replace('AM:', '')
+                    .replace('FM:', '')
+                    .trim();
+                displayText = cleanFreq;
+            }
+            mobileFreqText.textContent = displayText;
         }
         
         // Update mobile station playing state
