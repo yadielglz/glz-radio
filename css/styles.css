@@ -1692,10 +1692,34 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
         height: 100%;
     }
     
-    /* Hide desktop dropdown on mobile */
-    #station-select {
+    /* Hide old select dropdown on mobile */
+#station-select {
+    display: none !important;
+}
+
+/* Ensure desktop dropdown is visible on desktop */
+#desktop-station-selector {
+    display: block !important;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+#desktop-current-station {
+    width: 100%;
+    min-height: 60px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(16, 185, 129, 0.08));
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: 
+        0 4px 20px rgba(0, 0, 0, 0.3),
+        0 0 15px rgba(16, 185, 129, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 1024px) {
+    #desktop-station-selector {
         display: none !important;
     }
+}
     
     #app {
         padding: 0 0.5rem;

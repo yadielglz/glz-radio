@@ -80,6 +80,7 @@ function init() {
         ui.updateNetworkStatus();
         
         // Initialize dropdown functionality based on screen size
+        console.log('Screen width:', window.innerWidth, 'Setting up dropdown for:', window.innerWidth <= 1024 ? 'mobile' : 'desktop');
         if (window.innerWidth <= 1024) {
             ui.setupMobileDropdown();
         } else {

@@ -690,7 +690,18 @@ export function setupDesktopDropdown() {
     const desktopDropdownClose = document.getElementById('desktop-dropdown-close');
     const desktopStationSearch = document.getElementById('desktop-station-search');
     
-    if (!desktopCurrentStation || !desktopDropdownOverlay || !desktopDropdown) return;
+    console.log('Setting up desktop dropdown:', {
+        desktopCurrentStation: !!desktopCurrentStation,
+        desktopDropdownOverlay: !!desktopDropdownOverlay,
+        desktopDropdown: !!desktopDropdown,
+        desktopDropdownClose: !!desktopDropdownClose,
+        desktopStationSearch: !!desktopStationSearch
+    });
+    
+    if (!desktopCurrentStation || !desktopDropdownOverlay || !desktopDropdown) {
+        console.warn('Desktop dropdown elements not found');
+        return;
+    }
     
     // Remove any existing event listeners to prevent duplicates
     const newDesktopCurrentStation = desktopCurrentStation.cloneNode(true);
