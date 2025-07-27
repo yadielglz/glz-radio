@@ -53,8 +53,7 @@ function init() {
         tuner: !!dom.tuner,
         bigClock: !!dom.bigClock,
         idleWeather: !!dom.idleWeather,
-        clock: !!dom.clock,
-        stationSelect: !!dom.stationSelect
+        clock: !!dom.clock
     });
     
     // This is a critical check. If dom elements are missing, we can't proceed.
@@ -231,13 +230,7 @@ function setupEventListeners() {
         lucide.createIcons();
     }
 
-    if (dom.stationSelect) {
-        dom.stationSelect.addEventListener('change', (e) => {
-            const idx = parseInt(e.target.value, 10);
-            const station = state.filteredStations[idx];
-            player.setStation(station);
-        });
-    }
+    // Note: We no longer use the old select element, using new dropdowns instead
 }
     
 // The 'module' type script in HTML will run when it's parsed.

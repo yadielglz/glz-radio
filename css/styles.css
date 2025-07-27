@@ -1708,12 +1708,22 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     display: block !important;
     width: 100%;
     margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
 }
 
 /* Override Tailwind classes for desktop dropdown visibility */
 @media (min-width: 1024px) {
     #desktop-station-selector {
         display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+    
+    #desktop-current-station {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 }
 

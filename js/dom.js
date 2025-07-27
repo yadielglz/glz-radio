@@ -26,7 +26,6 @@ export const dom = {
     bandButtons: document.querySelectorAll('.band-btn'),
     prevBtn: document.getElementById('prev-btn'),
     nextBtn: document.getElementById('next-btn'),
-    stationSelect: document.getElementById('station-select'),
 
     // Controls
     playBtn: document.getElementById('play-btn'),

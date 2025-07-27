@@ -68,9 +68,7 @@ export function initializeUIState() {
 export function updateTuner(index) {
     if (dom.tuner) {
         dom.tuner.value = index;
-        if (dom.stationSelect && dom.stationSelect.options[index]) {
-            dom.stationSelect.value = index;
-        }
+            // Note: We no longer use the old select element, using new dropdowns instead
     }
 }
 
@@ -427,6 +425,25 @@ export function updatePlayingModeIndicator(isPlaying) {
 export function updateStationDropdown(stations) {
     console.log('updateStationDropdown called with', stations.length, 'stations');
     console.log('Window width:', window.innerWidth);
+    
+    // Check if desktop dropdown elements exist
+    const desktopSelector = document.getElementById('desktop-station-selector');
+    const desktopCurrentStation = document.getElementById('desktop-current-station');
+    const desktopStationsList = document.getElementById('desktop-stations-list');
+    
+    console.log('Desktop dropdown elements check:', {
+        desktopSelector: !!desktopSelector,
+        desktopCurrentStation: !!desktopCurrentStation,
+        desktopStationsList: !!desktopStationsList
+    });
+    
+    if (desktopSelector) {
+        console.log('Desktop selector computed styles:', {
+            display: window.getComputedStyle(desktopSelector).display,
+            visibility: window.getComputedStyle(desktopSelector).visibility,
+            opacity: window.getComputedStyle(desktopSelector).opacity
+        });
+    }
     
     // Update mobile station grid
     updateMobileStationGrid(stations);
