@@ -533,7 +533,7 @@ function createStationOption(station, index, type) {
     logo.src = station.logo;
     logo.alt = `${station.name} logo`;
     logo.onerror = () => {
-        logo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0icmdiYSgxNiwgMTg1LCAxMjksIDAuMSkiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMkM0LjY5IDIgMiA0LjY5IDIgOHM0LjY5IDYgNiA2IDYtMi42OSA2LTZTMTEuMzEgMiA4IDJ6bS0xIDlsLTMtMyAxLjQxLTEuNDFMOCA5LjU5bDUuMDYtNS4wNkwxNC41IDZsLTcuNSA3eiIgZmlsbD0iIzEwYjk4MSIvPgo8L3N2Zz4KPC9zdmc+Cg==';
+        logo.src = './images/generic-station-logo.svg';
     };
     
     // Create info container
@@ -598,7 +598,7 @@ function updateMobileCurrentStation(station) {
     if (station && mobileStationLogo && mobileStationName && mobileStationFrequency) {
         mobileStationLogo.src = station.logo;
         mobileStationLogo.onerror = () => {
-            mobileStationLogo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTIiIGZpbGw9InJnYmEoMTYsIDE4NSwgMTI5LCAwLjEpIi8+CjxzdmcgeD0iMTIiIHk9IjEyIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bS0yIDE0bC01LTUgMS40MS0xLjQxTDEyIDE0LjE3bDcuNTktNy41OUwyMSA4bC05IDl6IiBmaWxsPSIjMTBiOTgxIi8+Cjwvc3ZnPgo8L3N2Zz4K';
+            mobileStationLogo.src = './images/generic-station-logo.svg';
         };
         mobileStationName.textContent = station.name;
         mobileStationFrequency.textContent = station.frequency
@@ -611,7 +611,7 @@ function updateMobileCurrentStation(station) {
         }
     } else {
         // Reset to default state
-        if (mobileStationLogo) mobileStationLogo.src = '';
+        if (mobileStationLogo) mobileStationLogo.src = './images/generic-station-logo.svg';
         if (mobileStationName) mobileStationName.textContent = 'Select a station';
         if (mobileStationFrequency) mobileStationFrequency.textContent = 'Tap to change';
         if (mobileCurrentStation) mobileCurrentStation.classList.remove('playing');
@@ -632,7 +632,7 @@ function updateDesktopCurrentStation(station) {
     if (station && desktopStationLogo && desktopStationName && desktopStationFrequency) {
         desktopStationLogo.src = station.logo;
         desktopStationLogo.onerror = () => {
-            desktopStationLogo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTIiIGZpbGw9InJnYmEoMTYsIDE4NSwgMTI5LCAwLjEpIi8+CjxzdmcgeD0iMTIiIHk9IjEyIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bS0yIDE0bC01LTUgMS40MS0xLjQxTDEyIDE0LjE3bDcuNTktNy41OUwyMSA4bC05IDl6IiBmaWxsPSIjMTBiOTgxIi8+Cjwvc3ZnPgo8L3N2Zz4K';
+            desktopStationLogo.src = './images/generic-station-logo.svg';
         };
         desktopStationName.textContent = station.name;
         desktopStationFrequency.textContent = station.frequency
@@ -645,7 +645,7 @@ function updateDesktopCurrentStation(station) {
         }
     } else {
         // Reset to default state
-        if (desktopStationLogo) desktopStationLogo.src = '';
+        if (desktopStationLogo) desktopStationLogo.src = './images/generic-station-logo.svg';
         if (desktopStationName) desktopStationName.textContent = 'Select a station';
         if (desktopStationFrequency) desktopStationFrequency.textContent = 'Click to change';
         if (desktopCurrentStation) desktopCurrentStation.classList.remove('playing');
