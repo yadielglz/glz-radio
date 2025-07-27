@@ -1327,8 +1327,9 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     }
 }
 
-/* Modern Mobile Station Dropdown */
-.mobile-dropdown-trigger {
+/* Modern Station Dropdown (Mobile & Desktop) */
+.mobile-dropdown-trigger,
+.desktop-dropdown-trigger {
     position: relative;
     overflow: hidden;
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(16, 185, 129, 0.08));
@@ -1339,7 +1340,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.mobile-dropdown-trigger::before {
+.mobile-dropdown-trigger::before,
+.desktop-dropdown-trigger::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -1348,11 +1350,13 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     transition: opacity 0.3s ease;
 }
 
-.mobile-dropdown-trigger:hover::before {
+.mobile-dropdown-trigger:hover::before,
+.desktop-dropdown-trigger:hover::before {
     opacity: 1;
 }
 
-.mobile-dropdown-trigger.playing {
+.mobile-dropdown-trigger.playing,
+.desktop-dropdown-trigger.playing {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.15));
     border-color: rgba(16, 185, 129, 0.6);
     box-shadow: 
@@ -1360,18 +1364,21 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
         inset 0 0 15px rgba(16, 185, 129, 0.1);
 }
 
-.mobile-dropdown-arrow {
+.mobile-dropdown-arrow,
+.desktop-dropdown-arrow {
     position: relative;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.mobile-dropdown-trigger.active .mobile-dropdown-arrow {
+.mobile-dropdown-trigger.active .mobile-dropdown-arrow,
+.desktop-dropdown-trigger.active .desktop-dropdown-arrow {
     transform: rotate(180deg);
     background: rgba(16, 185, 129, 0.2);
 }
 
 /* Dropdown Overlay */
-.mobile-dropdown-overlay {
+.mobile-dropdown-overlay,
+.desktop-dropdown-overlay {
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
     animation: fadeIn 0.3s ease;
@@ -1381,7 +1388,12 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.mobile-dropdown {
+.desktop-dropdown-container {
+    animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-dropdown,
+.desktop-dropdown {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(16, 185, 129, 0.08));
     border: 1px solid rgba(16, 185, 129, 0.3);
     box-shadow: 
@@ -1392,7 +1404,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     overflow: hidden;
 }
 
-.mobile-dropdown::before {
+.mobile-dropdown::before,
+.desktop-dropdown::before {
     content: '';
     position: absolute;
     inset: 0;
@@ -1402,6 +1415,11 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 
 .mobile-dropdown.show {
     transform: translateY(0);
+}
+
+.desktop-dropdown.show {
+    transform: scale(1) !important;
+    opacity: 1 !important;
 }
 
 /* Search Input */
@@ -1448,7 +1466,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
 }
 
 /* Station Options */
-.mobile-station-option {
+.mobile-station-option,
+.desktop-station-option {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(16, 185, 129, 0.05));
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -1474,7 +1493,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     border-color: rgba(16, 185, 129, 0.4);
 }
 
-.mobile-station-option.playing {
+.mobile-station-option.playing,
+.desktop-station-option.playing {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(52, 211, 153, 0.15));
     border-color: rgba(16, 185, 129, 0.6);
     box-shadow: 
@@ -1483,7 +1503,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     transform: scale(1.02);
 }
 
-.mobile-station-option:hover {
+.mobile-station-option:hover,
+.desktop-station-option:hover {
     background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(16, 185, 129, 0.08));
     transform: translateY(-2px);
     box-shadow: 
@@ -1492,7 +1513,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     border-color: rgba(16, 185, 129, 0.4);
 }
 
-.mobile-station-option:active {
+.mobile-station-option:active,
+.desktop-station-option:active {
     transform: scale(0.98);
     transition: transform 0.1s ease;
 }

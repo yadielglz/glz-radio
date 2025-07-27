@@ -79,9 +79,11 @@ function init() {
         setupEventListeners();
         ui.updateNetworkStatus();
         
-        // Initialize mobile dropdown functionality
+        // Initialize dropdown functionality based on screen size
         if (window.innerWidth <= 1024) {
             ui.setupMobileDropdown();
+        } else {
+            ui.setupDesktopDropdown();
         }
         
         // Start clocks
@@ -102,14 +104,11 @@ function init() {
         // Handle window resize for mobile/desktop switching
         window.addEventListener('resize', () => {
             const isMobile = window.innerWidth <= 1024;
-            const stationSelect = document.getElementById('station-select');
             
-            if (stationSelect) {
-                if (isMobile) {
-                    stationSelect.classList.add('hidden');
-                } else if (!state.isPlaying) {
-                    stationSelect.classList.remove('hidden');
-                }
+            if (isMobile) {
+                ui.setupMobileDropdown();
+            } else {
+                ui.setupDesktopDropdown();
             }
         });
     }).catch(error => {
@@ -144,6 +143,17 @@ function setupEventListeners() {
     
     // Mobile station selection handler
     document.addEventListener('mobileStationSelected', (e) => {
+        const { station, index } = e.detail;
+        if (station && index !== undefined) {
+            // Update tuner position
+            ui.updateTuner(index);
+            // Set the station
+            player.setStation(station);
+        }
+    });
+    
+    // Desktop station selection handler
+    document.addEventListener('desktopStationSelected', (e) => {
         const { station, index } = e.detail;
         if (station && index !== undefined) {
             // Update tuner position

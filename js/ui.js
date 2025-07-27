@@ -88,18 +88,7 @@ export function updatePlayerUI(station, isPlaying) {
     }
     
     // Smooth transitions for station selection elements
-    if (dom.stationSelect) {
-        if (isPlaying) {
-            dom.stationSelect.classList.add('hidden');
-        } else {
-            // Only show desktop dropdown on large screens
-            if (window.innerWidth > 1024) {
-                dom.stationSelect.classList.remove('hidden');
-            } else {
-                dom.stationSelect.classList.add('hidden');
-            }
-        }
-    }
+    // Note: We no longer use the old select element, using new dropdowns instead
     
     if (dom.tunerContainer) {
         if (isPlaying) {
@@ -436,42 +425,20 @@ export function updatePlayingModeIndicator(isPlaying) {
 }
 
 export function updateStationDropdown(stations) {
-    if (!dom.stationSelect) return;
-
-    // Preserve current selection
-    const currentVal = dom.stationSelect.value;
-
-    dom.stationSelect.innerHTML = '';
-
-    stations.forEach((station, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-
-        const cleanedFreq = station.frequency
-            .replace('AM:', '')
-            .replace('FM:', '')
-            .replace('Khz', '')
-            .replace('Mhz', '')
-            .trim();
-
-        opt.textContent = station.frequency.startsWith('Satellite') ? station.name : `${cleanedFreq} · ${station.name}`;
-        dom.stationSelect.appendChild(opt);
-    });
-
-    // Restore selection if possible
-    if (currentVal && dom.stationSelect.options[currentVal]) {
-        dom.stationSelect.value = currentVal;
-    }
-    
     // Update mobile station grid
     updateMobileStationGrid(stations);
     
-    // Ensure mobile dropdown is set up after stations are loaded
-    if (window.innerWidth <= 1024) {
-        setTimeout(() => {
+    // Update desktop station grid
+    updateDesktopStationGrid(stations);
+    
+    // Ensure dropdowns are set up after stations are loaded
+    setTimeout(() => {
+        if (window.innerWidth <= 1024) {
             setupMobileDropdown();
-        }, 100);
-    }
+        } else {
+            setupDesktopDropdown();
+        }
+    }, 100);
 }
 
 function updateMobileStationGrid(stations) {
@@ -488,71 +455,95 @@ function updateMobileStationGrid(stations) {
     
     // Create station options
     stations.forEach((station, index) => {
-        const option = document.createElement('div');
-        option.className = 'mobile-station-option';
-        option.dataset.stationIndex = index;
-        
-        // Create logo
-        const logo = document.createElement('img');
-        logo.className = 'mobile-station-option-logo';
-        logo.src = station.logo;
-        logo.alt = `${station.name} logo`;
-        logo.onerror = () => {
-            logo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0icmdiYSgxNiwgMTg1LCAxMjksIDAuMSkiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMkM0LjY5IDIgMiA0LjY5IDIgOHM0LjY5IDYgNiA2IDYtMi42OSA2LTZTMTEuMzEgMiA4IDJ6bS0xIDlsLTMtMyAxLjQxLTEuNDFMOCA5LjU5bDUuMDYtNS4wNkwxNC41IDZsLTcuNSA3eiIgZmlsbD0iIzEwYjk4MSIvPgo8L3N2Zz4KPC9zdmc+Cg==';
-        };
-        
-        // Create info container
-        const info = document.createElement('div');
-        info.className = 'mobile-station-option-info';
-        
-        // Create station name
-        const name = document.createElement('div');
-        name.className = 'mobile-station-option-name';
-        name.textContent = station.name;
-        
-        // Create frequency
-        const frequency = document.createElement('div');
-        frequency.className = 'mobile-station-option-frequency';
-        frequency.textContent = station.frequency
-            .replace('AM:', 'AM ')
-            .replace('FM:', 'FM ')
-            .replace('Satellite Radio', 'SAT');
-        
-        // Create playing indicator
-        const playingIndicator = document.createElement('div');
-        playingIndicator.className = 'mobile-station-option-playing';
-        playingIndicator.style.display = 'none';
-        
-        // Assemble option
-        info.appendChild(name);
-        info.appendChild(frequency);
-        option.appendChild(logo);
-        option.appendChild(info);
-        option.appendChild(playingIndicator);
-        
-        // Add click handler
-        option.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Dispatch custom event for mobile station selection
-            const event = new CustomEvent('mobileStationSelected', {
-                detail: { station, index }
-            });
-            document.dispatchEvent(event);
-            
-            // Update current station display
-            updateMobileCurrentStation(station);
-            
-            // Hide picker
-            hideMobileStationPicker();
-        });
-        
+        const option = createStationOption(station, index, 'mobile');
         mobileStationsList.appendChild(option);
     });
+}
+
+function updateDesktopStationGrid(stations) {
+    const desktopStationsList = document.getElementById('desktop-stations-list');
+    const desktopCurrentStation = document.getElementById('desktop-current-station');
+    const desktopStationLogo = document.getElementById('desktop-station-logo');
+    const desktopStationName = document.getElementById('desktop-station-name');
+    const desktopStationFrequency = document.getElementById('desktop-station-frequency');
     
-    // Setup dropdown functionality
-    setupMobileDropdown();
+    if (!desktopStationsList || !desktopCurrentStation) return;
+    
+    // Clear existing list
+    desktopStationsList.innerHTML = '';
+    
+    // Create station options
+    stations.forEach((station, index) => {
+        const option = createStationOption(station, index, 'desktop');
+        desktopStationsList.appendChild(option);
+    });
+}
+
+function createStationOption(station, index, type) {
+    const option = document.createElement('div');
+    option.className = `${type}-station-option`;
+    option.dataset.stationIndex = index;
+    
+    // Create logo
+    const logo = document.createElement('img');
+    logo.className = `${type}-station-option-logo`;
+    logo.src = station.logo;
+    logo.alt = `${station.name} logo`;
+    logo.onerror = () => {
+        logo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0icmdiYSgxNiwgMTg1LCAxMjksIDAuMSkiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMkM0LjY5IDIgMiA0LjY5IDIgOHM0LjY5IDYgNiA2IDYtMi42OSA2LTZTMTEuMzEgMiA4IDJ6bS0xIDlsLTMtMyAxLjQxLTEuNDFMOCA5LjU5bDUuMDYtNS4wNkwxNC41IDZsLTcuNSA3eiIgZmlsbD0iIzEwYjk4MSIvPgo8L3N2Zz4KPC9zdmc+Cg==';
+    };
+    
+    // Create info container
+    const info = document.createElement('div');
+    info.className = `${type}-station-option-info`;
+    
+    // Create station name
+    const name = document.createElement('div');
+    name.className = `${type}-station-option-name`;
+    name.textContent = station.name;
+    
+    // Create frequency
+    const frequency = document.createElement('div');
+    frequency.className = `${type}-station-option-frequency`;
+    frequency.textContent = station.frequency
+        .replace('AM:', 'AM ')
+        .replace('FM:', 'FM ')
+        .replace('Satellite Radio', 'SAT');
+    
+    // Create playing indicator
+    const playingIndicator = document.createElement('div');
+    playingIndicator.className = `${type}-station-option-playing`;
+    playingIndicator.style.display = 'none';
+    
+    // Assemble option
+    info.appendChild(name);
+    info.appendChild(frequency);
+    option.appendChild(logo);
+    option.appendChild(info);
+    option.appendChild(playingIndicator);
+    
+    // Add click handler
+    option.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // Dispatch custom event for station selection
+        const event = new CustomEvent(`${type}StationSelected`, {
+            detail: { station, index }
+        });
+        document.dispatchEvent(event);
+        
+        // Update current station display
+        if (type === 'mobile') {
+            updateMobileCurrentStation(station);
+            hideMobileStationPicker();
+        } else {
+            updateDesktopCurrentStation(station);
+            hideDesktopStationPicker();
+        }
+    });
+    
+    return option;
 }
 
 function updateMobileCurrentStation(station) {
@@ -587,6 +578,40 @@ function updateMobileCurrentStation(station) {
 // Export function to update mobile station from external calls
 export function updateMobileStation(station) {
     updateMobileCurrentStation(station);
+}
+
+function updateDesktopCurrentStation(station) {
+    const desktopStationLogo = document.getElementById('desktop-station-logo');
+    const desktopStationName = document.getElementById('desktop-station-name');
+    const desktopStationFrequency = document.getElementById('desktop-station-frequency');
+    const desktopCurrentStation = document.getElementById('desktop-current-station');
+    
+    if (station && desktopStationLogo && desktopStationName && desktopStationFrequency) {
+        desktopStationLogo.src = station.logo;
+        desktopStationLogo.onerror = () => {
+            desktopStationLogo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTIiIGZpbGw9InJnYmEoMTYsIDE4NSwgMTI5LCAwLjEpIi8+CjxzdmcgeD0iMTIiIHk9IjEyIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bS0yIDE0bC01LTUgMS40MS0xLjQxTDEyIDE0LjE3bDcuNTktNy41OUwyMSA4bC05IDl6IiBmaWxsPSIjMTBiOTgxIi8+Cjwvc3ZnPgo8L3N2Zz4K';
+        };
+        desktopStationName.textContent = station.name;
+        desktopStationFrequency.textContent = station.frequency
+            .replace('AM:', 'AM ')
+            .replace('FM:', 'FM ')
+            .replace('Satellite Radio', 'SAT');
+        
+        if (desktopCurrentStation) {
+            desktopCurrentStation.classList.add('playing');
+        }
+    } else {
+        // Reset to default state
+        if (desktopStationLogo) desktopStationLogo.src = '';
+        if (desktopStationName) desktopStationName.textContent = 'Select a station';
+        if (desktopStationFrequency) desktopStationFrequency.textContent = 'Click to change';
+        if (desktopCurrentStation) desktopCurrentStation.classList.remove('playing');
+    }
+}
+
+// Export function to update desktop station from external calls
+export function updateDesktopStation(station) {
+    updateDesktopCurrentStation(station);
 }
 
 export function setupMobileDropdown() {
@@ -658,6 +683,75 @@ export function setupMobileDropdown() {
     });
 }
 
+export function setupDesktopDropdown() {
+    const desktopCurrentStation = document.getElementById('desktop-current-station');
+    const desktopDropdownOverlay = document.getElementById('desktop-dropdown-overlay');
+    const desktopDropdown = document.getElementById('desktop-station-picker');
+    const desktopDropdownClose = document.getElementById('desktop-dropdown-close');
+    const desktopStationSearch = document.getElementById('desktop-station-search');
+    
+    if (!desktopCurrentStation || !desktopDropdownOverlay || !desktopDropdown) return;
+    
+    // Remove any existing event listeners to prevent duplicates
+    const newDesktopCurrentStation = desktopCurrentStation.cloneNode(true);
+    desktopCurrentStation.parentNode.replaceChild(newDesktopCurrentStation, desktopCurrentStation);
+    
+    // Toggle dropdown on trigger click
+    newDesktopCurrentStation.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showDesktopStationPicker();
+    });
+    
+    // Close dropdown on overlay click (but not on dropdown content)
+    desktopDropdownOverlay.addEventListener('click', (e) => {
+        if (e.target === desktopDropdownOverlay) {
+            hideDesktopStationPicker();
+        }
+    });
+    
+    // Close dropdown on close button click
+    if (desktopDropdownClose) {
+        desktopDropdownClose.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            hideDesktopStationPicker();
+        });
+    }
+    
+    // Search functionality
+    if (desktopStationSearch) {
+        desktopStationSearch.addEventListener('input', (e) => {
+            e.stopPropagation();
+            const searchTerm = e.target.value.toLowerCase();
+            const stationOptions = document.querySelectorAll('.desktop-station-option');
+            
+            stationOptions.forEach((option, index) => {
+                const stationName = option.querySelector('.desktop-station-option-name').textContent.toLowerCase();
+                const stationFrequency = option.querySelector('.desktop-station-option-frequency').textContent.toLowerCase();
+                
+                if (stationName.includes(searchTerm) || stationFrequency.includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+        
+        // Prevent search input from closing dropdown
+        desktopStationSearch.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
+    
+    // Close dropdown on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && desktopDropdownOverlay.classList.contains('show')) {
+            hideDesktopStationPicker();
+        }
+    });
+}
+
 function toggleMobileStationPicker() {
     const overlay = document.getElementById('mobile-dropdown-overlay');
     if (overlay && overlay.classList.contains('show')) {
@@ -721,6 +815,62 @@ function hideMobileStationPicker() {
         
         // Clear search input
         const searchInput = document.getElementById('mobile-station-search');
+        if (searchInput) {
+            searchInput.value = '';
+            // Trigger search to show all stations
+            searchInput.dispatchEvent(new Event('input'));
+        }
+    }
+}
+
+function showDesktopStationPicker() {
+    const overlay = document.getElementById('desktop-dropdown-overlay');
+    const dropdown = document.getElementById('desktop-station-picker');
+    const trigger = document.getElementById('desktop-current-station');
+    
+    if (overlay && dropdown && trigger) {
+        // Show overlay
+        overlay.classList.remove('hidden');
+        overlay.classList.add('show');
+        
+        // Show dropdown with animation
+        setTimeout(() => {
+            dropdown.classList.add('show');
+        }, 50);
+        
+        // Update trigger state
+        trigger.classList.add('active');
+        
+        // Focus search input if available
+        const searchInput = document.getElementById('desktop-station-search');
+        if (searchInput) {
+            setTimeout(() => {
+                searchInput.focus();
+            }, 300);
+        }
+    }
+}
+
+function hideDesktopStationPicker() {
+    const overlay = document.getElementById('desktop-dropdown-overlay');
+    const dropdown = document.getElementById('desktop-station-picker');
+    const trigger = document.getElementById('desktop-current-station');
+    
+    if (overlay && dropdown && trigger) {
+        // Hide dropdown with animation
+        dropdown.classList.remove('show');
+        
+        // Hide overlay after animation
+        setTimeout(() => {
+            overlay.classList.remove('show');
+            overlay.classList.add('hidden');
+        }, 300);
+        
+        // Update trigger state
+        trigger.classList.remove('active');
+        
+        // Clear search input
+        const searchInput = document.getElementById('desktop-station-search');
         if (searchInput) {
             searchInput.value = '';
             // Trigger search to show all stations
