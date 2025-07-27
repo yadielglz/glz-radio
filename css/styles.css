@@ -1710,9 +1710,6 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     margin-bottom: 1rem;
     position: relative;
     z-index: 1;
-    background: rgba(255, 0, 0, 0.2) !important; /* RED BACKGROUND FOR TESTING */
-    border: 2px solid red !important; /* RED BORDER FOR TESTING */
-    min-height: 100px !important; /* FORCE HEIGHT FOR TESTING */
 }
 
 /* Override Tailwind classes for desktop dropdown visibility */
