@@ -115,20 +115,39 @@
                                     <div id="tuner-labels" class="hidden"></div>
                                     <div id="tuner-markers" class="hidden"></div>
                                     
-                                    <!-- Mobile Station Grid -->
-                                    <div id="mobile-station-grid" class="lg:hidden grid grid-cols-2 gap-3 mt-4">
-                                        <!-- Test station cards -->
-                                        <div class="mobile-station-card" data-station-index="0">
-                                            <div class="mobile-station-playing-indicator"></div>
-                                            <img class="mobile-station-logo" src="https://via.placeholder.com/48x48/10b981/ffffff?text=ST" alt="Test Station logo">
-                                            <div class="mobile-station-name">Test Station</div>
-                                            <div class="mobile-station-frequency">FM 101.5</div>
+                                    <!-- Mobile Station Selector -->
+                                    <div id="mobile-station-selector" class="lg:hidden mt-4">
+                                        <!-- Current Station Display -->
+                                        <div id="mobile-current-station" class="glass rounded-2xl p-3 mb-3 flex items-center gap-3">
+                                            <img id="mobile-station-logo" src="https://via.placeholder.com/48x48/10b981/ffffff?text=ST" alt="Station Logo" class="w-12 h-12 object-contain rounded-lg bg-white/10">
+                                            <div class="flex-1 min-w-0">
+                                                <div id="mobile-station-name" class="font-bold text-sm truncate">Test Station</div>
+                                                <div id="mobile-station-frequency" class="text-xs text-green-400">FM 101.5</div>
+                                            </div>
+                                            <i data-lucide="chevron-down" class="w-5 h-5 text-green-400"></i>
                                         </div>
-                                        <div class="mobile-station-card" data-station-index="1">
-                                            <div class="mobile-station-playing-indicator"></div>
-                                            <img class="mobile-station-logo" src="https://via.placeholder.com/48x48/10b981/ffffff?text=AS" alt="Another Station logo">
-                                            <div class="mobile-station-name">Another Station</div>
-                                            <div class="mobile-station-frequency">FM 102.3</div>
+                                        
+                                        <!-- Station Picker (Hidden by default) -->
+                                        <div id="mobile-station-picker" class="hidden glass rounded-2xl p-3 max-h-48 overflow-y-auto">
+                                            <div class="grid grid-cols-1 gap-2">
+                                                <!-- Test station options -->
+                                                <div class="mobile-station-option" data-station-index="0">
+                                                    <img class="mobile-station-option-logo" src="https://via.placeholder.com/32x32/10b981/ffffff?text=ST" alt="Test Station logo">
+                                                    <div class="mobile-station-option-info">
+                                                        <div class="mobile-station-option-name">Test Station</div>
+                                                        <div class="mobile-station-option-frequency">FM 101.5</div>
+                                                    </div>
+                                                    <div class="mobile-station-option-playing"></div>
+                                                </div>
+                                                <div class="mobile-station-option" data-station-index="1">
+                                                    <img class="mobile-station-option-logo" src="https://via.placeholder.com/32x32/10b981/ffffff?text=AS" alt="Another Station logo">
+                                                    <div class="mobile-station-option-info">
+                                                        <div class="mobile-station-option-name">Another Station</div>
+                                                        <div class="mobile-station-option-frequency">FM 102.3</div>
+                                                    </div>
+                                                    <div class="mobile-station-option-playing"></div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

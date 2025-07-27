@@ -415,75 +415,171 @@ export function updateStationDropdown(stations) {
 }
 
 function updateMobileStationGrid(stations) {
-    const mobileGrid = document.getElementById('mobile-station-grid');
-    if (!mobileGrid) return;
+    const mobilePicker = document.getElementById('mobile-station-picker');
+    const mobileCurrentStation = document.getElementById('mobile-current-station');
+    const mobileStationLogo = document.getElementById('mobile-station-logo');
+    const mobileStationName = document.getElementById('mobile-station-name');
+    const mobileStationFrequency = document.getElementById('mobile-station-frequency');
     
-    // Clear existing grid
-    mobileGrid.innerHTML = '';
+    if (!mobilePicker || !mobileCurrentStation) return;
     
-    // Create station cards
+    // Clear existing picker
+    const pickerGrid = mobilePicker.querySelector('.grid');
+    if (pickerGrid) {
+        pickerGrid.innerHTML = '';
+    }
+    
+    // Create station options
     stations.forEach((station, index) => {
-        const card = document.createElement('div');
-        card.className = 'mobile-station-card';
-        card.dataset.stationIndex = index;
-        
-        // Create playing indicator
-        const playingIndicator = document.createElement('div');
-        playingIndicator.className = 'mobile-station-playing-indicator';
+        const option = document.createElement('div');
+        option.className = 'mobile-station-option';
+        option.dataset.stationIndex = index;
         
         // Create logo
         const logo = document.createElement('img');
-        logo.className = 'mobile-station-logo';
+        logo.className = 'mobile-station-option-logo';
         logo.src = station.logo;
         logo.alt = `${station.name} logo`;
         logo.onerror = () => {
-            logo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0icmdiYSgxNiwgMTg1LCAxMjksIDAuMSkiLz4KPHN2ZyB4PSIxMiIgeT0iMTIiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTIgMTRsLTUtNSAxLjQxLTEuNDFMMTIgMTQuMTdsNy41OS03LjU5TDIxIDhsLTkgOXoiIGZpbGw9IiMxMGI5ODEiLz4KPC9zdmc+Cjwvc3ZnPgo=';
+            logo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNiIgZmlsbD0icmdiYSgxNiwgMTg1LCAxMjksIDAuMSkiLz4KPHN2ZyB4PSI4IiB5PSI4IiB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTggMkM0LjY5IDIgMiA0LjY5IDIgOHM0LjY5IDYgNiA2IDYtMi42OSA2LTZTMTEuMzEgMiA4IDJ6bS0xIDlsLTMtMyAxLjQxLTEuNDFMOCA5LjU5bDUuMDYtNS4wNkwxNC41IDZsLTcuNSA3eiIgZmlsbD0iIzEwYjk4MSIvPgo8L3N2Zz4KPC9zdmc+Cg==';
         };
+        
+        // Create info container
+        const info = document.createElement('div');
+        info.className = 'mobile-station-option-info';
         
         // Create station name
         const name = document.createElement('div');
-        name.className = 'mobile-station-name';
+        name.className = 'mobile-station-option-name';
         name.textContent = station.name;
         
         // Create frequency
         const frequency = document.createElement('div');
-        frequency.className = 'mobile-station-frequency';
+        frequency.className = 'mobile-station-option-frequency';
         frequency.textContent = station.frequency
             .replace('AM:', 'AM ')
             .replace('FM:', 'FM ')
             .replace('Satellite Radio', 'SAT');
         
-        // Assemble card
-        card.appendChild(playingIndicator);
-        card.appendChild(logo);
-        card.appendChild(name);
-        card.appendChild(frequency);
+        // Create playing indicator
+        const playingIndicator = document.createElement('div');
+        playingIndicator.className = 'mobile-station-option-playing';
+        playingIndicator.style.display = 'none';
+        
+        // Assemble option
+        info.appendChild(name);
+        info.appendChild(frequency);
+        option.appendChild(logo);
+        option.appendChild(info);
+        option.appendChild(playingIndicator);
         
         // Add click handler
-        card.addEventListener('click', () => {
+        option.addEventListener('click', () => {
             // Update dropdown to match
             if (dom.stationSelect) {
                 dom.stationSelect.value = index;
                 dom.stationSelect.dispatchEvent(new Event('change'));
             }
+            
+            // Update current station display
+            updateMobileCurrentStation(station);
+            
+            // Hide picker
+            hideMobileStationPicker();
         });
         
-        mobileGrid.appendChild(card);
+        pickerGrid.appendChild(option);
+    });
+    
+    // Add click handler to current station display
+    mobileCurrentStation.addEventListener('click', () => {
+        toggleMobileStationPicker();
     });
 }
 
-export function updateMobileStationPlayingState(stationIndex) {
-    // Remove playing class from all cards
-    const cards = document.querySelectorAll('.mobile-station-card');
-    cards.forEach(card => card.classList.remove('playing'));
+function updateMobileCurrentStation(station) {
+    const mobileStationLogo = document.getElementById('mobile-station-logo');
+    const mobileStationName = document.getElementById('mobile-station-name');
+    const mobileStationFrequency = document.getElementById('mobile-station-frequency');
+    const mobileCurrentStation = document.getElementById('mobile-current-station');
     
-    // Add playing class to current station
-    if (stationIndex !== null && stationIndex >= 0) {
-        const currentCard = document.querySelector(`[data-station-index="${stationIndex}"]`);
-        if (currentCard) {
-            currentCard.classList.add('playing');
+    if (station && mobileStationLogo && mobileStationName && mobileStationFrequency) {
+        mobileStationLogo.src = station.logo;
+        mobileStationLogo.onerror = () => {
+            mobileStationLogo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iMTIiIGZpbGw9InJnYmEoMTYsIDE4NSwgMTI5LCAwLjEpIi8+CjxzdmcgeD0iMTIiIHk9IjEyIiB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyczQuNDggMTAgMTAgMTAgMTAtNC40OCAxMC0xMFMxNy41MiAyIDEyIDJ6bS0yIDE0bC01LTUgMS40MS0xLjQxTDEyIDE0LjE3bDcuNTktNy41OUwyMSA4bC05IDl6IiBmaWxsPSIjMTBiOTgxIi8+Cjwvc3ZnPgo8L3N2Zz4K';
+        };
+        mobileStationName.textContent = station.name;
+        mobileStationFrequency.textContent = station.frequency
+            .replace('AM:', 'AM ')
+            .replace('FM:', 'FM ')
+            .replace('Satellite Radio', 'SAT');
+        
+        if (mobileCurrentStation) {
+            mobileCurrentStation.classList.add('playing');
+        }
+    } else {
+        // Reset to default state
+        if (mobileStationLogo) mobileStationLogo.src = '';
+        if (mobileStationName) mobileStationName.textContent = 'Select a station';
+        if (mobileStationFrequency) mobileStationFrequency.textContent = 'Tap to change';
+        if (mobileCurrentStation) mobileCurrentStation.classList.remove('playing');
+    }
+}
+
+function toggleMobileStationPicker() {
+    const picker = document.getElementById('mobile-station-picker');
+    if (picker) {
+        if (picker.classList.contains('show')) {
+            hideMobileStationPicker();
+        } else {
+            showMobileStationPicker();
         }
     }
+}
+
+function showMobileStationPicker() {
+    const picker = document.getElementById('mobile-station-picker');
+    if (picker) {
+        picker.classList.remove('hidden');
+        picker.classList.add('show');
+    }
+}
+
+function hideMobileStationPicker() {
+    const picker = document.getElementById('mobile-station-picker');
+    if (picker) {
+        picker.classList.remove('show');
+        setTimeout(() => {
+            picker.classList.add('hidden');
+        }, 300);
+    }
+}
+
+export function updateMobileStationPlayingState(stationIndex) {
+    // Update current station display if playing
+    if (stationIndex !== null && stationIndex >= 0) {
+        const currentStation = state.filteredStations[stationIndex];
+        if (currentStation) {
+            updateMobileCurrentStation(currentStation);
+        }
+    } else {
+        updateMobileCurrentStation(null);
+    }
+    
+    // Update picker options
+    const options = document.querySelectorAll('.mobile-station-option');
+    options.forEach((option, index) => {
+        const playingIndicator = option.querySelector('.mobile-station-option-playing');
+        if (playingIndicator) {
+            if (index === stationIndex) {
+                option.classList.add('playing');
+                playingIndicator.style.display = 'block';
+            } else {
+                option.classList.remove('playing');
+                playingIndicator.style.display = 'none';
+            }
+        }
+    });
 }
 
 function computeAverageColor(img) {
