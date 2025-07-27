@@ -441,8 +441,19 @@ export function updateStationDropdown(stations) {
         console.log('Desktop selector computed styles:', {
             display: window.getComputedStyle(desktopSelector).display,
             visibility: window.getComputedStyle(desktopSelector).visibility,
-            opacity: window.getComputedStyle(desktopSelector).opacity
+            opacity: window.getComputedStyle(desktopSelector).opacity,
+            position: window.getComputedStyle(desktopSelector).position,
+            width: window.getComputedStyle(desktopSelector).width,
+            height: window.getComputedStyle(desktopSelector).height
         });
+        
+        // Force make it visible for testing
+        desktopSelector.style.display = 'block';
+        desktopSelector.style.visibility = 'visible';
+        desktopSelector.style.opacity = '1';
+        console.log('Forced desktop selector to be visible');
+    } else {
+        console.error('DESKTOP SELECTOR NOT FOUND!');
     }
     
     // Update mobile station grid

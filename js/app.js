@@ -81,6 +81,15 @@ function init() {
         setupEventListeners();
         ui.updateNetworkStatus();
         
+        // Test if desktop dropdown exists
+        const desktopTest = document.getElementById('desktop-station-selector');
+        console.log('=== DESKTOP DROPDOWN TEST ===');
+        console.log('Desktop selector found:', !!desktopTest);
+        if (desktopTest) {
+            console.log('Desktop selector HTML:', desktopTest.outerHTML);
+            console.log('Desktop selector parent:', desktopTest.parentElement);
+        }
+        
         // Ensure station dropdowns are populated
         ui.updateStationDropdown(state.filteredStations);
         
