@@ -31,7 +31,16 @@ export function updateTuner(index) {
 
 export function updatePlayerUI(station, isPlaying) {
     const iconName = isPlaying ? 'pause' : 'play';
-    dom.playBtn.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6 text-white"></i><span id="play-btn-text" class="font-medium ml-2">${isPlaying ? 'Pause' : 'Play'}</span>`;
+    const buttonText = isPlaying ? 'Pause' : 'Play';
+    
+    // Update main play button
+    dom.playBtn.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6 text-white"></i><span id="play-btn-text" class="font-medium ml-2">${buttonText}</span>`;
+    
+    // Update desktop play button in now-playing section
+    const desktopPlayBtn = document.getElementById('desktop-play-btn');
+    if (desktopPlayBtn) {
+        desktopPlayBtn.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6 text-white"></i><span class="font-medium">${buttonText}</span>`;
+    }
     
     // Smooth transitions for station selection elements
     if (dom.stationSelect) {
@@ -70,12 +79,33 @@ export function updatePlayerUI(station, isPlaying) {
         // Smooth play button transition
         setTimeout(() => {
             dom.playBtn.classList.add('playing');
+            if (desktopPlayBtn) {
+                desktopPlayBtn.classList.add('playing');
+            }
         }, 200);
 
         dom.stationLogo.src = station.logo;
         dom.stationName.textContent = station.name;
         dom.stationFrequency.textContent = station.frequency;
         dom.stationCallsign.textContent = station.callSign;
+
+        // Update desktop frequency indicator
+        const desktopFreqIndicator = document.getElementById('desktop-frequency-indicator');
+        const desktopFreqText = document.getElementById('desktop-frequency-text');
+        if (desktopFreqIndicator && desktopFreqText) {
+            desktopFreqIndicator.classList.add('active');
+            
+            // Extract clean frequency for display
+            let displayText = state.currentBand;
+            if (state.currentBand === 'AM' || state.currentBand === 'FM') {
+                const cleanFreq = station.frequency
+                    .replace('AM:', '')
+                    .replace('FM:', '')
+                    .trim();
+                displayText = cleanFreq;
+            }
+            desktopFreqText.textContent = displayText;
+        }
 
         // Trigger logo bounce, remove class after animation to allow re-trigger
         dom.stationLogo.classList.add('logo-bounce');
@@ -101,8 +131,17 @@ export function updatePlayerUI(station, isPlaying) {
         if (dom.playBtn) {
             dom.playBtn.classList.remove('playing');
         }
+        if (desktopPlayBtn) {
+            desktopPlayBtn.classList.remove('playing');
+        }
         if (dom.header) {
             dom.header.style.removeProperty('--glow-color');
+        }
+
+        // Hide desktop frequency indicator
+        const desktopFreqIndicator = document.getElementById('desktop-frequency-indicator');
+        if (desktopFreqIndicator) {
+            desktopFreqIndicator.classList.remove('active');
         }
 
         // Deactivate blurred background

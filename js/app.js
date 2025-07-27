@@ -89,6 +89,17 @@ function setupEventListeners() {
         e.stopPropagation(); // Prevent event bubbling if needed
         player.togglePlay();
     });
+    
+    // Desktop play button event listener (in now-playing section)
+    setTimeout(() => {
+        const desktopPlayBtn = document.getElementById('desktop-play-btn');
+        if (desktopPlayBtn) {
+            desktopPlayBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                player.togglePlay();
+            });
+        }
+    }, 100);
 
     // Optional: Clicking the whole display could also toggle play/pause
     // dom.playerDisplay.addEventListener('click', player.togglePlay); // Removed - element doesn't exist

@@ -93,14 +93,13 @@ export function setPlayState(isPlaying) {
 }
 
 export async function initWeather() {
-    if (!navigator.geolocation) {
-        return;
-    }
-
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-        const { latitude, longitude } = pos.coords;
+    // Default location (San Juan, PR) as fallback
+    const defaultLat = 18.22;
+    const defaultLon = -66.59;
+    
+    const fetchWeather = async (lat, lon) => {
         try {
-            const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=fahrenheit&timezone=auto`;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit&timezone=auto`;
             const res = await fetch(url);
             const json = await res.json();
             if (json && json.current_weather) {
@@ -110,7 +109,18 @@ export async function initWeather() {
         } catch (e) {
             console.error('Weather fetch failed', e);
         }
-    }, (err) => {
-        console.warn('Geolocation error:', err);
-    });
+    };
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (pos) => {
+            const { latitude, longitude } = pos.coords;
+            await fetchWeather(latitude, longitude);
+        }, async (err) => {
+            console.warn('Geolocation error, using default location:', err);
+            await fetchWeather(defaultLat, defaultLon);
+        });
+    } else {
+        console.warn('Geolocation not available, using default location');
+        await fetchWeather(defaultLat, defaultLon);
+    }
 }
