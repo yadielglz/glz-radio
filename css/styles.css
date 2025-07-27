@@ -1384,6 +1384,12 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     animation: fadeIn 0.3s ease;
 }
 
+.desktop-dropdown-overlay.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 .mobile-dropdown-container {
     animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1726,6 +1732,23 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     padding: 16px;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 10;
+}
+
+#desktop-current-station::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), transparent);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+#desktop-current-station:hover::before {
+    opacity: 1;
 }
 
 #desktop-current-station:hover {

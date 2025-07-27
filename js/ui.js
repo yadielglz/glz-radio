@@ -724,6 +724,7 @@ export function setupDesktopDropdown() {
     
     // Toggle dropdown on trigger click
     newDesktopCurrentStation.addEventListener('click', (e) => {
+        console.log('Desktop dropdown trigger clicked!');
         e.preventDefault();
         e.stopPropagation();
         showDesktopStationPicker();
@@ -850,9 +851,16 @@ function hideMobileStationPicker() {
 }
 
 function showDesktopStationPicker() {
+    console.log('showDesktopStationPicker called');
     const overlay = document.getElementById('desktop-dropdown-overlay');
     const dropdown = document.getElementById('desktop-station-picker');
     const trigger = document.getElementById('desktop-current-station');
+    
+    console.log('Desktop dropdown elements:', {
+        overlay: !!overlay,
+        dropdown: !!dropdown,
+        trigger: !!trigger
+    });
     
     if (overlay && dropdown && trigger) {
         // Show overlay
