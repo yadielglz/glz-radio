@@ -425,6 +425,9 @@ export function updatePlayingModeIndicator(isPlaying) {
 }
 
 export function updateStationDropdown(stations) {
+    console.log('updateStationDropdown called with', stations.length, 'stations');
+    console.log('Window width:', window.innerWidth);
+    
     // Update mobile station grid
     updateMobileStationGrid(stations);
     
@@ -467,7 +470,19 @@ function updateDesktopStationGrid(stations) {
     const desktopStationName = document.getElementById('desktop-station-name');
     const desktopStationFrequency = document.getElementById('desktop-station-frequency');
     
-    if (!desktopStationsList || !desktopCurrentStation) return;
+    console.log('updateDesktopStationGrid called with', stations.length, 'stations');
+    console.log('Desktop elements found:', {
+        desktopStationsList: !!desktopStationsList,
+        desktopCurrentStation: !!desktopCurrentStation,
+        desktopStationLogo: !!desktopStationLogo,
+        desktopStationName: !!desktopStationName,
+        desktopStationFrequency: !!desktopStationFrequency
+    });
+    
+    if (!desktopStationsList || !desktopCurrentStation) {
+        console.warn('Desktop dropdown elements not found, cannot update grid');
+        return;
+    }
     
     // Clear existing list
     desktopStationsList.innerHTML = '';
