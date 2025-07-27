@@ -44,6 +44,16 @@ function applyBand(band) {
 function init() {
     console.log('Initializing GLZ Radio...');
     
+    // Debug DOM elements
+    console.log('DOM Elements Check:', {
+        app: !!dom.app,
+        tuner: !!dom.tuner,
+        bigClock: !!dom.bigClock,
+        idleWeather: !!dom.idleWeather,
+        clock: !!dom.clock,
+        stationSelect: !!dom.stationSelect
+    });
+    
     // This is a critical check. If dom elements are missing, we can't proceed.
     if (!dom.app || !dom.tuner) {
         console.error('Fatal Error: Essential DOM elements are missing. App cannot start.');
@@ -57,6 +67,9 @@ function init() {
         // Set initial state
         const initialStation = state.filteredStations[0];
         player.setStation(initialStation);
+        
+        // Initialize UI state
+        ui.initializeUIState();
         
         // Initial UI update for the idle state
         ui.updatePlayerUI(initialStation, false);
@@ -76,7 +89,11 @@ function init() {
         setInterval(() => ui.updateClock(new Date()), 1000); // Update every second
 
         // Initialize weather (geolocation)
-        initWeather();
+        initWeather().then(() => {
+            console.log('Weather initialized successfully');
+        }).catch(error => {
+            console.error('Weather initialization failed:', error);
+        });
 
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();

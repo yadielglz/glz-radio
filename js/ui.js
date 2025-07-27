@@ -11,6 +11,9 @@ export function updateClock(date) {
     const displayHours = ((hours + 11) % 12 + 1); // Converts 24h to 12h, 0 to 12
     if(dom.clock) {
       dom.clock.textContent = `${displayHours}:${minutes} ${ampm}`;
+      console.log('Header clock updated to:', `${displayHours}:${minutes} ${ampm}`);
+    } else {
+      console.warn('Header clock element not found');
     }
 
     // Update big clock (AM/PM format as requested)
@@ -20,7 +23,45 @@ export function updateClock(date) {
       // Force AM/PM format and ensure it's not being overridden
       const timeString = `${bigClockDisplayHours}:${minutes} ${bigClockAmpm}`;
       dom.bigClock.textContent = timeString;
-      console.log('Big clock updated to:', timeString); // Debug log
+      console.log('Big clock updated to:', timeString);
+    } else {
+      console.warn('Big clock element not found');
+    }
+}
+
+// Function to ensure initial UI state is correct
+export function initializeUIState() {
+    console.log('Initializing UI state...');
+    
+    // Ensure idle display is visible initially
+    if (dom.idleDisplay) {
+        dom.idleDisplay.classList.remove('hidden');
+        console.log('Idle display made visible');
+    } else {
+        console.warn('Idle display element not found');
+    }
+    
+    // Ensure now playing is hidden initially
+    if (dom.nowPlaying) {
+        dom.nowPlaying.classList.add('hidden');
+        console.log('Now playing hidden');
+    } else {
+        console.warn('Now playing element not found');
+    }
+    
+    // Ensure station controls are visible initially
+    const stationControls = document.getElementById('station-controls');
+    if (stationControls) {
+        stationControls.classList.remove('hidden');
+        console.log('Station controls made visible');
+    } else {
+        console.warn('Station controls element not found');
+    }
+    
+    // Ensure header weather is hidden initially
+    if (dom.headerWeather) {
+        dom.headerWeather.classList.add('hidden');
+        console.log('Header weather hidden');
     }
 }
 
@@ -141,6 +182,11 @@ export function updatePlayerUI(station, isPlaying) {
         // Upper card (clock + weather) stays visible
         // Lower card shows station controls
         dom.nowPlaying.classList.add('hidden');
+        
+        // Ensure idle display is visible
+        if (dom.idleDisplay) {
+            dom.idleDisplay.classList.remove('hidden');
+        }
         
         // Show station controls when idle
         const stationControls = document.getElementById('station-controls');
