@@ -889,6 +889,8 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
         flex-direction: row;
         gap: 0.75rem;
         flex-shrink: 0;
+        display: flex;
+        align-items: center;
     }
 
     /* Desktop Lower Card (Station Controls) */
@@ -1560,6 +1562,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
     align-items: center;
     justify-content: space-between;
     min-height: 120px;
+    flex-direction: row;
 }
 
 #big-clock {
@@ -1591,6 +1594,7 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
         0 0 15px rgba(16, 185, 129, 0.1),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
 }
 
 #idle-weather:hover {

@@ -17,7 +17,10 @@ export function updateClock(date) {
     const bigClockAmpm = hours >= 12 ? 'PM' : 'AM';
     const bigClockDisplayHours = ((hours + 11) % 12 + 1); // Converts 24h to 12h, 0 to 12
     if(dom.bigClock) {
-      dom.bigClock.textContent = `${bigClockDisplayHours}:${minutes} ${bigClockAmpm}`;
+      // Force AM/PM format and ensure it's not being overridden
+      const timeString = `${bigClockDisplayHours}:${minutes} ${bigClockAmpm}`;
+      dom.bigClock.textContent = timeString;
+      console.log('Big clock updated to:', timeString); // Debug log
     }
 }
 
