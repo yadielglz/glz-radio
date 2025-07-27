@@ -108,13 +108,18 @@
                                     </button>
                                 </div>
 
-                                <!-- Dropdown / Slider wrapper -->
+                                <!-- Mobile Station Selector -->
                                 <div class="relative w-full">
                                     <input type="range" id="tuner" min="0" max="0" value="0" class="w-full hidden">
-                                    <select id="station-select" class="w-full glass rounded-full px-4 py-3 pr-10 text-sm focus:outline-none bg-white/10 backdrop-blur-md appearance-none">
+                                    <select id="station-select" class="w-full glass rounded-full px-4 py-3 pr-10 text-sm focus:outline-none bg-white/10 backdrop-blur-md appearance-none lg:block hidden">
                                     </select>
                                     <div id="tuner-labels" class="hidden"></div>
                                     <div id="tuner-markers" class="hidden"></div>
+                                    
+                                    <!-- Mobile Station Grid -->
+                                    <div id="mobile-station-grid" class="lg:hidden grid grid-cols-2 gap-3 mt-4">
+                                        <!-- Stations will be populated by JavaScript -->
+                                    </div>
                                 </div>
                             </div>
                         </div>

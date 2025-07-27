@@ -115,6 +115,10 @@ export function updatePlayerUI(station, isPlaying) {
             }
             desktopFreqText.textContent = displayText;
         }
+        
+        // Update mobile station playing state
+        const currentStationIndex = state.filteredStations.findIndex(s => s.name === station.name);
+        updateMobileStationPlayingState(currentStationIndex);
 
         // Trigger logo bounce, remove class after animation to allow re-trigger
         dom.stationLogo.classList.add('logo-bounce');
@@ -156,6 +160,9 @@ export function updatePlayerUI(station, isPlaying) {
         if (desktopFreqIndicator) {
             desktopFreqIndicator.classList.remove('active');
         }
+        
+        // Clear mobile station playing state
+        updateMobileStationPlayingState(null);
 
         // Deactivate blurred background
         if (dom.bgBlur) {
@@ -401,6 +408,81 @@ export function updateStationDropdown(stations) {
     // Restore selection if possible
     if (currentVal && dom.stationSelect.options[currentVal]) {
         dom.stationSelect.value = currentVal;
+    }
+    
+    // Update mobile station grid
+    updateMobileStationGrid(stations);
+}
+
+function updateMobileStationGrid(stations) {
+    const mobileGrid = document.getElementById('mobile-station-grid');
+    if (!mobileGrid) return;
+    
+    // Clear existing grid
+    mobileGrid.innerHTML = '';
+    
+    // Create station cards
+    stations.forEach((station, index) => {
+        const card = document.createElement('div');
+        card.className = 'mobile-station-card';
+        card.dataset.stationIndex = index;
+        
+        // Create playing indicator
+        const playingIndicator = document.createElement('div');
+        playingIndicator.className = 'mobile-station-playing-indicator';
+        
+        // Create logo
+        const logo = document.createElement('img');
+        logo.className = 'mobile-station-logo';
+        logo.src = station.logo;
+        logo.alt = `${station.name} logo`;
+        logo.onerror = () => {
+            logo.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDgiIGhlaWdodD0iNDgiIHZpZXdCb3g9IjAgMCA0OCA0OCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOCIgZmlsbD0icmdiYSgxNiwgMTg1LCAxMjksIDAuMSkiLz4KPHN2ZyB4PSIxMiIgeT0iMTIiIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cGF0aCBkPSJNMTIgMkM2LjQ4IDIgMiA2LjQ4IDIgMTJzNC40OCAxMCAxMCAxMCAxMC00LjQ4IDEwLTEwUzE3LjUyIDIgMTIgMnptLTIgMTRsLTUtNSAxLjQxLTEuNDFMMTIgMTQuMTdsNy41OS03LjU5TDIxIDhsLTkgOXoiIGZpbGw9IiMxMGI5ODEiLz4KPC9zdmc+Cjwvc3ZnPgo=';
+        };
+        
+        // Create station name
+        const name = document.createElement('div');
+        name.className = 'mobile-station-name';
+        name.textContent = station.name;
+        
+        // Create frequency
+        const frequency = document.createElement('div');
+        frequency.className = 'mobile-station-frequency';
+        frequency.textContent = station.frequency
+            .replace('AM:', 'AM ')
+            .replace('FM:', 'FM ')
+            .replace('Satellite Radio', 'SAT');
+        
+        // Assemble card
+        card.appendChild(playingIndicator);
+        card.appendChild(logo);
+        card.appendChild(name);
+        card.appendChild(frequency);
+        
+        // Add click handler
+        card.addEventListener('click', () => {
+            // Update dropdown to match
+            if (dom.stationSelect) {
+                dom.stationSelect.value = index;
+                dom.stationSelect.dispatchEvent(new Event('change'));
+            }
+        });
+        
+        mobileGrid.appendChild(card);
+    });
+}
+
+export function updateMobileStationPlayingState(stationIndex) {
+    // Remove playing class from all cards
+    const cards = document.querySelectorAll('.mobile-station-card');
+    cards.forEach(card => card.classList.remove('playing'));
+    
+    // Add playing class to current station
+    if (stationIndex !== null && stationIndex >= 0) {
+        const currentCard = document.querySelector(`[data-station-index="${stationIndex}"]`);
+        if (currentCard) {
+            currentCard.classList.add('playing');
+        }
     }
 }
 
