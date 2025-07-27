@@ -67,7 +67,9 @@ export function updatePlayerUI(station, isPlaying) {
         }
     }
 
-    // Play status removed - indicator handles the playing state
+    if (dom.playStatus) {
+        dom.playStatus.textContent = isPlaying ? 'Playing' : 'Paused';
+    }
 
     if (isPlaying && station) {
         // State: Playing
