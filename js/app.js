@@ -15,6 +15,9 @@ function applyBand(band) {
     ui.createTunerScale(state.filteredStations, band);
     ui.updateBandButton(band, state.isPlaying);
 
+    // Update station dropdowns with new stations
+    ui.updateStationDropdown(state.filteredStations);
+
     // Select first station of the new band if current station is not in filtered list
     let targetStation = state.currentStation;
     if (!state.filteredStations.includes(targetStation)) {
@@ -78,6 +81,9 @@ function init() {
         ui.setAppFooter();
         setupEventListeners();
         ui.updateNetworkStatus();
+        
+        // Ensure station dropdowns are populated
+        ui.updateStationDropdown(state.filteredStations);
         
         // Initialize dropdown functionality based on screen size
         console.log('Screen width:', window.innerWidth, 'Setting up dropdown for:', window.innerWidth <= 1024 ? 'mobile' : 'desktop');
