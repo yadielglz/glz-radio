@@ -61,6 +61,11 @@ function init() {
         setupEventListeners();
         ui.updateNetworkStatus();
         
+        // Initialize mobile dropdown functionality
+        if (window.innerWidth <= 1024) {
+            ui.setupMobileDropdown();
+        }
+        
         // Start clocks
         ui.updateClock(new Date()); // Initial call
         setInterval(() => ui.updateClock(new Date()), 1000); // Update every second

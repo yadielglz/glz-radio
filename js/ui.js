@@ -414,22 +414,26 @@ export function updateStationDropdown(stations) {
     
     // Update mobile station grid
     updateMobileStationGrid(stations);
+    
+    // Ensure mobile dropdown is set up after stations are loaded
+    if (window.innerWidth <= 1024) {
+        setTimeout(() => {
+            setupMobileDropdown();
+        }, 100);
+    }
 }
 
 function updateMobileStationGrid(stations) {
-    const mobilePicker = document.getElementById('mobile-station-picker');
+    const mobileStationsList = document.getElementById('mobile-stations-list');
     const mobileCurrentStation = document.getElementById('mobile-current-station');
     const mobileStationLogo = document.getElementById('mobile-station-logo');
     const mobileStationName = document.getElementById('mobile-station-name');
     const mobileStationFrequency = document.getElementById('mobile-station-frequency');
     
-    if (!mobilePicker || !mobileCurrentStation) return;
+    if (!mobileStationsList || !mobileCurrentStation) return;
     
-    // Clear existing picker
-    const pickerGrid = mobilePicker.querySelector('.grid');
-    if (pickerGrid) {
-        pickerGrid.innerHTML = '';
-    }
+    // Clear existing list
+    mobileStationsList.innerHTML = '';
     
     // Create station options
     stations.forEach((station, index) => {
@@ -490,13 +494,11 @@ function updateMobileStationGrid(stations) {
             hideMobileStationPicker();
         });
         
-        pickerGrid.appendChild(option);
+        mobileStationsList.appendChild(option);
     });
     
-    // Add click handler to current station display
-    mobileCurrentStation.addEventListener('click', () => {
-        toggleMobileStationPicker();
-    });
+    // Setup dropdown functionality
+    setupMobileDropdown();
 }
 
 function updateMobileCurrentStation(station) {
@@ -528,32 +530,133 @@ function updateMobileCurrentStation(station) {
     }
 }
 
-function toggleMobileStationPicker() {
-    const picker = document.getElementById('mobile-station-picker');
-    if (picker) {
-        if (picker.classList.contains('show')) {
+export function setupMobileDropdown() {
+    const mobileCurrentStation = document.getElementById('mobile-current-station');
+    const mobileDropdownOverlay = document.getElementById('mobile-dropdown-overlay');
+    const mobileDropdown = document.getElementById('mobile-station-picker');
+    const mobileDropdownClose = document.getElementById('mobile-dropdown-close');
+    const mobileStationSearch = document.getElementById('mobile-station-search');
+    
+    if (!mobileCurrentStation || !mobileDropdownOverlay || !mobileDropdown) return;
+    
+    // Toggle dropdown on trigger click
+    mobileCurrentStation.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        showMobileStationPicker();
+    });
+    
+    // Close dropdown on overlay click
+    mobileDropdownOverlay.addEventListener('click', (e) => {
+        if (e.target === mobileDropdownOverlay) {
             hideMobileStationPicker();
-        } else {
-            showMobileStationPicker();
         }
+    });
+    
+    // Close dropdown on close button click
+    if (mobileDropdownClose) {
+        mobileDropdownClose.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            hideMobileStationPicker();
+        });
+    }
+    
+    // Search functionality
+    if (mobileStationSearch) {
+        mobileStationSearch.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const stationOptions = document.querySelectorAll('.mobile-station-option');
+            
+            stationOptions.forEach((option, index) => {
+                const stationName = option.querySelector('.mobile-station-option-name').textContent.toLowerCase();
+                const stationFrequency = option.querySelector('.mobile-station-option-frequency').textContent.toLowerCase();
+                
+                if (stationName.includes(searchTerm) || stationFrequency.includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+    }
+    
+    // Close dropdown on escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mobileDropdownOverlay.classList.contains('show')) {
+            hideMobileStationPicker();
+        }
+    });
+}
+
+function toggleMobileStationPicker() {
+    const overlay = document.getElementById('mobile-dropdown-overlay');
+    if (overlay && overlay.classList.contains('show')) {
+        hideMobileStationPicker();
+    } else {
+        showMobileStationPicker();
     }
 }
 
 function showMobileStationPicker() {
-    const picker = document.getElementById('mobile-station-picker');
-    if (picker) {
-        picker.classList.remove('hidden');
-        picker.classList.add('show');
+    const overlay = document.getElementById('mobile-dropdown-overlay');
+    const dropdown = document.getElementById('mobile-station-picker');
+    const trigger = document.getElementById('mobile-current-station');
+    
+    if (overlay && dropdown && trigger) {
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+        
+        // Show overlay
+        overlay.classList.remove('hidden');
+        overlay.classList.add('show');
+        
+        // Show dropdown with animation
+        setTimeout(() => {
+            dropdown.classList.add('show');
+        }, 50);
+        
+        // Update trigger state
+        trigger.classList.add('active');
+        
+        // Focus search input if available
+        const searchInput = document.getElementById('mobile-station-search');
+        if (searchInput) {
+            setTimeout(() => {
+                searchInput.focus();
+            }, 300);
+        }
     }
 }
 
 function hideMobileStationPicker() {
-    const picker = document.getElementById('mobile-station-picker');
-    if (picker) {
-        picker.classList.remove('show');
+    const overlay = document.getElementById('mobile-dropdown-overlay');
+    const dropdown = document.getElementById('mobile-station-picker');
+    const trigger = document.getElementById('mobile-current-station');
+    
+    if (overlay && dropdown && trigger) {
+        // Allow body scroll
+        document.body.style.overflow = '';
+        
+        // Hide dropdown with animation
+        dropdown.classList.remove('show');
+        
+        // Hide overlay after animation
         setTimeout(() => {
-            picker.classList.add('hidden');
+            overlay.classList.remove('show');
+            overlay.classList.add('hidden');
         }, 300);
+        
+        // Update trigger state
+        trigger.classList.remove('active');
+        
+        // Clear search input
+        const searchInput = document.getElementById('mobile-station-search');
+        if (searchInput) {
+            searchInput.value = '';
+            // Trigger search to show all stations
+            searchInput.dispatchEvent(new Event('input'));
+        }
     }
 }
 
