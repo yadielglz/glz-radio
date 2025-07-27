@@ -42,9 +42,9 @@
             <div class="lg:desktop-upper-card mb-6 lg:mb-8">
                 <!-- Idle Display with Clock and Weather -->
                 <div id="idle-display" class="glass rounded-3xl p-8 flex items-center justify-between text-white w-full">
-                    <div id="big-clock" class="text-6xl font-bold">3:45 PM</div>
+                    <div id="big-clock" class="text-6xl font-bold">9:56 PM</div>
                     <div id="idle-weather" class="text-sm text-gray-300 flex items-center space-x-2">
-                        <span>☀️ 72°F</span>
+                        <span>☀️ 83°F Clear Sky</span>
                     </div>
                 </div>
             </div>
@@ -53,29 +53,32 @@
             <div class="lg:desktop-lower-card">
                 <!-- Now Playing Display (Initially Hidden) -->
                 <div id="now-playing" class="hidden glass rounded-3xl p-6 flex items-center justify-start text-white w-full mb-8 lg:mb-0">
-                    <img id="station-logo" src="https://via.placeholder.com/96x96/10b981/ffffff?text=STATION" alt="Station Logo" class="h-28 w-28 lg:h-24 lg:w-24 object-contain rounded-md mr-6 lg:mr-0 lg:mb-4 flex-shrink-0">
-                    <div class="flex flex-col justify-center flex-1 lg:station-info lg:items-center lg:text-center lg:w-full lg:overflow-hidden">
-                        <div id="station-name" class="text-2xl font-bold mb-2 lg:text-center lg:mb-1">Test Station</div>
-                        <div id="station-frequency" class="text-lg mb-1 lg:text-center lg:mb-1">FM: 101.5</div>
-                        <div id="station-callsign" class="text-sm text-gray-400 mb-2 lg:text-center lg:mb-1">TEST-FM</div>
-                        <div id="play-status" class="text-xs text-gray-400 mt-2 h-5 lg:text-center lg:mt-1">Playing</div>
-                        
-                        <!-- Desktop Playing Controls -->
-                        <div class="hidden lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-4 lg:mt-4">
-                            <!-- Frequency Indicator for Desktop -->
-                            <div id="desktop-frequency-indicator" class="playing-mode-indicator active">
-                                <div class="playing-mode-content">
-                                    <i data-lucide="radio" class="playing-mode-icon"></i>
-                                    <span id="desktop-frequency-text" class="playing-mode-text">101.5</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Desktop Play Button -->
-                            <button id="desktop-play-btn" class="glass rounded-full flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md px-8 py-4">
-                                <i data-lucide="pause" class="w-6 h-6 text-white"></i>
-                                <span class="font-medium">Pause</span>
-                            </button>
+                    <!-- Station Info Section (60%) -->
+                    <div class="flex items-center flex-1 lg:flex-1 lg:mr-8">
+                        <img id="station-logo" src="https://via.placeholder.com/96x96/10b981/ffffff?text=STATION" alt="Station Logo" class="h-28 w-28 lg:h-24 lg:w-24 object-contain rounded-md mr-6 lg:mr-6 flex-shrink-0">
+                        <div class="flex flex-col justify-center flex-1 lg:station-info lg:items-start lg:text-left lg:w-full lg:overflow-hidden">
+                            <div id="station-name" class="text-2xl font-bold mb-2 lg:text-left lg:mb-1">Test Station</div>
+                            <div id="station-frequency" class="text-lg mb-1 lg:text-left lg:mb-1">FM: 101.5</div>
+                            <div id="station-callsign" class="text-sm text-gray-400 mb-2 lg:text-left lg:mb-1">TEST-FM</div>
+                            <div id="play-status" class="text-xs text-gray-400 mt-2 h-5 lg:text-left lg:mt-1">Playing</div>
                         </div>
+                    </div>
+                    
+                    <!-- Controls Section (40%) -->
+                    <div class="flex flex-col items-center justify-center lg:flex-row lg:gap-4 lg:flex-shrink-0">
+                        <!-- Frequency Indicator for Desktop -->
+                        <div id="desktop-frequency-indicator" class="playing-mode-indicator active">
+                            <div class="playing-mode-content">
+                                <i data-lucide="radio" class="playing-mode-icon"></i>
+                                <span id="desktop-frequency-text" class="playing-mode-text">101.5</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Desktop Play Button -->
+                        <button id="desktop-play-btn" class="glass rounded-full flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md px-8 py-4">
+                            <i data-lucide="pause" class="w-6 h-6 text-white"></i>
+                            <span class="font-medium">Pause</span>
+                        </button>
                     </div>
                 </div>
 
