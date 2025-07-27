@@ -51,7 +51,12 @@ export function updatePlayerUI(station, isPlaying) {
         if (isPlaying) {
             dom.stationSelect.classList.add('hidden');
         } else {
-            dom.stationSelect.classList.remove('hidden');
+            // Only show desktop dropdown on large screens
+            if (window.innerWidth > 1024) {
+                dom.stationSelect.classList.remove('hidden');
+            } else {
+                dom.stationSelect.classList.add('hidden');
+            }
         }
     }
     
@@ -480,12 +485,15 @@ function updateMobileStationGrid(stations) {
         option.appendChild(playingIndicator);
         
         // Add click handler
-        option.addEventListener('click', () => {
-            // Update dropdown to match
-            if (dom.stationSelect) {
-                dom.stationSelect.value = index;
-                dom.stationSelect.dispatchEvent(new Event('change'));
-            }
+        option.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Dispatch custom event for mobile station selection
+            const event = new CustomEvent('mobileStationSelected', {
+                detail: { station, index }
+            });
+            document.dispatchEvent(event);
             
             // Update current station display
             updateMobileCurrentStation(station);
@@ -530,6 +538,11 @@ function updateMobileCurrentStation(station) {
     }
 }
 
+// Export function to update mobile station from external calls
+export function updateMobileStation(station) {
+    updateMobileCurrentStation(station);
+}
+
 export function setupMobileDropdown() {
     const mobileCurrentStation = document.getElementById('mobile-current-station');
     const mobileDropdownOverlay = document.getElementById('mobile-dropdown-overlay');
@@ -539,14 +552,18 @@ export function setupMobileDropdown() {
     
     if (!mobileCurrentStation || !mobileDropdownOverlay || !mobileDropdown) return;
     
+    // Remove any existing event listeners to prevent duplicates
+    const newMobileCurrentStation = mobileCurrentStation.cloneNode(true);
+    mobileCurrentStation.parentNode.replaceChild(newMobileCurrentStation, mobileCurrentStation);
+    
     // Toggle dropdown on trigger click
-    mobileCurrentStation.addEventListener('click', (e) => {
+    newMobileCurrentStation.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
         showMobileStationPicker();
     });
     
-    // Close dropdown on overlay click
+    // Close dropdown on overlay click (but not on dropdown content)
     mobileDropdownOverlay.addEventListener('click', (e) => {
         if (e.target === mobileDropdownOverlay) {
             hideMobileStationPicker();
@@ -565,6 +582,7 @@ export function setupMobileDropdown() {
     // Search functionality
     if (mobileStationSearch) {
         mobileStationSearch.addEventListener('input', (e) => {
+            e.stopPropagation();
             const searchTerm = e.target.value.toLowerCase();
             const stationOptions = document.querySelectorAll('.mobile-station-option');
             
@@ -578,6 +596,11 @@ export function setupMobileDropdown() {
                     option.style.display = 'none';
                 }
             });
+        });
+        
+        // Prevent search input from closing dropdown
+        mobileStationSearch.addEventListener('click', (e) => {
+            e.stopPropagation();
         });
     }
     
@@ -685,6 +708,11 @@ export function updateMobileStationPlayingState(stationIndex) {
             }
         }
     });
+}
+
+// Function to update mobile station display when band changes
+export function updateMobileStationDisplay(station) {
+    updateMobileCurrentStation(station);
 }
 
 function computeAverageColor(img) {

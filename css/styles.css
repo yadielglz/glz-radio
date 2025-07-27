@@ -1659,6 +1659,11 @@ input[type="range"]#tuner::-webkit-slider-runnable-track {
         height: 100%;
     }
     
+    /* Hide desktop dropdown on mobile */
+    #station-select {
+        display: none !important;
+    }
+    
     #app {
         padding: 0 0.5rem;
         height: 100vh;

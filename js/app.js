@@ -34,6 +34,11 @@ function applyBand(band) {
 
     // Ensure RDS reflects current band when not playing
     ui.updateRds(state.currentStation, state.isPlaying);
+    
+    // Update mobile station display
+    if (window.innerWidth <= 1024) {
+        ui.updateMobileStationDisplay(targetStation);
+    }
 }
 
 function init() {
@@ -76,6 +81,20 @@ function init() {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+        
+        // Handle window resize for mobile/desktop switching
+        window.addEventListener('resize', () => {
+            const isMobile = window.innerWidth <= 1024;
+            const stationSelect = document.getElementById('station-select');
+            
+            if (stationSelect) {
+                if (isMobile) {
+                    stationSelect.classList.add('hidden');
+                } else if (!state.isPlaying) {
+                    stationSelect.classList.remove('hidden');
+                }
+            }
+        });
     }).catch(error => {
         console.error("Failed to initialize application:", error);
     });
@@ -105,6 +124,17 @@ function setupEventListeners() {
             });
         }
     }, 100);
+    
+    // Mobile station selection handler
+    document.addEventListener('mobileStationSelected', (e) => {
+        const { station, index } = e.detail;
+        if (station && index !== undefined) {
+            // Update tuner position
+            ui.updateTuner(index);
+            // Set the station
+            player.setStation(station);
+        }
+    });
 
     // Optional: Clicking the whole display could also toggle play/pause
     // dom.playerDisplay.addEventListener('click', player.togglePlay); // Removed - element doesn't exist
