@@ -109,13 +109,33 @@
                                     </button>
                                 </div>
 
-                                <!-- Dropdown / Slider wrapper -->
+                                <!-- Mobile Station Selector -->
                                 <div class="relative w-full">
                                     <input type="range" id="tuner" min="0" max="0" value="0" class="w-full hidden">
-                                    <select id="station-select" class="w-full glass rounded-full px-4 py-3 pr-10 text-sm focus:outline-none bg-white/10 backdrop-blur-md appearance-none">
+                                    <select id="station-select" class="w-full glass rounded-full px-4 py-3 pr-10 text-sm focus:outline-none bg-white/10 backdrop-blur-md appearance-none lg:block hidden">
                                     </select>
                                     <div id="tuner-labels" class="hidden"></div>
                                     <div id="tuner-markers" class="hidden"></div>
+                                    
+                                    <!-- Mobile Station Selector -->
+                                    <div id="mobile-station-selector" class="lg:hidden mt-4">
+                                        <!-- Current Station Display -->
+                                        <div id="mobile-current-station" class="glass rounded-2xl p-3 mb-3 flex items-center gap-3">
+                                            <img id="mobile-station-logo" src="" alt="Station Logo" class="w-12 h-12 object-contain rounded-lg bg-white/10">
+                                            <div class="flex-1 min-w-0">
+                                                <div id="mobile-station-name" class="font-bold text-sm truncate">Select a station</div>
+                                                <div id="mobile-station-frequency" class="text-xs text-green-400">Tap to change</div>
+                                            </div>
+                                            <i data-lucide="chevron-down" class="w-5 h-5 text-green-400"></i>
+                                        </div>
+                                        
+                                        <!-- Station Picker (Hidden by default) -->
+                                        <div id="mobile-station-picker" class="hidden glass rounded-2xl p-3 max-h-48 overflow-y-auto">
+                                            <div class="grid grid-cols-1 gap-2">
+                                                <!-- Stations will be populated by JavaScript -->
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
