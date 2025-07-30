@@ -5,7 +5,9 @@ export const state = {
     filteredStations: [],
     currentBand: 'FM',
     currentStation: null,
-    isPlaying: false
+    isPlaying: false,
+    rdsInterval: null,
+    rdsTextIndex: 0
 };
 
 // Helper to filter stations based on the active band
@@ -31,4 +33,4 @@ export async function loadStations() {
     // Default band to FM on load
     setBand(state.currentBand);
     return Promise.resolve();
-} 
+}

@@ -34,22 +34,13 @@ function render() {
         <i data-lucide="${icon}" class="weather-icon"></i>
         <div class="weather-details">
             <div class="weather-temp">${temp}°F</div>
-            <div class="weather-condition">${condition}</div>
         </div>
     `;
     
-    // Simple header weather (compact)
-    const headerHtml = `<i data-lucide="${icon}" class="w-4 h-4 inline-block"></i><span>${temp}°F</span>`;
-
     if (dom.idleWeather) {
         dom.idleWeather.innerHTML = idleHtml;
     }
-    if (dom.headerWeather) dom.headerWeather.innerHTML = headerHtml;
-
-    // Keep weather visible at all times (both idle and playing states)
-    if (dom.idleWeather) dom.idleWeather.classList.remove('hidden');
-    if (dom.headerWeather) dom.headerWeather.classList.add('hidden'); // Always hide header weather
-
+    
     if (window.lucide) {
         lucide.createIcons();
     }

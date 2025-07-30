@@ -1,36 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="color-scheme" content="dark">
     <title>GLZ Radio</title>
     
-    <link rel="manifest" href="/manifest.json">
-    <link rel="apple-touch-icon" href="images/icon-192x192.png">
-
+    <!-- Google Sans Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
     
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-black text-white font-sans overflow-hidden lg:overflow-auto">
-
+<body class="bg-gradient-to-br from-gray-900 to-black text-white font-sans overflow-hidden">
     <!-- Blurred background layer -->
-    <div id="bg-blur"></div>
-
-    <div id="app" class="flex flex-col h-dvh lg:h-auto max-w-md lg:max-w-none mx-auto bg-black relative">
-
+    <div id="bg-blur" class="fixed inset-0 z-0"></div>
+    
+    <div id="app" class="flex flex-col h-dvh max-w-md lg:max-w-4xl mx-auto relative z-10">
         <!-- Header -->
-        <header class="flex items-center justify-between text-sm flex-shrink-0 glass rounded-b-3xl lg:rounded-t-3xl lg:rounded-b-none px-6 py-4">
+        <header class="flex items-center justify-between text-sm px-6 py-4 glass-effect rounded-b-2xl">
             <div class="flex items-center space-x-2">
-                <div id="clock" class="text-left invisible font-semibold"></div>
+                <div id="clock" class="text-left font-semibold"></div>
             </div>
             <div id="rds-display" class="flex-1 text-center font-bold truncate px-2">
                 <span id="rds-text" class="text-base">GLZ Radio</span>
@@ -42,192 +42,78 @@
         </header>
 
         <!-- Main Content -->
-        <main class="flex-grow flex flex-col justify-center px-6 py-6 lg:py-8">
-            
-            <!-- Desktop Layout: Upper Card (Clock + Weather) -->
-            <div class="lg:desktop-upper-card mb-6 lg:mb-8">
-                <!-- Idle Display with Clock and Weather -->
-                <div id="idle-display" class="glass rounded-3xl p-8 flex items-center justify-between text-white w-full">
-                    <div class="flex flex-col items-center">
-                        <div id="big-clock" class="text-6xl font-bold"></div>
-                        <!-- Frequency Indicator for Desktop -->
-                        <div id="desktop-frequency-indicator" class="playing-mode-indicator mt-4 hidden lg:flex">
-                            <div class="playing-mode-content">
-                                <i data-lucide="radio" class="playing-mode-icon"></i>
-                                <span id="desktop-frequency-text" class="playing-mode-text">FM</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex flex-col items-end">
-                        <div id="idle-weather" class="text-sm text-gray-300 flex items-center space-x-2"></div>
-                        <!-- Frequency Indicator for Mobile -->
-                        <div id="mobile-frequency-indicator" class="playing-mode-indicator mt-4 lg:hidden">
-                            <div class="playing-mode-content">
-                                <i data-lucide="radio" class="playing-mode-icon"></i>
-                                <span id="mobile-frequency-text" class="playing-mode-text">FM</span>
-                            </div>
-                        </div>
+        <main class="flex-grow flex flex-col justify-center px-6 py-8">
+            <!-- Clock and Weather Display -->
+            <div class="glass-effect rounded-3xl p-8 mb-8 flex items-center justify-between">
+                <div class="flex flex-col items-center">
+                    <div id="big-clock" class="text-6xl font-bold"></div>
+                </div>
+                <div class="flex flex-col items-end">
+                    <div id="idle-weather" class="text-sm flex items-center space-x-2"></div>
+                </div>
+            </div>
+
+            <!-- Now Playing Display -->
+            <div id="now-playing" class="hidden glass-effect rounded-3xl p-6 mb-8">
+                <div class="flex items-center">
+                    <img id="station-logo" src="" alt="Station Logo" class="h-24 w-24 object-contain rounded-xl mr-6">
+                    <div class="flex-1">
+                        <div id="station-name" class="text-2xl font-bold mb-1"></div>
+                        <div id="station-frequency" class="text-lg mb-1"></div>
+                        <div id="station-callsign" class="text-sm text-gray-400 mb-4"></div>
+                        <button id="desktop-play-btn" class="glass-effect rounded-full flex items-center gap-3 px-6 py-3">
+                            <i data-lucide="pause" class="w-5 h-5"></i>
+                            <span>Pause</span>
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Desktop Layout: Lower Card (Station Controls) -->
-            <div class="lg:desktop-lower-card">
-                <!-- Now Playing Display (Initially Hidden) -->
-                <div id="now-playing" class="hidden glass rounded-3xl p-6 flex items-center justify-start text-white w-full mb-8 lg:mb-0">
-                    <!-- Station Info Section (60%) -->
-                    <div class="flex items-center flex-1 lg:flex-1 lg:mr-8">
-                        <img id="station-logo" src="" alt="Station Logo" class="h-28 w-28 lg:h-24 lg:w-24 object-contain rounded-md mr-6 lg:mr-6 flex-shrink-0">
-                        <div class="flex flex-col justify-center flex-1 lg:station-info lg:items-start lg:text-left lg:w-full lg:overflow-hidden">
-                            <div id="station-name" class="text-2xl font-bold mb-2 lg:text-left lg:mb-1"></div>
-                            <div id="station-frequency" class="text-lg mb-1 lg:text-left lg:mb-1"></div>
-                            <div id="station-callsign" class="text-sm text-gray-400 mb-2 lg:text-left lg:mb-1"></div>
+            <!-- Station Controls -->
+            <div id="station-controls">
+                <!-- Band Selection -->
+                <div class="flex justify-center mb-8 gap-4">
+                    <button class="band-btn glass-effect rounded-full px-6 py-3" data-band="AM">
+                        <span class="font-bold">AM</span>
+                    </button>
+                    <button class="band-btn glass-effect rounded-full px-6 py-3" data-band="FM">
+                        <span class="font-bold">FM</span>
+                    </button>
+                    <button class="band-btn glass-effect rounded-full px-6 py-3" data-band="SAT">
+                        <span class="font-bold">SAT</span>
+                    </button>
+                </div>
+
+                <!-- Station Selection -->
+                <div class="glass-effect rounded-3xl p-6 mb-8">
+                    <div id="desktop-station-selector">
+                        <!-- Current Station Display -->
+                        <div id="desktop-current-station" class="glass-effect rounded-2xl p-4 flex items-center gap-3 cursor-pointer">
+                            <img id="desktop-station-logo" src="" alt="Station Logo" class="w-12 h-12 object-contain rounded-xl">
+                            <div class="flex-1 min-w-0">
+                                <div id="desktop-station-name" class="font-bold text-sm truncate">Select a station</div>
+                                <div id="desktop-station-frequency" class="text-xs text-green-400">Click to change</div>
+                            </div>
+                            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10">
+                                <i data-lucide="chevron-down" class="w-4 h-4 text-green-400"></i>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <!-- Controls Section (40%) -->
-                    <div class="flex flex-col items-center justify-center lg:flex-row lg:gap-4 lg:flex-shrink-0">
-                        <!-- Desktop Play Button -->
-                        <button id="desktop-play-btn" class="glass rounded-full flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md px-8 py-4">
-                            <i data-lucide="pause" class="w-6 h-6 text-white"></i>
-                            <span class="font-medium">Pause</span>
-                        </button>
                     </div>
                 </div>
 
-                <!-- Station Controls (Visible when not playing) -->
-                <div id="station-controls" class="w-full">
-                    <div id="radio-controls-wrapper" class="w-full flex flex-col items-center lg:grid lg:grid-cols-2 lg:gap-8">
-
-                        <!-- Tuner -->
-                        <div id="tuner-container" class="glass rounded-3xl w-full">
-                            <div class="flex flex-col items-stretch">
-                                <!-- Band Selection Buttons -->
-                                <div id="band-btn-group" class="flex justify-center mb-6 gap-4 flex-wrap">
-                                    <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10 px-6 py-3" data-band="AM">
-                                        <span class="font-bold">AM</span>
-                                        <i data-lucide="radio" class="radio-icon text-green-400"></i>
-                                    </button>
-                                    <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10 px-6 py-3" data-band="FM">
-                                        <span class="font-bold">FM</span>
-                                        <i data-lucide="radio" class="radio-icon text-green-400"></i>
-                                    </button>
-                                    <button class="band-btn glass rounded-full backdrop-blur-md bg-white/10 px-6 py-3" data-band="SAT">
-                                        <span class="font-bold">SAT</span>
-                                        <i data-lucide="radio" class="radio-icon text-green-400"></i>
-                                    </button>
-                                </div>
-
-                                <!-- Mobile Station Selector -->
-                                <div class="relative w-full">
-                                    <input type="range" id="tuner" min="0" max="0" value="0" class="w-full hidden">
-                                    <!-- Desktop Station Selector (using new dropdown) -->
-                                    <div id="desktop-station-selector" class="lg:block">
-                                        <!-- Current Station Display -->
-                                        <div id="desktop-current-station" class="desktop-dropdown-trigger glass rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition-all duration-300 hover:bg-white/10 active:scale-95">
-                                            <img id="desktop-station-logo" src="" alt="Station Logo" class="w-12 h-12 object-contain rounded-xl bg-white/10 shadow-lg">
-                                            <div class="flex-1 min-w-0">
-                                                <div id="desktop-station-name" class="font-bold text-sm truncate">Select a station</div>
-                                                <div id="desktop-station-frequency" class="text-xs text-green-400">Click to change</div>
-                                            </div>
-                                            <div class="desktop-dropdown-arrow flex items-center justify-center w-8 h-8 rounded-full bg-white/10 transition-transform duration-300">
-                                                <i data-lucide="chevron-down" class="w-4 h-4 text-green-400 transition-transform duration-300"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Modern Dropdown Overlay -->
-                                        <div id="desktop-dropdown-overlay" class="desktop-dropdown-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
-                                            <div class="desktop-dropdown-container absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-transparent p-4">
-                                                <div id="desktop-station-picker" class="desktop-dropdown glass rounded-3xl p-6 max-h-[70vh] max-w-md w-full overflow-hidden transform scale-95 opacity-0 transition-all duration-300">
-                                                    <!-- Dropdown Header -->
-                                                    <div class="flex items-center justify-between mb-4">
-                                                        <h3 class="text-lg font-bold text-white">Select Station</h3>
-                                                        <button id="desktop-dropdown-close" class="desktop-dropdown-close w-8 h-8 rounded-full bg-white/10 flex items-center justify-center transition-all duration-200 hover:bg-white/20 active:scale-95">
-                                                            <i data-lucide="x" class="w-4 h-4 text-white"></i>
-                                                        </button>
-                                                    </div>
-                                                    
-                                                    <!-- Search Bar -->
-                                                    <div class="desktop-search-container mb-4">
-                                                        <div class="relative">
-                                                            <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-400"></i>
-                                                            <input type="text" id="desktop-station-search" placeholder="Search stations..." class="w-full pl-10 pr-4 py-3 bg-white/10 border border-green-400/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-green-400/60 transition-all duration-200">
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Stations List -->
-                                                    <div id="desktop-stations-list" class="desktop-stations-list space-y-2 max-h-[50vh] overflow-y-auto custom-scrollbar">
-                                                        <!-- Stations will be populated by JavaScript -->
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div id="tuner-labels" class="hidden"></div>
-                                    <div id="tuner-markers" class="hidden"></div>
-                                    
-                                    <!-- Mobile Station Selector -->
-                                    <div id="mobile-station-selector" class="lg:hidden mt-4">
-                                        <!-- Current Station Display -->
-                                        <div id="mobile-current-station" class="mobile-dropdown-trigger glass rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition-all duration-300 hover:bg-white/10 active:scale-95">
-                                            <img id="mobile-station-logo" src="" alt="Station Logo" class="w-12 h-12 object-contain rounded-xl bg-white/10 shadow-lg">
-                                            <div class="flex-1 min-w-0">
-                                                <div id="mobile-station-name" class="font-bold text-sm truncate">Select a station</div>
-                                                <div id="mobile-station-frequency" class="text-xs text-green-400">Tap to change</div>
-                                            </div>
-                                            <div class="mobile-dropdown-arrow flex items-center justify-center w-8 h-8 rounded-full bg-white/10 transition-transform duration-300">
-                                                <i data-lucide="chevron-down" class="w-4 h-4 text-green-400 transition-transform duration-300"></i>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Modern Dropdown Overlay -->
-                                        <div id="mobile-dropdown-overlay" class="mobile-dropdown-overlay fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
-                                            <div class="mobile-dropdown-container absolute bottom-0 left-0 right-0 bg-transparent p-4">
-                                                <div id="mobile-station-picker" class="mobile-dropdown glass rounded-t-3xl p-6 max-h-[60vh] overflow-hidden transform translate-y-full transition-transform duration-300">
-                                                    <!-- Dropdown Header -->
-                                                    <div class="flex items-center justify-between mb-4">
-                                                        <h3 class="text-lg font-bold text-white">Select Station</h3>
-                                                        <button id="mobile-dropdown-close" class="mobile-dropdown-close w-8 h-8 rounded-full bg-white/10 flex items-center justify-center transition-all duration-200 hover:bg-white/20 active:scale-95">
-                                                            <i data-lucide="x" class="w-4 h-4 text-white"></i>
-                                                        </button>
-                                                    </div>
-                                                    
-                                                    <!-- Search Bar (Optional) -->
-                                                    <div class="mobile-search-container mb-4">
-                                                        <div class="relative">
-                                                            <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-green-400"></i>
-                                                            <input type="text" id="mobile-station-search" placeholder="Search stations..." class="w-full pl-10 pr-4 py-3 bg-white/10 border border-green-400/30 rounded-xl text-white placeholder-white/60 focus:outline-none focus:border-green-400/60 transition-all duration-200">
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <!-- Stations List -->
-                                                    <div id="mobile-stations-list" class="mobile-stations-list space-y-2 max-h-[45vh] overflow-y-auto custom-scrollbar">
-                                                        <!-- Stations will be populated by JavaScript -->
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Play Button Only -->
-                        <div id="controls-container" class="flex flex-col items-center">
-                            <button id="play-btn" class="glass rounded-full flex items-center gap-3 justify-center shadow-lg transform active:scale-95 transition backdrop-blur-md px-8 py-4">
-                                <i data-lucide="play" class="w-6 h-6 text-white"></i>
-                                <span id="play-btn-text" class="font-medium">Play</span>
-                            </button>
-                        </div>
-
-                    </div> <!-- end radio-controls-wrapper -->
+                <!-- Play Button -->
+                <div class="flex justify-center">
+                    <button id="play-btn" class="glass-effect rounded-full flex items-center gap-3 px-8 py-4">
+                        <i data-lucide="play" class="w-6 h-6"></i>
+                        <span id="play-btn-text" class="font-medium">Play</span>
+                    </button>
                 </div>
             </div>
         </main>
 
         <!-- Footer -->
-        <footer class="text-center text-xs text-gray-500 py-3 px-6 flex-shrink-0 lg:rounded-b-3xl">
-            <p class="font-medium">Glz Technical Systems :: Ver 7.0 :: Build: <span id="build-timestamp"></span></p>
+        <footer class="text-center text-xs text-gray-500 py-3 px-6">
+            <p class="font-medium">Glz Technical Systems :: Ver 10.0 :: Build: <span id="build-timestamp"></span></p>
         </footer>
     </div>
 
@@ -236,6 +122,5 @@
 
     <!-- Main App Script -->
     <script type="module" src="js/app.js"></script>
-
 </body>
 </html>

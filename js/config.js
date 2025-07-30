@@ -1,4 +1,4 @@
-// Radio Stations Configuration
+// Radio Stations Configuration (DO NOT ALTER - Curated List)
 const RADIO_STATIONS = {
     "WKAQ 580": {
         "logo": "https://i.iheart.com/v3/re/assets/images/77d5680e-688b-4488-8c56-9b4963cb0813.png",
@@ -15,7 +15,7 @@ const RADIO_STATIONS = {
         "rdsText": ["NotiUno 630", "WUNO AM", "630 AM", "San Juan, PR"]
     },
     "Radio Once": {
-        "logo": "https://www.radioonce.com/templates/rt_galatea/custom/images/demo/home/header/logo-radio11.png",
+        "logo": "https://radioIsla.tv/wp-content/uploads/2019/06/Logo-Radio-Isla.png",
         "streamUrl": "http://49.13.212.200:14167/stream?type=http&nocache=21",
         "frequency": "AM: 1120 Khz",
         "callSign": "WMSW AM",
@@ -144,8 +144,8 @@ const RADIO_STATIONS = {
 
 // App Constants
 const STATIONS_ORDER = Object.keys(RADIO_STATIONS);
-const APP_VERSION = "9.2";
-const APP_BUILD_DATE = "2025-06-11";
+const APP_VERSION = "10.0";
+const APP_BUILD_DATE = "2025-07-30";
 
 // Weather API Configuration
 const WEATHER_API_BASE = "https://api.open-meteo.com/v1/forecast";
@@ -155,39 +155,14 @@ const IP_LOCATION_API = "https://ipapi.co/json/";
 const DEFAULT_LAT = 18.22;
 const DEFAULT_LON = -66.59;
 
-// Weather update interval (15 minutes)
-const WEATHER_UPDATE_INTERVAL = 1000 * 60 * 15;
-
-// RDS text rotation interval (4 seconds)
-const RDS_ROTATION_INTERVAL = 4000;
-
-// Network speed update interval (2 seconds)
-const NETWORK_SPEED_UPDATE_INTERVAL = 2000;
-
-// Stopwatch update interval (1 second)
-const STOPWATCH_UPDATE_INTERVAL = 1000;
-
-// Clock update interval (10 seconds)
-const CLOCK_UPDATE_INTERVAL = 10000;
-
-// Status bar update interval (1 second)
-const STATUS_BAR_UPDATE_INTERVAL = 1000;
-
-// Splash screen duration (2.5 seconds)
-const SPLASH_DURATION = 2500;
-
-// Animation durations
-const ANIMATION_DURATIONS = {
-    FADE_IN: 500,
-    TUNER_NEEDLE_SETTLE: 800,
-    POWER_ON: 800,
-    PLAYER_STARTUP: 1500,
-    PLAYER_SHUTDOWN: 300
-}; 
+// Update intervals
+const WEATHER_UPDATE_INTERVAL = 1000 * 60 * 15; // 15 minutes
+const RDS_ROTATION_INTERVAL = 4000; // 4 seconds
+const CLOCK_UPDATE_INTERVAL = 1000; // 1 second
 
 export const STATIONS = Object.keys(RADIO_STATIONS).map(stationName => {
     return {
         name: stationName,
         ...RADIO_STATIONS[stationName]
     };
-}); 
+});
