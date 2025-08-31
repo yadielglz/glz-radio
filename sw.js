@@ -9,7 +9,6 @@ const urlsToCache = [
   '/js/state.js',
   '/js/ui.js',
   '/js/player.js',
-  '/js/weather.js',
   '/images/generic-station-logo.svg'
 ];
 

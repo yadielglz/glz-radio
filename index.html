@@ -7,61 +7,55 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="color-scheme" content="dark">
     <title>GLZ Radio</title>
-    
-    <!-- Google Sans Font -->
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" rel="stylesheet">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">
 </head>
-<body class="bg-gradient-to-br from-gray-900 to-black text-white font-sans overflow-hidden">
-    <!-- Blurred background layer -->
-    <div id="bg-blur" class="fixed inset-0 z-0"></div>
-    
-    <div id="app" class="flex flex-col h-dvh max-w-md lg:max-w-4xl mx-auto relative z-10">
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white font-sans min-h-screen">
+    <div id="app" class="container mx-auto max-w-md lg:max-w-2xl px-4 py-6">
         <!-- Header -->
-        <header class="flex items-center justify-between text-sm px-6 py-4 glass-effect rounded-b-2xl">
-            <div class="flex items-center space-x-2">
-                <div id="clock" class="text-left font-semibold"></div>
+        <header class="flex items-center justify-between mb-6 p-4 bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10">
+            <div class="flex items-center space-x-3">
+                <div id="clock" class="text-lg font-semibold text-white/90"></div>
             </div>
-            <div id="rds-display" class="flex-1 text-center font-bold truncate px-2">
-                <span id="rds-text" class="text-base">GLZ Radio</span>
+            <div id="rds-display" class="flex-1 text-center px-4">
+                <div class="bg-white/10 backdrop-blur-sm rounded-lg px-3 py-2 border border-white/20">
+                    <span id="rds-text" class="text-lg font-semibold text-white">GLZ Radio</span>
+                </div>
             </div>
             <div id="connection-status" class="flex items-center space-x-2">
-                <div id="header-weather" class="hidden text-xs flex items-center space-x-1"></div>
-                <i id="network-icon" data-lucide="wifi" class="w-4 h-4 text-green-400 inline-block"></i>
+                <i id="network-icon" data-lucide="wifi" class="w-5 h-5 text-green-400"></i>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main class="flex-grow flex flex-col justify-center px-6 py-8">
-            <!-- Clock and Weather Display -->
-            <div class="glass-effect rounded-3xl p-8 mb-8 flex items-center justify-between">
-                <div class="flex flex-col items-center">
-                    <div id="big-clock" class="text-6xl font-bold"></div>
-                </div>
-                <div class="flex flex-col items-end">
-                    <div id="idle-weather" class="text-sm flex items-center space-x-2"></div>
-                </div>
+        <main class="space-y-6">
+            <!-- Idle Display -->
+            <div id="idle-display" class="text-center py-12">
+                <div id="big-clock" class="text-7xl lg:text-8xl font-bold mb-4 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent"></div>
+                <p class="text-white/60 text-lg">Select a station to begin</p>
             </div>
 
-            <!-- Now Playing Display -->
-            <div id="now-playing" class="hidden glass-effect rounded-3xl p-6 mb-8">
-                <div class="flex items-center">
-                    <img id="station-logo" src="" alt="Station Logo" class="h-24 w-24 object-contain rounded-xl mr-6">
-                    <div class="flex-1">
-                        <div id="station-name" class="text-2xl font-bold mb-1"></div>
-                        <div id="station-frequency" class="text-lg mb-1"></div>
-                        <div id="station-callsign" class="text-sm text-gray-400 mb-4"></div>
-                        <button id="desktop-play-btn" class="glass-effect rounded-full flex items-center gap-3 px-6 py-3">
+            <!-- Now Playing -->
+            <div id="now-playing" class="hidden p-6 bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10">
+                <div class="flex items-center space-x-4">
+                    <img id="station-logo" src="" alt="Station Logo" class="w-20 h-20 lg:w-24 lg:h-24 object-contain rounded-xl shadow-lg">
+                    <div class="flex-1 min-w-0">
+                        <h2 id="station-name" class="text-2xl lg:text-3xl font-bold mb-2 truncate"></h2>
+                        <p id="station-frequency" class="text-lg text-blue-400 mb-1"></p>
+                        <p id="station-callsign" class="text-sm text-white/60 mb-4"></p>
+                        <button id="desktop-play-btn" class="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl">
                             <i data-lucide="pause" class="w-5 h-5"></i>
                             <span>Pause</span>
                         </button>
@@ -70,51 +64,60 @@
             </div>
 
             <!-- Station Controls -->
-            <div id="station-controls">
+            <div id="station-controls" class="space-y-4">
                 <!-- Band Selection -->
-                <div class="flex justify-center mb-8 gap-4">
-                    <button class="band-btn glass-effect rounded-full px-6 py-3" data-band="AM">
-                        <span class="font-bold">AM</span>
-                    </button>
-                    <button class="band-btn glass-effect rounded-full px-6 py-3" data-band="FM">
-                        <span class="font-bold">FM</span>
-                    </button>
-                    <button class="band-btn glass-effect rounded-full px-6 py-3" data-band="SAT">
-                        <span class="font-bold">SAT</span>
-                    </button>
+                <div class="flex justify-center space-x-2 lg:space-x-4">
+                    <button class="band-btn px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all duration-200 font-medium" data-band="AM">AM</button>
+                    <button class="band-btn px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all duration-200 font-medium" data-band="FM">FM</button>
+                    <button class="band-btn px-6 py-3 bg-white/10 hover:bg-white/20 border border-white/20 rounded-xl transition-all duration-200 font-medium" data-band="SAT">SAT</button>
                 </div>
 
-                <!-- Station Selection -->
-                <div class="glass-effect rounded-3xl p-6 mb-8">
-                    <div id="desktop-station-selector">
-                        <!-- Current Station Display -->
-                        <div id="desktop-current-station" class="glass-effect rounded-2xl p-4 flex items-center gap-3 cursor-pointer">
-                            <img id="desktop-station-logo" src="" alt="Station Logo" class="w-12 h-12 object-contain rounded-xl">
-                            <div class="flex-1 min-w-0">
-                                <div id="desktop-station-name" class="font-bold text-sm truncate">Select a station</div>
-                                <div id="desktop-station-frequency" class="text-xs text-green-400">Click to change</div>
-                            </div>
-                            <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white/10">
-                                <i data-lucide="chevron-down" class="w-4 h-4 text-green-400"></i>
+                <!-- Station Selector -->
+                <div class="p-4 bg-white/5 backdrop-blur-lg rounded-2xl border border-white/10">
+                    <button id="desktop-current-station" class="w-full flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 rounded-xl transition-all duration-200 border border-white/20">
+                        <div class="flex items-center space-x-3">
+                            <img id="desktop-station-logo" src="./images/generic-station-logo.svg" alt="Station Logo" class="w-12 h-12 object-contain rounded-lg">
+                            <div class="text-left">
+                                <div id="desktop-station-name" class="font-semibold text-lg">Select a station</div>
+                                <div id="desktop-station-frequency" class="text-sm text-white/60">Click to browse</div>
                             </div>
                         </div>
-                    </div>
+                        <i data-lucide="chevron-down" class="w-5 h-5 text-white/60"></i>
+                    </button>
                 </div>
 
                 <!-- Play Button -->
                 <div class="flex justify-center">
-                    <button id="play-btn" class="glass-effect rounded-full flex items-center gap-3 px-8 py-4">
+                    <button id="play-btn" class="flex items-center space-x-3 px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl font-medium text-lg">
                         <i data-lucide="play" class="w-6 h-6"></i>
-                        <span id="play-btn-text" class="font-medium">Play</span>
+                        <span id="play-btn-text">Play</span>
                     </button>
                 </div>
             </div>
         </main>
 
         <!-- Footer -->
-        <footer class="text-center text-xs text-gray-500 py-3 px-6">
-            <p class="font-medium">Glz Technical Systems :: Ver 10.0 :: Build: <span id="build-timestamp"></span></p>
+        <footer class="text-center mt-8 py-4 text-white/40 text-sm">
+            <p>GLZ Technical Systems :: Ver 10.0 :: Build: <span id="build-timestamp"></span></p>
         </footer>
+    </div>
+
+    <!-- Station Picker Modal -->
+    <div id="station-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-800 rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden border border-white/10">
+            <div class="p-4 border-b border-white/10">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold">Select Station</h3>
+                    <button id="close-modal" class="p-2 hover:bg-white/10 rounded-lg transition-colors" aria-label="Close station picker">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <input type="text" id="station-search" placeholder="Search stations..." class="w-full mt-3 px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:border-blue-400">
+            </div>
+            <div id="station-list" class="max-h-96 overflow-y-auto p-2">
+                <!-- Stations will be populated here -->
+            </div>
+        </div>
     </div>
 
     <!-- Audio Element -->

@@ -2,7 +2,6 @@ import { dom } from './dom.js';
 import { state, loadStations, setBand } from './state.js';
 import * as player from './player.js';
 import * as ui from './ui.js';
-import { initWeather } from './weather.js';
 
 const BANDS = ['AM', 'FM', 'SAT'];
 
@@ -48,9 +47,6 @@ function init() {
         ui.updateClock(new Date()); // Initial call
         setInterval(() => ui.updateClock(new Date()), 1000); // Update every second
 
-        // Initialize weather
-        initWeather();
-        
         // Create lucide icons
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
@@ -92,13 +88,7 @@ function setupEventListeners() {
     // Desktop station selector
     if (dom.desktopCurrentStation) {
         dom.desktopCurrentStation.addEventListener('click', () => {
-            // For now, just select the first station in the list
-            // In a full implementation, this would open a station picker
-            const firstStation = state.filteredStations[0];
-            if (firstStation) {
-                player.setStation(firstStation);
-                ui.updateDesktopStation(firstStation);
-            }
+            ui.openStationModal();
         });
     }
 

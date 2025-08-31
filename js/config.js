@@ -147,16 +147,7 @@ const STATIONS_ORDER = Object.keys(RADIO_STATIONS);
 const APP_VERSION = "10.0";
 const APP_BUILD_DATE = "2025-07-30";
 
-// Weather API Configuration
-const WEATHER_API_BASE = "https://api.open-meteo.com/v1/forecast";
-const IP_LOCATION_API = "https://ipapi.co/json/";
-
-// Default location (San Juan, Puerto Rico)
-const DEFAULT_LAT = 18.22;
-const DEFAULT_LON = -66.59;
-
 // Update intervals
-const WEATHER_UPDATE_INTERVAL = 1000 * 60 * 15; // 15 minutes
 const RDS_ROTATION_INTERVAL = 4000; // 4 seconds
 const CLOCK_UPDATE_INTERVAL = 1000; // 1 second
 
