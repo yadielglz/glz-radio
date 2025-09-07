@@ -176,40 +176,29 @@ export function openStationModal() {
         currentModalStations = [...state.filteredStations];
         renderStationList();
         dom.stationModal.classList.remove('hidden');
-        if (dom.stationSearch) {
-            dom.stationSearch.focus();
-        }
     }
 }
 
 export function closeStationModal() {
     if (dom.stationModal) {
         dom.stationModal.classList.add('hidden');
-        if (dom.stationSearch) {
-            dom.stationSearch.value = '';
-        }
     }
 }
 
-function renderStationList(searchTerm = '') {
+function renderStationList() {
     if (!dom.stationList) return;
-
-    const filteredStations = currentModalStations.filter(station =>
-        station.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        station.frequency.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     dom.stationList.innerHTML = '';
 
-    filteredStations.forEach((station, index) => {
+    currentModalStations.forEach((station, index) => {
         const stationElement = document.createElement('div');
-        stationElement.className = 'station-item p-4 flex items-center space-x-3 cursor-pointer hover:bg-white/10 transition-colors';
+        stationElement.className = 'station-item p-4 flex items-center space-x-3 cursor-pointer hover:bg-white/10 transition-all duration-200 transform hover:scale-[1.02]';
         stationElement.dataset.index = index;
 
         const logo = document.createElement('img');
         logo.src = station.logo;
         logo.alt = station.name;
-        logo.className = 'w-12 h-12 object-contain rounded-lg';
+        logo.className = 'w-12 h-12 object-contain rounded-lg transition-transform duration-200 hover:scale-110';
         logo.onerror = () => {
             logo.src = './images/generic-station-logo.svg';
         };
@@ -270,12 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Search functionality
-    if (dom.stationSearch) {
-        dom.stationSearch.addEventListener('input', (e) => {
-            renderStationList(e.target.value);
-        });
-    }
 
     // Close on Escape key
     document.addEventListener('keydown', (e) => {

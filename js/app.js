@@ -2,6 +2,8 @@ import { dom } from './dom.js';
 import { state, loadStations, setBand } from './state.js';
 import * as player from './player.js';
 import * as ui from './ui.js';
+import { weatherService } from './weather.js';
+import './pwa.js';
 
 const BANDS = ['AM', 'FM', 'SAT'];
 

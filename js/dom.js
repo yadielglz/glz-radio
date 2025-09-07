@@ -32,7 +32,6 @@ export const dom = {
     // Modal
     stationModal: document.getElementById('station-modal'),
     closeModal: document.getElementById('close-modal'),
-    stationSearch: document.getElementById('station-search'),
     stationList: document.getElementById('station-list'),
 
     // Footer
