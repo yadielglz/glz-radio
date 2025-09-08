@@ -68,18 +68,69 @@ function init() {
                     console.log('✅ Found station grid element');
                     console.log('📐 Grid dimensions:', grid.offsetWidth, 'x', grid.offsetHeight);
                     console.log('🎨 Grid computed style:', window.getComputedStyle(grid).display);
+                    console.log('👁️ Grid visibility:', window.getComputedStyle(grid).visibility);
+                    console.log('🫥 Grid opacity:', window.getComputedStyle(grid).opacity);
                     
-                    const testCard = document.createElement('div');
-                    testCard.style.cssText = 'background: red; color: white; padding: 20px; margin: 10px; border: 3px solid yellow; min-height: 100px; text-align: center; font-weight: bold; position: relative; z-index: 999;';
-                    testCard.innerHTML = 'MANUAL TEST CARD - IF YOU SEE THIS, JS IS WORKING';
-                    grid.appendChild(testCard);
-                    console.log('✅ Manual test card added');
-                    
-                    // Force a repaint on Safari
+                    // For Safari iOS, completely bypass grid and force simple layout
                     if (isSafariIOS) {
-                        grid.style.transform = 'translateZ(0)';
-                        grid.offsetHeight; // Trigger reflow
+                        console.log('🍎 Safari iOS: Forcing simple layout...');
+                        
+                        // Clear grid and force simple styles
+                        grid.innerHTML = '';
+                        grid.style.cssText = `
+                            display: block !important;
+                            width: 100% !important;
+                            height: auto !important;
+                            min-height: 300px !important;
+                            background: red !important;
+                            border: 5px solid yellow !important;
+                            padding: 20px !important;
+                            margin: 10px 0 !important;
+                            position: relative !important;
+                            z-index: 999 !important;
+                            visibility: visible !important;
+                            opacity: 1 !important;
+                        `;
+                        
+                        // Add multiple simple test cards
+                        for (let i = 1; i <= 4; i++) {
+                            const testCard = document.createElement('div');
+                            testCard.style.cssText = `
+                                display: block !important;
+                                background: lime !important;
+                                color: black !important;
+                                padding: 15px !important;
+                                margin: 10px 0 !important;
+                                border: 3px solid blue !important;
+                                min-height: 80px !important;
+                                text-align: center !important;
+                                font-weight: bold !important;
+                                font-size: 16px !important;
+                                position: relative !important;
+                                z-index: 1000 !important;
+                                visibility: visible !important;
+                                opacity: 1 !important;
+                                width: 100% !important;
+                                box-sizing: border-box !important;
+                            `;
+                            testCard.innerHTML = `SAFARI TEST CARD ${i}<br/>Simple Block Layout`;
+                            grid.appendChild(testCard);
+                        }
+                        
+                        // Force repaint
+                        grid.offsetHeight;
+                        document.body.offsetHeight;
+                        
+                        console.log('🍎 Safari iOS: Simple layout applied');
+                    } else {
+                        // Regular test for non-Safari
+                        const testCard = document.createElement('div');
+                        testCard.style.cssText = 'background: red; color: white; padding: 20px; margin: 10px; border: 3px solid yellow; min-height: 100px; text-align: center; font-weight: bold; position: relative; z-index: 999;';
+                        testCard.innerHTML = 'MANUAL TEST CARD - IF YOU SEE THIS, JS IS WORKING';
+                        grid.appendChild(testCard);
                     }
+                    
+                    console.log('✅ Manual test card(s) added');
                 } else {
                     console.error('❌ Could not find station-grid element');
                     console.log('🔍 Available elements with "grid" in ID:');

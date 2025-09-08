@@ -255,6 +255,9 @@ function renderStationGrid() {
         return;
     }
 
+    // Check if this is Safari iOS
+    const isSafariIOS = /Safari/.test(navigator.userAgent) && /iPhone|iPad/.test(navigator.userAgent);
+    
     // Add a visible indicator that we're trying to render
     dom.stationGrid.innerHTML = '<div style="color: red; padding: 20px; border: 2px solid red;">LOADING STATIONS...</div>';
     
@@ -265,19 +268,73 @@ function renderStationGrid() {
         : currentGridStations;
     
     console.log(`Rendering grid: isMobile=${isMobile}, windowWidth=${window.innerWidth}, showingAll=${showingAllStations}, totalStations=${currentGridStations.length}, stationsToShow=${stationsToShow.length}`);
+    console.log(`🍎 Safari iOS detected: ${isSafariIOS}`);
     
     // Clear the loading indicator
     dom.stationGrid.innerHTML = '';
     
-    // Add test cards first to ensure grid is working
-    for (let i = 0; i < 3; i++) {
-        const testCard = document.createElement('div');
-        testCard.className = 'station-card glass-panel p-4 rounded-xl cursor-pointer';
-        testCard.style.minHeight = '120px';
-        testCard.style.border = '2px solid lime';
-        testCard.style.background = 'rgba(0, 255, 0, 0.2)';
-        testCard.innerHTML = `<div class="text-center text-white font-bold">TEST CARD ${i + 1}</div>`;
-        dom.stationGrid.appendChild(testCard);
+    // Safari iOS: Use simple block layout instead of grid
+    if (isSafariIOS) {
+        console.log('🍎 Using Safari iOS simple layout');
+        
+        // Force simple block layout
+        dom.stationGrid.style.cssText = `
+            display: block !important;
+            width: 100% !important;
+            background: rgba(255, 0, 0, 0.2) !important;
+            padding: 10px !important;
+            border: 2px solid red !important;
+        `;
+        
+        // Add stations as simple blocks
+        stationsToShow.forEach((station, index) => {
+            const stationCard = document.createElement('div');
+            stationCard.style.cssText = `
+                display: block !important;
+                width: 100% !important;
+                background: rgba(0, 255, 0, 0.3) !important;
+                border: 2px solid lime !important;
+                padding: 15px !important;
+                margin: 10px 0 !important;
+                text-align: center !important;
+                color: white !important;
+                font-weight: bold !important;
+                min-height: 100px !important;
+                box-sizing: border-box !important;
+            `;
+            
+            stationCard.innerHTML = `
+                <div style="color: white; font-size: 16px; margin-bottom: 5px;">${station.name}</div>
+                <div style="color: lightblue; font-size: 14px;">${station.frequency}</div>
+                ${station.callSign ? `<div style="color: lightgray; font-size: 12px;">${station.callSign}</div>` : ''}
+            `;
+            
+            // Add click handler
+            stationCard.addEventListener('click', () => selectStationFromGrid(currentGridStations.indexOf(station)));
+            
+            dom.stationGrid.appendChild(stationCard);
+        });
+        
+    } else {
+        // Regular grid layout for other browsers
+        
+        // Add test cards first to ensure grid is working
+        for (let i = 0; i < 3; i++) {
+            const testCard = document.createElement('div');
+            testCard.className = 'station-card glass-panel p-4 rounded-xl cursor-pointer';
+            testCard.style.minHeight = '120px';
+            testCard.style.border = '2px solid lime';
+            testCard.style.background = 'rgba(0, 255, 0, 0.2)';
+            testCard.innerHTML = `<div class="text-center text-white font-bold">TEST CARD ${i + 1}</div>`;
+            dom.stationGrid.appendChild(testCard);
+        }
+        
+        // Add real station cards
+        stationsToShow.forEach((station, index) => {
+            const actualIndex = currentGridStations.indexOf(station);
+            const stationCard = createStationCard(station, actualIndex);
+            dom.stationGrid.appendChild(stationCard);
+        });
     }
     
     // Show/hide the "show more" button
@@ -290,13 +347,6 @@ function renderStationGrid() {
             dom.showMoreContainer.classList.add('hidden');
         }
     }
-
-    // Add real station cards
-    stationsToShow.forEach((station, index) => {
-        const actualIndex = currentGridStations.indexOf(station);
-        const stationCard = createStationCard(station, actualIndex);
-        dom.stationGrid.appendChild(stationCard);
-    });
 
     console.log(`Added ${stationsToShow.length} station cards to grid`);
 
