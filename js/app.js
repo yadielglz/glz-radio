@@ -19,15 +19,41 @@ function applyBand(band) {
 }
 
 function init() {
-    console.log('Initializing GLZ Radio...');
+    console.log('🚀 Initializing GLZ Radio...');
+    console.log('📱 User Agent:', navigator.userAgent);
+    console.log('📏 Screen size:', window.innerWidth, 'x', window.innerHeight);
+    console.log('🔍 Is Mobile?', window.innerWidth < 640);
     
     // Load stations
     loadStations().then(() => {
+        console.log('✅ Stations loaded successfully');
+        console.log('📊 Total stations:', state.stations.length);
+        
         // Apply default (initial) band
         applyBand(state.currentBand);
+        console.log('🎵 Applied band:', state.currentBand);
+        console.log('🎛️ Filtered stations:', state.filteredStations.length);
         
         // Initialize station grid
+        console.log('🎯 About to call updateStationGrid...');
         ui.updateStationGrid();
+        console.log('✅ updateStationGrid called');
+        
+        // Add manual test after a delay
+        setTimeout(() => {
+            console.log('🧪 Adding manual test cards...');
+            const grid = document.getElementById('station-grid');
+            if (grid) {
+                console.log('✅ Found station grid element');
+                const testCard = document.createElement('div');
+                testCard.style.cssText = 'background: red; color: white; padding: 20px; margin: 10px; border: 3px solid yellow; min-height: 100px; text-align: center; font-weight: bold;';
+                testCard.innerHTML = 'MANUAL TEST CARD - IF YOU SEE THIS, JS IS WORKING';
+                grid.appendChild(testCard);
+                console.log('✅ Manual test card added');
+            } else {
+                console.error('❌ Could not find station-grid element');
+            }
+        }, 2000);
         
         // Set app footer
         ui.setAppFooter();
@@ -47,7 +73,7 @@ function init() {
             lucide.createIcons();
         }
     }).catch(error => {
-        console.error("Failed to initialize application:", error);
+        console.error("❌ Failed to initialize application:", error);
     });
 }
 
