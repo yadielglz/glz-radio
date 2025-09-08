@@ -219,8 +219,35 @@ export function updateBandButton(band, isPlaying = false) {
 export function updateStationGrid() {
     currentGridStations = [...state.filteredStations];
     console.log('Updating station grid with', currentGridStations.length, 'stations');
+    console.log('Filtered stations:', state.filteredStations);
+    console.log('Current band:', state.currentBand);
     renderStationGrid();
 }
+
+// Debug function to test if grid is working
+export function addTestCard() {
+    if (!dom.stationGrid) {
+        console.error('Station grid not found for test');
+        return;
+    }
+    
+    const testCard = document.createElement('div');
+    testCard.className = 'station-card glass-panel p-4 rounded-xl bg-red-500';
+    testCard.innerHTML = '<div class="text-center text-white">TEST CARD</div>';
+    testCard.style.minHeight = '120px';
+    testCard.style.border = '2px solid red';
+    dom.stationGrid.appendChild(testCard);
+    console.log('Test card added to grid');
+}
+
+// Expose debug functions globally for console testing
+window.debugStationGrid = {
+    addTestCard,
+    updateStationGrid,
+    renderStationGrid,
+    getCurrentStations: () => currentGridStations,
+    getGridElement: () => dom.stationGrid
+};
 
 function renderStationGrid() {
     if (!dom.stationGrid) {
@@ -228,7 +255,8 @@ function renderStationGrid() {
         return;
     }
 
-    dom.stationGrid.innerHTML = '';
+    // Add a visible indicator that we're trying to render
+    dom.stationGrid.innerHTML = '<div style="color: red; padding: 20px; border: 2px solid red;">LOADING STATIONS...</div>';
     
     // Determine how many stations to show
     const isMobile = window.innerWidth < 640;
@@ -237,6 +265,20 @@ function renderStationGrid() {
         : currentGridStations;
     
     console.log(`Rendering grid: isMobile=${isMobile}, windowWidth=${window.innerWidth}, showingAll=${showingAllStations}, totalStations=${currentGridStations.length}, stationsToShow=${stationsToShow.length}`);
+    
+    // Clear the loading indicator
+    dom.stationGrid.innerHTML = '';
+    
+    // Add test cards first to ensure grid is working
+    for (let i = 0; i < 3; i++) {
+        const testCard = document.createElement('div');
+        testCard.className = 'station-card glass-panel p-4 rounded-xl cursor-pointer';
+        testCard.style.minHeight = '120px';
+        testCard.style.border = '2px solid lime';
+        testCard.style.background = 'rgba(0, 255, 0, 0.2)';
+        testCard.innerHTML = `<div class="text-center text-white font-bold">TEST CARD ${i + 1}</div>`;
+        dom.stationGrid.appendChild(testCard);
+    }
     
     // Show/hide the "show more" button
     if (isMobile && currentGridStations.length > MOBILE_STATION_LIMIT) {
@@ -249,6 +291,7 @@ function renderStationGrid() {
         }
     }
 
+    // Add real station cards
     stationsToShow.forEach((station, index) => {
         const actualIndex = currentGridStations.indexOf(station);
         const stationCard = createStationCard(station, actualIndex);
