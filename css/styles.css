@@ -617,19 +617,96 @@ footer .glass-panel {
   transform: scale(1.1);
 }
 
+/* Safari iOS Specific Fixes */
+@supports (-webkit-touch-callout: none) {
+  /* This targets Safari specifically */
+  #station-grid {
+    display: -webkit-grid !important;
+    display: grid !important;
+    -webkit-grid-template-columns: repeat(2, 1fr) !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    -webkit-grid-gap: 1rem !important;
+    grid-gap: 1rem !important;
+    gap: 1rem !important;
+  }
+  
+  .station-card {
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+  }
+  
+  /* Disable problematic backdrop-filter on Safari iOS */
+  .glass-card,
+  .glass-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+  }
+}
+
+/* Specific fixes when body has safari-ios class */
+body.safari-ios {
+  -webkit-text-size-adjust: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+body.safari-ios #station-grid {
+  display: -webkit-grid !important;
+  display: grid !important;
+  -webkit-grid-template-columns: 1fr 1fr !important;
+  grid-template-columns: 1fr 1fr !important;
+  -webkit-grid-gap: 1rem !important;
+  grid-gap: 1rem !important;
+  gap: 1rem !important;
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  width: 100% !important;
+  overflow: visible !important;
+  min-height: 200px !important;
+  background: rgba(255, 0, 0, 0.2) !important; /* Red background for Safari debugging */
+}
+
+body.safari-ios .station-card {
+  -webkit-transform: translateZ(0) !important;
+  transform: translateZ(0) !important;
+  -webkit-backface-visibility: hidden !important;
+  backface-visibility: hidden !important;
+  will-change: transform !important;
+  background: rgba(0, 255, 0, 0.4) !important; /* Green background for Safari debugging */
+  border: 3px solid lime !important;
+  min-height: 100px !important;
+  position: relative !important;
+  z-index: 100 !important;
+}
+
+body.safari-ios .glass-card,
+body.safari-ios .glass-panel {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
 /* Station Grid Responsive Adjustments */
 @media (max-width: 640px) {
   /* Force station grid to be visible on mobile */
   #station-grid {
     display: grid !important;
+    display: -webkit-grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
+    -webkit-grid-template-columns: repeat(2, 1fr) !important;
     gap: 1rem !important;
+    -webkit-grid-gap: 1rem !important;
+    grid-gap: 1rem !important;
     visibility: visible !important;
     opacity: 1 !important;
     position: relative !important;
     z-index: 10 !important;
     min-height: 200px !important;
     background: rgba(255, 0, 0, 0.1) !important; /* Temporary red background for debugging */
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
   }
   
   .station-card {
@@ -642,6 +719,10 @@ footer .glass-panel {
     min-height: 120px !important;
     background: rgba(0, 255, 0, 0.3) !important; /* Temporary green background for debugging */
     border: 2px solid lime !important;
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
   }
   
   .station-card img {
@@ -649,6 +730,8 @@ footer .glass-panel {
     height: 3.5rem !important;
     display: block !important;
     visibility: visible !important;
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
   }
   
   .station-card h4 {

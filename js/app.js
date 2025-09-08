@@ -23,6 +23,21 @@ function init() {
     console.log('📱 User Agent:', navigator.userAgent);
     console.log('📏 Screen size:', window.innerWidth, 'x', window.innerHeight);
     console.log('🔍 Is Mobile?', window.innerWidth < 640);
+    console.log('🍎 Is Safari?', /Safari/.test(navigator.userAgent) && /iPhone|iPad/.test(navigator.userAgent));
+    
+    // Safari iOS specific fixes
+    if (/Safari/.test(navigator.userAgent) && /iPhone|iPad/.test(navigator.userAgent)) {
+        console.log('🛠️ Applying Safari iOS fixes...');
+        
+        // Force viewport recalculation
+        setTimeout(() => {
+            window.scrollTo(0, 1);
+            window.scrollTo(0, 0);
+        }, 100);
+        
+        // Add Safari-specific CSS class
+        document.body.classList.add('safari-ios');
+    }
     
     // Load stations
     loadStations().then(() => {
@@ -34,26 +49,46 @@ function init() {
         console.log('🎵 Applied band:', state.currentBand);
         console.log('🎛️ Filtered stations:', state.filteredStations.length);
         
-        // Initialize station grid
+        // Initialize station grid with Safari iOS delay
         console.log('🎯 About to call updateStationGrid...');
-        ui.updateStationGrid();
-        console.log('✅ updateStationGrid called');
         
-        // Add manual test after a delay
+        // Safari iOS needs extra time for DOM to be ready
+        const isSafariIOS = /Safari/.test(navigator.userAgent) && /iPhone|iPad/.test(navigator.userAgent);
+        const delay = isSafariIOS ? 500 : 0;
+        
         setTimeout(() => {
-            console.log('🧪 Adding manual test cards...');
-            const grid = document.getElementById('station-grid');
-            if (grid) {
-                console.log('✅ Found station grid element');
-                const testCard = document.createElement('div');
-                testCard.style.cssText = 'background: red; color: white; padding: 20px; margin: 10px; border: 3px solid yellow; min-height: 100px; text-align: center; font-weight: bold;';
-                testCard.innerHTML = 'MANUAL TEST CARD - IF YOU SEE THIS, JS IS WORKING';
-                grid.appendChild(testCard);
-                console.log('✅ Manual test card added');
-            } else {
-                console.error('❌ Could not find station-grid element');
-            }
-        }, 2000);
+            ui.updateStationGrid();
+            console.log('✅ updateStationGrid called');
+            
+            // Add manual test after additional delay
+            setTimeout(() => {
+                console.log('🧪 Adding manual test cards...');
+                const grid = document.getElementById('station-grid');
+                if (grid) {
+                    console.log('✅ Found station grid element');
+                    console.log('📐 Grid dimensions:', grid.offsetWidth, 'x', grid.offsetHeight);
+                    console.log('🎨 Grid computed style:', window.getComputedStyle(grid).display);
+                    
+                    const testCard = document.createElement('div');
+                    testCard.style.cssText = 'background: red; color: white; padding: 20px; margin: 10px; border: 3px solid yellow; min-height: 100px; text-align: center; font-weight: bold; position: relative; z-index: 999;';
+                    testCard.innerHTML = 'MANUAL TEST CARD - IF YOU SEE THIS, JS IS WORKING';
+                    grid.appendChild(testCard);
+                    console.log('✅ Manual test card added');
+                    
+                    // Force a repaint on Safari
+                    if (isSafariIOS) {
+                        grid.style.transform = 'translateZ(0)';
+                        grid.offsetHeight; // Trigger reflow
+                    }
+                } else {
+                    console.error('❌ Could not find station-grid element');
+                    console.log('🔍 Available elements with "grid" in ID:');
+                    document.querySelectorAll('[id*="grid"]').forEach(el => {
+                        console.log(`  - ${el.id}: ${el.tagName}`);
+                    });
+                }
+            }, 2000);
+        }, delay);
         
         // Set app footer
         ui.setAppFooter();
