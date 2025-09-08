@@ -21,15 +21,17 @@ export const dom = {
     // Station Controls
     bandButtons: document.querySelectorAll('.band-btn'),
     playBtn: document.getElementById('play-btn'),
+    playBtnContainer: document.getElementById('play-btn-container'),
     desktopPlayBtn: document.getElementById('desktop-play-btn'),
 
-    // Station Selector
-    desktopCurrentStation: document.getElementById('desktop-current-station'),
-    desktopStationLogo: document.getElementById('desktop-station-logo'),
-    desktopStationName: document.getElementById('desktop-station-name'),
-    desktopStationFrequency: document.getElementById('desktop-station-frequency'),
+    // Station Grid Selector
+    stationGrid: document.getElementById('station-grid'),
+    showMoreContainer: document.getElementById('show-more-container'),
+    showMoreBtn: document.getElementById('show-more-btn'),
+    showMoreText: document.getElementById('show-more-text'),
+    showMoreIcon: document.getElementById('show-more-icon'),
 
-    // Modal
+    // Modal (kept for backwards compatibility)
     stationModal: document.getElementById('station-modal'),
     closeModal: document.getElementById('close-modal'),
     stationList: document.getElementById('station-list'),

@@ -14,11 +14,8 @@ function applyBand(band) {
     // Update band button UI
     ui.updateBandButton(band, state.isPlaying);
     
-    // Update station dropdown with new stations
-    const firstStation = state.filteredStations[0];
-    if (firstStation) {
-        ui.updateDesktopStation(firstStation);
-    }
+    // Update station grid with new stations
+    ui.updateStationGrid();
 }
 
 function init() {
@@ -29,12 +26,8 @@ function init() {
         // Apply default (initial) band
         applyBand(state.currentBand);
         
-        // Set initial station
-        const initialStation = state.filteredStations[0];
-        if (initialStation) {
-            player.setStation(initialStation);
-            ui.updateDesktopStation(initialStation);
-        }
+        // Initialize station grid
+        ui.updateStationGrid();
         
         // Set app footer
         ui.setAppFooter();
@@ -87,12 +80,7 @@ function setupEventListeners() {
         });
     }
     
-    // Desktop station selector
-    if (dom.desktopCurrentStation) {
-        dom.desktopCurrentStation.addEventListener('click', () => {
-            ui.openStationModal();
-        });
-    }
+    // Desktop station selector - handled in ui.js to avoid duplicates
 
     // Listen to the audio element's state changes to keep the UI in sync
     if (dom.audioPlayer) {

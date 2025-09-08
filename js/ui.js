@@ -2,7 +2,10 @@ import { dom } from './dom.js';
 import { state } from './state.js';
 import * as player from './player.js';
 
-let currentModalStations = [];
+let currentGridStations = [];
+let selectedStationIndex = null;
+let showingAllStations = false;
+const MOBILE_STATION_LIMIT = 6; // Show 6 stations initially on mobile
 
 export function updateClock(date) {
     const hours = date.getHours();
@@ -11,31 +14,60 @@ export function updateClock(date) {
     // Update top bar clock (12-hour format)
     const ampm = hours >= 12 ? 'PM' : 'AM';
     const displayHours = ((hours + 11) % 12 + 1); // Converts 24h to 12h, 0 to 12
+    const timeString = `${displayHours}:${minutes} ${ampm}`;
+    
     if(dom.clock) {
-        dom.clock.textContent = `${displayHours}:${minutes} ${ampm}`;
+        dom.clock.textContent = timeString;
+    }
+
+    // Update mobile clock (same format)
+    const mobileClockElement = document.getElementById('mobile-clock');
+    if(mobileClockElement) {
+        mobileClockElement.textContent = timeString;
     }
 
     // Update big clock (AM/PM format as requested)
     const bigClockAmpm = hours >= 12 ? 'PM' : 'AM';
     const bigClockDisplayHours = ((hours + 11) % 12 + 1); // Converts 24h to 12h, 0 to 12
     if(dom.bigClock) {
-        const timeString = `${bigClockDisplayHours}:${minutes} ${bigClockAmpm}`;
-        dom.bigClock.textContent = timeString;
+        const bigTimeString = `${bigClockDisplayHours}:${minutes} ${bigClockAmpm}`;
+        dom.bigClock.textContent = bigTimeString;
     }
 }
 
 export function updatePlayerUI(station, isPlaying) {
     const iconName = isPlaying ? 'pause' : 'play';
-    const buttonText = isPlaying ? 'Pause' : 'Play';
+    const buttonText = isPlaying ? 'Pause' : 'Resume';
 
-    // Update main play button
-    if (dom.playBtn) {
-        dom.playBtn.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6"></i><span id="play-btn-text" class="ml-2">${buttonText}</span>`;
+    // Handle play button visibility and content
+    if (station) {
+        // Station is selected - show play button
+        if (dom.playBtnContainer) {
+            dom.playBtnContainer.classList.remove('hidden');
+        }
+        
+        // Update main play button with new structure
+        if (dom.playBtn) {
+            const playBtnInner = dom.playBtn.querySelector('.bg-gradient-to-r');
+            if (playBtnInner) {
+                playBtnInner.innerHTML = `
+                    <div class="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                        <i data-lucide="${iconName}" class="w-5 h-5 text-white ${iconName === 'play' ? 'ml-0.5' : ''}"></i>
+                    </div>
+                    <span id="play-btn-text" class="font-bold text-xl text-white">${buttonText}</span>
+                `;
+            }
+        }
+    } else {
+        // No station selected - hide play button
+        if (dom.playBtnContainer) {
+            dom.playBtnContainer.classList.add('hidden');
+        }
     }
 
     // Update desktop play button in now-playing section
     if (dom.desktopPlayBtn) {
-        dom.desktopPlayBtn.innerHTML = `<i data-lucide="${iconName}" class="w-5 h-5"></i><span>${buttonText}</span>`;
+        dom.desktopPlayBtn.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6"></i><span>${buttonText}</span>`;
     }
 
     if (isPlaying && station) {
@@ -64,14 +96,29 @@ export function updatePlayerUI(station, isPlaying) {
             dom.stationLogo.classList.add('logo-bounce');
             setTimeout(() => dom.stationLogo.classList.remove('logo-bounce'), 700);
         }
-    } else {
-        // State: Idle
+    } else if (station && !isPlaying) {
+        // State: Station selected but paused
         // Hide now playing display
         if (dom.nowPlaying) {
             dom.nowPlaying.classList.add('hidden');
         }
 
-        // Show idle display and station controls when idle
+        // Show station controls but keep idle display hidden
+        if (dom.idleDisplay) {
+            dom.idleDisplay.classList.add('hidden');
+        }
+        const stationControls = document.getElementById('station-controls');
+        if (stationControls) {
+            stationControls.classList.remove('hidden');
+        }
+    } else {
+        // State: No station selected (true idle)
+        // Hide now playing display
+        if (dom.nowPlaying) {
+            dom.nowPlaying.classList.add('hidden');
+        }
+
+        // Show idle display and station controls
         if (dom.idleDisplay) {
             dom.idleDisplay.classList.remove('hidden');
         }
@@ -140,6 +187,7 @@ export function updateBandButton(band, isPlaying = false) {
     if (dom.bandButtons && dom.bandButtons.length) {
         dom.bandButtons.forEach(btn => {
             const isActive = btn.dataset.band === band;
+            const glassPanel = btn.querySelector('.glass-panel');
 
             // Remove all state classes
             btn.classList.remove('active');
@@ -147,123 +195,153 @@ export function updateBandButton(band, isPlaying = false) {
             if (isActive) {
                 // Active band
                 btn.classList.add('active');
+                
+                // Add active styling to the glass panel
+                if (glassPanel) {
+                    glassPanel.style.background = 'linear-gradient(135deg, rgb(59, 130, 246), rgb(139, 92, 246))';
+                    glassPanel.style.borderColor = 'rgb(59, 130, 246)';
+                    glassPanel.style.boxShadow = '0 0 30px rgba(59, 130, 246, 0.5), 0 8px 32px rgba(0, 0, 0, 0.3)';
+                    glassPanel.style.transform = 'scale(1.05)';
+                }
+            } else {
+                // Reset inactive band styling
+                if (glassPanel) {
+                    glassPanel.style.background = '';
+                    glassPanel.style.borderColor = '';
+                    glassPanel.style.boxShadow = '';
+                    glassPanel.style.transform = '';
+                }
             }
         });
     }
 }
 
-export function updateDesktopStation(station) {
-    if (station && dom.desktopStationLogo && dom.desktopStationName && dom.desktopStationFrequency) {
-        dom.desktopStationLogo.src = station.logo;
-        dom.desktopStationLogo.onerror = () => {
-            dom.desktopStationLogo.src = './images/generic-station-logo.svg';
-        };
-        dom.desktopStationName.textContent = station.name;
-        dom.desktopStationFrequency.textContent = station.frequency
-            .replace('AM:', 'AM ')
-            .replace('FM:', 'FM ')
-            .replace('Satellite Radio', 'SAT');
+export function updateStationGrid() {
+    currentGridStations = [...state.filteredStations];
+    renderStationGrid();
+}
+
+function renderStationGrid() {
+    if (!dom.stationGrid) return;
+
+    dom.stationGrid.innerHTML = '';
+    
+    // Determine how many stations to show
+    const isMobile = window.innerWidth < 640;
+    const stationsToShow = (isMobile && !showingAllStations) 
+        ? currentGridStations.slice(0, MOBILE_STATION_LIMIT)
+        : currentGridStations;
+    
+    // Show/hide the "show more" button
+    if (isMobile && currentGridStations.length > MOBILE_STATION_LIMIT) {
+        if (dom.showMoreContainer) {
+            dom.showMoreContainer.classList.remove('hidden');
+        }
     } else {
-        // Reset to default state
-        if (dom.desktopStationLogo) dom.desktopStationLogo.src = './images/generic-station-logo.svg';
-        if (dom.desktopStationName) dom.desktopStationName.textContent = 'Select a station';
-        if (dom.desktopStationFrequency) dom.desktopStationFrequency.textContent = 'Click to browse';
+        if (dom.showMoreContainer) {
+            dom.showMoreContainer.classList.add('hidden');
+        }
     }
-}
 
-export function openStationModal() {
-    if (dom.stationModal && dom.stationList) {
-        currentModalStations = [...state.filteredStations];
-        renderStationList();
-        dom.stationModal.classList.remove('hidden');
-    }
-}
-
-export function closeStationModal() {
-    if (dom.stationModal) {
-        dom.stationModal.classList.add('hidden');
-    }
-}
-
-function renderStationList() {
-    if (!dom.stationList) return;
-
-    dom.stationList.innerHTML = '';
-
-    currentModalStations.forEach((station, index) => {
-        const stationElement = document.createElement('div');
-        stationElement.className = 'station-item p-4 flex items-center space-x-3 cursor-pointer hover:bg-white/10 transition-all duration-200 transform hover:scale-[1.02]';
-        stationElement.dataset.index = index;
-
-        const logo = document.createElement('img');
-        logo.src = station.logo;
-        logo.alt = station.name;
-        logo.className = 'w-12 h-12 object-contain rounded-lg transition-transform duration-200 hover:scale-110';
-        logo.onerror = () => {
-            logo.src = './images/generic-station-logo.svg';
-        };
-
-        const info = document.createElement('div');
-        info.className = 'flex-1';
-
-        const name = document.createElement('div');
-        name.className = 'font-semibold text-white';
-        name.textContent = station.name;
-
-        const frequency = document.createElement('div');
-        frequency.className = 'text-sm text-blue-400';
-        frequency.textContent = station.frequency
-            .replace('AM:', 'AM ')
-            .replace('FM:', 'FM ')
-            .replace('Satellite Radio', 'SAT');
-
-        info.appendChild(name);
-        info.appendChild(frequency);
-
-        stationElement.appendChild(logo);
-        stationElement.appendChild(info);
-
-        stationElement.addEventListener('click', () => selectStationFromModal(index));
-
-        dom.stationList.appendChild(stationElement);
+    stationsToShow.forEach((station, index) => {
+        const actualIndex = currentGridStations.indexOf(station);
+        const stationCard = createStationCard(station, actualIndex);
+        dom.stationGrid.appendChild(stationCard);
     });
-}
 
-function selectStationFromModal(index) {
-    const station = currentModalStations[index];
-    if (station) {
-        player.setStation(station);
-        updateDesktopStation(station);
-        closeStationModal();
+    // Create icons
+    if (window.lucide) {
+        lucide.createIcons();
     }
 }
 
-// Initialize modal event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    // Station selector button
-    if (dom.desktopCurrentStation) {
-        dom.desktopCurrentStation.addEventListener('click', openStationModal);
-    }
+function createStationCard(station, index) {
+    const card = document.createElement('div');
+    card.className = `station-card glass-panel p-4 rounded-xl cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-lg ${
+        selectedStationIndex === index ? 'selected ring-2 ring-blue-400 ring-opacity-75' : ''
+    }`;
+    card.dataset.index = index;
 
-    // Close modal button
-    if (dom.closeModal) {
-        dom.closeModal.addEventListener('click', closeStationModal);
-    }
+    card.innerHTML = `
+        <div class="text-center">
+            <div class="relative mb-3 mx-auto w-16 h-16 lg:w-20 lg:h-20">
+                <img src="${station.logo}" alt="${station.name}" 
+                     class="w-full h-full object-contain rounded-lg shadow-md transition-transform duration-200 hover:scale-110"
+                     onerror="this.src='./images/generic-station-logo.svg'">
+                ${selectedStationIndex === index ? `
+                    <div class="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                        <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                    </div>
+                ` : ''}
+            </div>
+            <h4 class="font-bold text-white/90 text-sm lg:text-base mb-1 truncate">${station.name}</h4>
+            <p class="text-xs lg:text-sm text-blue-400 font-medium truncate">
+                ${station.frequency.replace('AM:', 'AM ').replace('FM:', 'FM ').replace('Satellite Radio', 'SAT')}
+            </p>
+            ${station.callSign ? `
+                <p class="text-xs text-white/50 mt-1 truncate">${station.callSign}</p>
+            ` : ''}
+        </div>
+    `;
 
-    // Close modal on outside click
-    if (dom.stationModal) {
-        dom.stationModal.addEventListener('click', (e) => {
-            if (e.target === dom.stationModal) {
-                closeStationModal();
-            }
-        });
-    }
-
-
-    // Close on Escape key
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && dom.stationModal && !dom.stationModal.classList.contains('hidden')) {
-            closeStationModal();
+    // Add click handler
+    card.addEventListener('click', () => selectStationFromGrid(index));
+    
+    // Add hover effects
+    card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-2px) scale(1.02)';
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        if (selectedStationIndex !== index) {
+            card.style.transform = '';
         }
     });
+
+    return card;
+}
+
+function selectStationFromGrid(index) {
+    const station = currentGridStations[index];
+    if (station) {
+        selectedStationIndex = index;
+        player.setStation(station);
+        
+        // Re-render grid to show selection
+        renderStationGrid();
+        
+        // Auto-play the selected station
+        setTimeout(() => {
+            player.togglePlay();
+        }, 300); // Small delay to allow UI to update
+    }
+}
+
+function toggleShowMore() {
+    showingAllStations = !showingAllStations;
+    
+    if (dom.showMoreText && dom.showMoreIcon) {
+        dom.showMoreText.textContent = showingAllStations ? 'Show Less' : 'Show All Stations';
+        dom.showMoreIcon.setAttribute('data-lucide', showingAllStations ? 'chevron-up' : 'chevron-down');
+    }
+    
+    renderStationGrid();
+}
+
+// Initialize grid event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Show more/less button
+    if (dom.showMoreBtn) {
+        dom.showMoreBtn.addEventListener('click', toggleShowMore);
+    }
+
+    // Handle window resize to adjust mobile/desktop view
+    window.addEventListener('resize', () => {
+        renderStationGrid();
+    });
+    
+    // Initialize the station grid
+    setTimeout(() => {
+        updateStationGrid();
+    }, 100);
 });
