@@ -218,11 +218,15 @@ export function updateBandButton(band, isPlaying = false) {
 
 export function updateStationGrid() {
     currentGridStations = [...state.filteredStations];
+    console.log('Updating station grid with', currentGridStations.length, 'stations');
     renderStationGrid();
 }
 
 function renderStationGrid() {
-    if (!dom.stationGrid) return;
+    if (!dom.stationGrid) {
+        console.error('Station grid element not found');
+        return;
+    }
 
     dom.stationGrid.innerHTML = '';
     
@@ -231,6 +235,8 @@ function renderStationGrid() {
     const stationsToShow = (isMobile && !showingAllStations) 
         ? currentGridStations.slice(0, MOBILE_STATION_LIMIT)
         : currentGridStations;
+    
+    console.log(`Rendering grid: isMobile=${isMobile}, windowWidth=${window.innerWidth}, showingAll=${showingAllStations}, totalStations=${currentGridStations.length}, stationsToShow=${stationsToShow.length}`);
     
     // Show/hide the "show more" button
     if (isMobile && currentGridStations.length > MOBILE_STATION_LIMIT) {
@@ -248,6 +254,8 @@ function renderStationGrid() {
         const stationCard = createStationCard(station, actualIndex);
         dom.stationGrid.appendChild(stationCard);
     });
+
+    console.log(`Added ${stationsToShow.length} station cards to grid`);
 
     // Create icons
     if (window.lucide) {
@@ -337,11 +345,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Handle window resize to adjust mobile/desktop view
     window.addEventListener('resize', () => {
-        renderStationGrid();
+        // Only re-render if we have stations loaded
+        if (currentGridStations.length > 0) {
+            renderStationGrid();
+        }
     });
     
-    // Initialize the station grid
-    setTimeout(() => {
-        updateStationGrid();
-    }, 100);
+    // Note: Station grid initialization is handled by app.js after stations are loaded
 });
