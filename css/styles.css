@@ -619,22 +619,56 @@ footer .glass-panel {
 
 /* Station Grid Responsive Adjustments */
 @media (max-width: 640px) {
+  /* Force station grid to be visible on mobile */
+  #station-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 10 !important;
+    min-height: 200px !important;
+    background: rgba(255, 0, 0, 0.1) !important; /* Temporary red background for debugging */
+  }
+  
   .station-card {
-    padding: 1rem 0.75rem;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 11 !important;
+    padding: 1rem 0.75rem !important;
+    min-height: 120px !important;
+    background: rgba(0, 255, 0, 0.3) !important; /* Temporary green background for debugging */
+    border: 2px solid lime !important;
   }
   
   .station-card img {
     width: 3.5rem !important;
     height: 3.5rem !important;
+    display: block !important;
+    visibility: visible !important;
   }
   
   .station-card h4 {
-    font-size: 0.8rem;
-    line-height: 1.2;
+    font-size: 0.8rem !important;
+    line-height: 1.2 !important;
+    color: white !important;
+    display: block !important;
   }
   
   .station-card p {
-    font-size: 0.7rem;
+    font-size: 0.7rem !important;
+    color: white !important;
+    display: block !important;
+  }
+  
+  /* Force the station selector to be visible */
+  .glass-card {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 }
 
