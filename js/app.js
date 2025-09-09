@@ -38,6 +38,13 @@ function init() {
         ui.updateClock(new Date()); // Initial call
         setInterval(() => ui.updateClock(new Date()), 1000); // Update every second
 
+        // Initialize mobile dropdown if on mobile
+        const isMobile = window.innerWidth < 1024;
+        if (isMobile) {
+            console.log('📱 Mobile detected, initializing dropdown');
+            ui.showStationBrowser('ALL');
+        }
+
         // Create lucide icons
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();

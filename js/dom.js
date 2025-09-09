@@ -33,6 +33,9 @@ export const dom = {
     loadMoreBtn: document.getElementById('load-more-btn'),
     loadMoreText: document.getElementById('load-more-text'),
     loadMoreIcon: document.getElementById('load-more-icon'),
+    
+    // Mobile Station Selector
+    mobileStationSelector: document.getElementById('mobile-station-selector'),
 
     // Footer
     buildTimestamp: document.getElementById('build-timestamp'),
