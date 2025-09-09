@@ -26,6 +26,7 @@ export const dom = {
 
     // Station Grid Selector
     stationGrid: document.getElementById('station-grid'),
+    mobileStationGrid: document.getElementById('mobile-station-grid'),
     showMoreContainer: document.getElementById('show-more-container'),
     showMoreBtn: document.getElementById('show-more-btn'),
     showMoreText: document.getElementById('show-more-text'),

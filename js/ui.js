@@ -222,21 +222,14 @@ export function updateStationGrid() {
     console.log('📻 Filtered stations:', state.filteredStations);
     console.log('🎛️ Current band:', state.currentBand);
     
-    // Update both mobile dropdown and desktop grid
+    // Update both mobile cards and desktop grid
     renderStationGrid();
-    
-    // Reset dropdown selection when band changes
-    const dropdown = document.getElementById('station-dropdown');
-    if (dropdown) {
-        dropdown.selectedIndex = 0; // Reset to "Choose a station..." option
-        console.log('🔄 Reset mobile dropdown selection');
-    }
     
     // Force re-render if we're on mobile
     const isMobile = window.innerWidth < 640;
     if (isMobile) {
-        console.log('📱 Mobile detected, ensuring dropdown is populated');
-        setTimeout(() => renderMobileDropdown(), 100);
+        console.log('📱 Mobile detected, ensuring station cards are populated');
+        setTimeout(() => renderMobileStationCards(), 100);
     }
 }
 
@@ -269,52 +262,50 @@ function renderStationGrid() {
     const isMobile = window.innerWidth < 640;
     
     if (isMobile) {
-        // Render mobile dropdown
-        renderMobileDropdown();
+        // Render mobile station cards
+        renderMobileStationCards();
     } else {
         // Render desktop grid
         renderDesktopGrid();
     }
 }
 
-function renderMobileDropdown() {
-    const dropdown = document.getElementById('station-dropdown');
-    if (!dropdown) {
-        console.error('Station dropdown not found');
+function renderMobileStationCards() {
+    const mobileGrid = dom.mobileStationGrid;
+    if (!mobileGrid) {
+        console.error('Mobile station grid not found');
         return;
     }
 
-    console.log('Rendering mobile dropdown with stations:', currentGridStations.length);
-    console.log('Current band:', state.currentBand);
-    console.log('Filtered stations:', state.filteredStations);
+    console.log('📱 Rendering mobile station cards with stations:', currentGridStations.length);
+    console.log('🎛️ Current band:', state.currentBand);
+    console.log('📻 Filtered stations:', state.filteredStations);
 
-    // Clear existing options and add band-specific placeholder
-    const bandText = state.currentBand === 'SAT' ? 'Satellite' : state.currentBand;
-    dropdown.innerHTML = `<option value="" class="text-gray-500">Choose a ${bandText} station...</option>`;
+    // Clear existing cards
+    mobileGrid.innerHTML = '';
     
-    // Add station options from current band only
+    // Add station cards from current band only
     if (currentGridStations && currentGridStations.length > 0) {
         currentGridStations.forEach((station, index) => {
-            const option = document.createElement('option');
-            option.value = index;
-            
-            // Format the display text based on band
-            let displayText = station.name;
-            if (station.frequency.startsWith('AM:')) {
-                displayText += ` - ${station.frequency.replace('AM:', 'AM ')}`;
-            } else if (station.frequency.startsWith('FM:')) {
-                displayText += ` - ${station.frequency.replace('FM:', 'FM ')}`;
-            } else if (station.frequency.includes('Satellite')) {
-                displayText += ` - SAT`;
-            }
-            
-            option.textContent = displayText;
-            option.className = 'text-white';
-            dropdown.appendChild(option);
+            const stationCard = createMobileStationCard(station, index);
+            mobileGrid.appendChild(stationCard);
         });
-        console.log(`✅ Added ${currentGridStations.length} ${state.currentBand} stations to mobile dropdown`);
+        console.log(`✅ Added ${currentGridStations.length} ${state.currentBand} station cards to mobile grid`);
     } else {
-        console.warn('⚠️ No stations available for mobile dropdown');
+        console.warn('⚠️ No stations available for mobile cards');
+        // Show a placeholder message
+        mobileGrid.innerHTML = `
+            <div class="text-center py-8 text-slate-400">
+                <i data-lucide="radio" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                <p class="text-lg font-medium">No ${state.currentBand} stations available</p>
+                <p class="text-sm">Try selecting a different band</p>
+            </div>
+        `;
+    }
+
+    // Create icons
+    if (window.lucide) {
+        lucide.createIcons();
     }
 }
 
@@ -358,6 +349,61 @@ function renderDesktopGrid() {
     if (window.lucide) {
         lucide.createIcons();
     }
+}
+
+function createMobileStationCard(station, index) {
+    const card = document.createElement('div');
+    card.className = `mobile-station-card bg-white/5 backdrop-blur-sm border border-white/10 rounded-xl p-4 cursor-pointer transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-105 ${
+        selectedStationIndex === index ? 'ring-2 ring-blue-400 bg-blue-500/10 border-blue-400/50' : ''
+    }`;
+    card.dataset.index = index;
+
+    card.innerHTML = `
+        <div class="flex items-center space-x-4">
+            <div class="relative flex-shrink-0">
+                <img src="${station.logo}" alt="${station.name}" 
+                     class="w-12 h-12 object-contain rounded-lg shadow-md"
+                     onerror="this.src='./images/generic-station-logo.svg'">
+                ${selectedStationIndex === index ? `
+                    <div class="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center shadow-lg">
+                        <i data-lucide="check" class="w-2.5 h-2.5 text-white"></i>
+                    </div>
+                ` : ''}
+            </div>
+            <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-white text-sm mb-1 truncate">${station.name}</h4>
+                <p class="text-xs text-blue-400 font-medium font-mono truncate">
+                    ${station.frequency.replace('AM:', 'AM ').replace('FM:', 'FM ').replace('Satellite Radio', 'SAT')}
+                </p>
+                ${station.callSign ? `
+                    <p class="text-xs text-white/50 mt-1 truncate">${station.callSign}</p>
+                ` : ''}
+            </div>
+            <div class="flex-shrink-0">
+                <div class="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center">
+                    <i data-lucide="play" class="w-4 h-4 text-white"></i>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add click handler
+    card.addEventListener('click', () => selectStationFromGrid(index));
+    
+    // Add hover effects
+    card.addEventListener('mouseenter', () => {
+        if (selectedStationIndex !== index) {
+            card.style.transform = 'scale(1.02)';
+        }
+    });
+    
+    card.addEventListener('mouseleave', () => {
+        if (selectedStationIndex !== index) {
+            card.style.transform = '';
+        }
+    });
+
+    return card;
 }
 
 function createStationCard(station, index) {
@@ -442,18 +488,6 @@ document.addEventListener('DOMContentLoaded', () => {
         dom.showMoreBtn.addEventListener('click', toggleShowMore);
     }
 
-    // Mobile dropdown event listener
-    const stationDropdown = document.getElementById('station-dropdown');
-    if (stationDropdown) {
-        stationDropdown.addEventListener('change', (e) => {
-            const selectedIndex = parseInt(e.target.value);
-            if (!isNaN(selectedIndex) && selectedIndex >= 0) {
-                console.log('📱 Mobile dropdown selection:', selectedIndex, currentGridStations[selectedIndex]?.name);
-                selectStationFromGrid(selectedIndex);
-            }
-        });
-    }
-
     // Handle window resize to adjust mobile/desktop view
     window.addEventListener('resize', () => {
         // Only re-render if we have stations loaded
@@ -463,12 +497,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // Debug function for mobile dropdown
-    window.debugMobileDropdown = () => {
-        const dropdown = document.getElementById('station-dropdown');
-        console.log('📱 Mobile dropdown debug:', {
-            element: dropdown,
-            options: dropdown?.options?.length || 0,
+    // Debug function for mobile station cards
+    window.debugMobileStations = () => {
+        const mobileGrid = dom.mobileStationGrid;
+        console.log('📱 Mobile station cards debug:', {
+            element: mobileGrid,
+            cards: mobileGrid?.children?.length || 0,
             currentBand: state.currentBand,
             filteredStations: state.filteredStations.length,
             currentGridStations: currentGridStations.length
