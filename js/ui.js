@@ -231,6 +231,9 @@ function renderStations() {
 function renderMobileDropdown() {
     const mobileSelector = dom.mobileStationSelector;
     console.log('📱 Mobile selector element:', mobileSelector);
+    console.log('📱 Mobile selector visible:', mobileSelector ? mobileSelector.offsetParent !== null : 'N/A');
+    console.log('📱 Mobile selector display:', mobileSelector ? window.getComputedStyle(mobileSelector).display : 'N/A');
+    console.log('📱 Mobile selector visibility:', mobileSelector ? window.getComputedStyle(mobileSelector).visibility : 'N/A');
     console.log('📱 State stations:', state.stations);
     console.log('📱 State stations length:', state.stations ? state.stations.length : 'undefined');
     
@@ -297,6 +300,13 @@ function renderMobileDropdown() {
     }
     
     console.log('📱 Added', mobileSelector.children.length - 1, 'station groups to dropdown');
+    console.log('📱 Dropdown HTML:', mobileSelector.innerHTML);
+    console.log('📱 Dropdown children count:', mobileSelector.children.length);
+    
+    // Test if options are actually selectable
+    const options = mobileSelector.querySelectorAll('option');
+    console.log('📱 Total options in dropdown:', options.length);
+    console.log('📱 First few options:', Array.from(options).slice(0, 5).map(opt => opt.textContent));
     
     // Create icons
     if (window.lucide) {
