@@ -1,29 +1,13 @@
 import { dom } from './dom.js';
-import { state, loadStations, setBand } from './state.js';
+import { state, loadStations } from './state.js';
 import * as player from './player.js';
 import * as ui from './ui.js';
-import { weatherService } from './weather.js';
 import './pwa.js';
-
-const BANDS = ['AM', 'FM', 'SAT'];
-
-function applyBand(band) {
-    // Update global state
-    setBand(band);
-    
-    // Update band button UI
-    ui.updateBandButton(band, state.isPlaying);
-    
-    // Update station grid with new stations
-    ui.updateStationGrid();
-}
 
 function init() {
     console.log('🚀 Initializing GLZ Radio...');
     console.log('📱 User Agent:', navigator.userAgent);
     console.log('📏 Screen size:', window.innerWidth, 'x', window.innerHeight);
-    console.log('🔍 Is Mobile?', window.innerWidth < 640);
-    console.log('🍎 Is Safari?', /Safari/.test(navigator.userAgent) && /iPhone|iPad/.test(navigator.userAgent));
     
     // Safari iOS specific fixes
     if (/Safari/.test(navigator.userAgent) && /iPhone|iPad/.test(navigator.userAgent)) {
@@ -44,21 +28,8 @@ function init() {
         console.log('✅ Stations loaded successfully');
         console.log('📊 Total stations:', state.stations.length);
         
-        // Apply default (initial) band
-        applyBand(state.currentBand);
-        console.log('🎵 Applied band:', state.currentBand);
-        console.log('🎛️ Filtered stations:', state.filteredStations.length);
-        
-        // Initialize station grid
-        console.log('🎯 Initializing station grid...');
-        ui.updateStationGrid();
-        console.log('✅ Station grid initialized');
-        
         // Set app footer
         ui.setAppFooter();
-        
-        // Setup event listeners
-        setupEventListeners();
         
         // Update network status
         ui.updateNetworkStatus();
@@ -77,36 +48,6 @@ function init() {
 }
 
 function setupEventListeners() {
-    // Unified Play/Pause button
-    if (dom.playBtn) {
-        dom.playBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            player.togglePlay();
-        });
-    }
-    
-    // Desktop play button event listener
-    if (dom.desktopPlayBtn) {
-        dom.desktopPlayBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            player.togglePlay();
-        });
-    }
-    
-    // Band selection buttons
-    if (dom.bandButtons && dom.bandButtons.length) {
-        dom.bandButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const band = btn.dataset.band;
-                if (band && band !== state.currentBand) {
-                    applyBand(band);
-                }
-            });
-        });
-    }
-    
-    // Desktop station selector - handled in ui.js to avoid duplicates
-
     // Listen to the audio element's state changes to keep the UI in sync
     if (dom.audioPlayer) {
         dom.audioPlayer.addEventListener('playing', () => {
@@ -131,10 +72,16 @@ function setupEventListeners() {
     window.addEventListener('offline', ui.updateNetworkStatus);
 }
 
-// The 'module' type script in HTML will run when it's parsed.
-// We just need to make sure the DOM is loaded.
+// Initialize the app
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
 } else {
     init();
+}
+
+// Setup event listeners after DOM is ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupEventListeners);
+} else {
+    setupEventListeners();
 }
