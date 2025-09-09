@@ -163,7 +163,13 @@ const elements = {
     weatherIcon: document.getElementById('weather-icon'),
     weatherTemp: document.getElementById('weather-temp'),
     rdsText: document.getElementById('rds-text'),
-    clock: document.getElementById('clock')
+    clock: document.getElementById('clock'),
+    settingsBtn: document.getElementById('settings-btn'),
+    settingsPanel: document.getElementById('settings-panel'),
+    closeSettings: document.getElementById('close-settings'),
+    weatherLocation: document.getElementById('weather-location'),
+    updateWeather: document.getElementById('update-weather'),
+    weatherSource: document.getElementById('weather-source')
 };
 
 // Initialize the app
@@ -179,8 +185,8 @@ function init() {
     // Load stations
     loadStations();
     
-    // Initialize weather
-    initWeather();
+    // Initialize weather (with fallback)
+    initWeatherWithFallback();
     
     // Initialize RDS
     initRDS();
@@ -202,6 +208,11 @@ function setupEventListeners() {
     
     // Station dropdown
     elements.stationDropdown.addEventListener('change', handleStationChange);
+    
+    // Settings events
+    elements.settingsBtn.addEventListener('click', openSettings);
+    elements.closeSettings.addEventListener('click', closeSettings);
+    elements.updateWeather.addEventListener('click', updateWeatherManually);
     
     // Audio events
     audio.addEventListener('loadstart', () => updateStatus('Loading...'));
@@ -264,6 +275,14 @@ function selectStation(name, station) {
     
     // Update RDS for the station
     updateRDSForStation(station);
+    
+    // Try to get weather from station's city
+    const city = extractCityFromRDS(station);
+    if (city && !elements.weatherLocation.value.trim()) {
+        console.log('Auto-detecting weather for station city:', city);
+        elements.weatherSource.textContent = `Station: ${city}`;
+        fetchWeatherByLocation(city);
+    }
     
     // Update status
     updateStatus(`Selected: ${name}`);
@@ -398,26 +417,52 @@ function updateStatus(message) {
     console.log('Status:', message);
 }
 
-// Weather functionality
-async function initWeather() {
+// Weather functionality with fallback
+async function initWeatherWithFallback() {
     try {
-        // Get user's location
+        // Try to get user's location
         const position = await getCurrentPosition();
         const { latitude, longitude } = position.coords;
         
-        // Get weather data
-        await fetchWeatherData(latitude, longitude);
+        // Try to get weather data
+        const weatherSuccess = await fetchWeatherData(latitude, longitude);
         
-        // Update weather every 10 minutes
-        setInterval(() => {
-            fetchWeatherData(latitude, longitude);
-        }, 600000); // 10 minutes
+        if (weatherSuccess) {
+            // Update weather every 10 minutes
+            setInterval(() => {
+                fetchWeatherData(latitude, longitude);
+            }, 600000); // 10 minutes
+        } else {
+            // Fallback to date/time display
+            initWeatherFallback();
+        }
         
     } catch (error) {
         console.error('Weather initialization failed:', error);
-        elements.weatherIcon.textContent = '🌤️';
-        elements.weatherTemp.textContent = '--°F';
+        // Fallback to date/time display
+        initWeatherFallback();
     }
+}
+
+function initWeatherFallback() {
+    console.log('Using weather fallback - showing date/time');
+    
+    // Update weather display with date/time
+    updateWeatherFallback();
+    
+    // Update every minute
+    setInterval(updateWeatherFallback, 60000);
+}
+
+function updateWeatherFallback() {
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric' 
+    });
+    
+    elements.weatherIcon.textContent = '📅';
+    elements.weatherTemp.textContent = dateStr;
 }
 
 function getCurrentPosition() {
@@ -469,15 +514,12 @@ async function fetchWeatherData(lat, lon) {
         elements.weatherIcon.textContent = getWeatherIcon(data.weather[0].icon);
         elements.weatherTemp.textContent = `${Math.round(data.main.temp)}°F`;
         
+        return true; // Success
+        
     } catch (error) {
         console.error('Weather fetch failed:', error);
-        // Fallback to demo data for development
-        elements.weatherIcon.textContent = '🌤️';
-        elements.weatherTemp.textContent = '72°F';
-        
-        // Show error in console for debugging
-        console.log('Using fallback weather data. This is normal when running from file:// protocol.');
         console.log('Weather error details:', error.message);
+        return false; // Failed
     }
 }
 
@@ -561,6 +603,110 @@ function formatTime12Hour(date) {
     const formattedMinutes = minutes.toString().padStart(2, '0');
     
     return `${formattedHours}:${formattedMinutes} ${ampm}`;
+}
+
+// Settings functionality
+function openSettings() {
+    elements.settingsPanel.classList.remove('hidden');
+    updateWeatherSourceDisplay();
+}
+
+function closeSettings() {
+    elements.settingsPanel.classList.add('hidden');
+}
+
+async function updateWeatherManually() {
+    const location = elements.weatherLocation.value.trim();
+    if (location) {
+        elements.weatherSource.textContent = `Manual: ${location}`;
+        await fetchWeatherByLocation(location);
+    } else {
+        elements.weatherSource.textContent = 'Auto-detecting from RDS...';
+        // Try to get weather from current station's RDS
+        if (currentStation) {
+            const city = extractCityFromRDS(currentStation);
+            if (city) {
+                elements.weatherSource.textContent = `Station: ${city}`;
+                await fetchWeatherByLocation(city);
+            }
+        }
+    }
+}
+
+function updateWeatherSourceDisplay() {
+    if (elements.weatherLocation.value.trim()) {
+        elements.weatherSource.textContent = `Manual: ${elements.weatherLocation.value}`;
+    } else if (currentStation) {
+        const city = extractCityFromRDS(currentStation);
+        if (city) {
+            elements.weatherSource.textContent = `Station: ${city}`;
+        } else {
+            elements.weatherSource.textContent = 'Auto-detecting...';
+        }
+    } else {
+        elements.weatherSource.textContent = 'Auto-detecting...';
+    }
+}
+
+// Extract city from RDS text
+function extractCityFromRDS(station) {
+    if (!station || !station.rdsText) return null;
+    
+    // Common Puerto Rican cities in RDS text
+    const cities = [
+        'San Juan', 'Bayamón', 'Caguas', 'Ponce', 'Arecibo', 'Mayagüez',
+        'Carolina', 'Guaynabo', 'Cayey', 'Fajardo', 'Humacao', 'Aguadilla',
+        'Hatillo', 'Orocovis', 'Corozal', 'Rio Piedras', 'Rio Grande',
+        'Quebradillas', 'Kissimmee', 'Florida'
+    ];
+    
+    // Look for cities in RDS text
+    for (const rdsText of station.rdsText) {
+        for (const city of cities) {
+            if (rdsText.toLowerCase().includes(city.toLowerCase())) {
+                return city;
+            }
+        }
+    }
+    
+    return null;
+}
+
+// Fetch weather by city name or zip code
+async function fetchWeatherByLocation(location) {
+    try {
+        const API_KEY = '342e0cb173ba66694bbe37a9012e5ed5';
+        const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(location)}&appid=${API_KEY}&units=imperial`;
+        
+        console.log('Fetching weather for location:', location);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+            mode: 'cors'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Weather API request failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        console.log('Weather data received:', data);
+        
+        // Update weather display
+        elements.weatherIcon.textContent = getWeatherIcon(data.weather[0].icon);
+        elements.weatherTemp.textContent = `${Math.round(data.main.temp)}°F`;
+        
+        return true;
+        
+    } catch (error) {
+        console.error('Weather fetch failed:', error);
+        // Fallback to date display
+        updateWeatherFallback();
+        return false;
+    }
 }
 
 // Initialize when DOM is loaded

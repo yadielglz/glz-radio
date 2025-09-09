@@ -17,28 +17,31 @@
     <div id="app">
         <!-- Header -->
         <header>
-            <!-- Top Line: GLZ Radio (Left), RDS (Center), Weather (Right) -->
+            <!-- Top Line: GLZ Radio (Left), Clock (Center), Weather (Right) -->
             <div class="header-top">
                 <div class="header-left">
                     <h1>GLZ Radio</h1>
                 </div>
                 <div class="header-center">
-                    <div id="rds-display" class="rds-display">
-                        <span id="rds-text">GLZ Radio</span>
-                    </div>
+                    <div id="clock" class="clock">--:-- --</div>
                 </div>
                 <div class="header-right">
                     <div id="weather" class="weather">
                         <div id="weather-icon" class="weather-icon">🌤️</div>
                         <div id="weather-temp" class="weather-temp">--°F</div>
                     </div>
+                    <button id="settings-btn" class="settings-btn" title="Settings">
+                        ⚙️
+                    </button>
                 </div>
             </div>
             
-            <!-- Bottom Line: Clock (Left&Center), Weather (Right) -->
+            <!-- Bottom Line: RDS (Left&Center), Status (Right) -->
             <div class="header-bottom">
-                <div class="clock-section">
-                    <div id="clock" class="clock">--:-- --</div>
+                <div class="rds-section">
+                    <div id="rds-display" class="rds-display">
+                        <span id="rds-text">GLZ Radio</span>
+                    </div>
                 </div>
                 <div class="status-section">
                     <div id="status" class="status">Ready</div>
@@ -74,6 +77,30 @@
                 </select>
             </div>
         </main>
+
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="settings-panel hidden">
+            <div class="settings-content">
+                <div class="settings-header">
+                    <h3>Settings</h3>
+                    <button id="close-settings" class="close-btn">✕</button>
+                </div>
+                <div class="settings-body">
+                    <div class="setting-group">
+                        <label for="weather-location">Weather Location:</label>
+                        <div class="weather-input-group">
+                            <input type="text" id="weather-location" placeholder="Enter city or zip code" class="weather-input">
+                            <button id="update-weather" class="btn btn-primary">Update</button>
+                        </div>
+                        <p class="setting-description">Leave empty to use station location from RDS</p>
+                    </div>
+                    <div class="setting-group">
+                        <label>Current Weather Source:</label>
+                        <div id="weather-source" class="weather-source">Auto-detecting...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Footer -->
         <footer>
