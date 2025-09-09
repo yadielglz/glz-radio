@@ -31,11 +31,6 @@ export const dom = {
     showMoreText: document.getElementById('show-more-text'),
     showMoreIcon: document.getElementById('show-more-icon'),
 
-    // Modal (kept for backwards compatibility)
-    stationModal: document.getElementById('station-modal'),
-    closeModal: document.getElementById('close-modal'),
-    stationList: document.getElementById('station-list'),
-
     // Footer
     buildTimestamp: document.getElementById('build-timestamp'),
 

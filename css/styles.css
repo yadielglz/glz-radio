@@ -408,25 +408,28 @@ header h1 {
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  border-radius: var(--radius-xl);
 }
 
 .band-btn .glass-panel {
   border-width: 2px;
   transition: all var(--transition-normal);
+  border-radius: var(--radius-xl);
 }
 
 .band-btn:hover .glass-panel {
-  transform: translateY(-2px) scale(1.02);
+  transform: translateY(-3px) scale(1.03);
   box-shadow: var(--shadow-medium);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .band-btn.active .glass-panel {
   background: linear-gradient(135deg, var(--primary), var(--accent));
   border-color: var(--primary);
   box-shadow: 
-    0 0 30px rgba(59, 130, 246, 0.5),
-    0 8px 32px rgba(0, 0, 0, 0.3);
-  transform: scale(1.05);
+    0 0 40px rgba(59, 130, 246, 0.6),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+  transform: scale(1.08);
 }
 
 .band-btn.active::before {
@@ -439,11 +442,27 @@ header h1 {
   background: linear-gradient(
     90deg, 
     transparent, 
-    rgba(255, 255, 255, 0.2), 
+    rgba(255, 255, 255, 0.3), 
     transparent
   );
   animation: shimmer 2s infinite;
   border-radius: inherit;
+}
+
+/* Band-specific hover colors */
+.band-btn[data-band="AM"]:hover .glass-panel {
+  border-color: rgba(239, 68, 68, 0.5);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2);
+}
+
+.band-btn[data-band="FM"]:hover .glass-panel {
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.2);
+}
+
+.band-btn[data-band="SAT"]:hover .glass-panel {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
 }
 
 /* Enhanced Station Grid Cards */
@@ -965,29 +984,39 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--glass-bg-strong);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
+  border: 2px solid var(--glass-border);
   color: var(--text-primary);
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   transition: all var(--transition-normal);
+  border-radius: var(--radius-lg);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-soft);
 }
 
 #station-dropdown:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow: 
+    0 0 0 3px rgba(59, 130, 246, 0.1),
+    var(--shadow-medium);
   background: var(--glass-bg-strong);
+  transform: translateY(-1px);
 }
 
 #station-dropdown option {
   background: var(--bg-primary);
   color: var(--text-primary);
-  padding: 0.5rem;
+  padding: 0.75rem;
+  font-weight: 500;
 }
 
 #station-dropdown:hover {
   border-color: var(--glass-border-strong);
   background: var(--glass-bg-strong);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
 }
 
 /* Mobile Station Selector */

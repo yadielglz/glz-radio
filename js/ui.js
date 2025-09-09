@@ -218,9 +218,9 @@ export function updateBandButton(band, isPlaying = false) {
 
 export function updateStationGrid() {
     currentGridStations = [...state.filteredStations];
-    console.log('Updating station grid with', currentGridStations.length, 'stations');
-    console.log('Filtered stations:', state.filteredStations);
-    console.log('Current band:', state.currentBand);
+    console.log('🔄 Updating station grid with', currentGridStations.length, 'stations');
+    console.log('📻 Filtered stations:', state.filteredStations);
+    console.log('🎛️ Current band:', state.currentBand);
     
     // Update both mobile dropdown and desktop grid
     renderStationGrid();
@@ -229,6 +229,14 @@ export function updateStationGrid() {
     const dropdown = document.getElementById('station-dropdown');
     if (dropdown) {
         dropdown.selectedIndex = 0; // Reset to "Choose a station..." option
+        console.log('🔄 Reset mobile dropdown selection');
+    }
+    
+    // Force re-render if we're on mobile
+    const isMobile = window.innerWidth < 640;
+    if (isMobile) {
+        console.log('📱 Mobile detected, ensuring dropdown is populated');
+        setTimeout(() => renderMobileDropdown(), 100);
     }
 }
 
@@ -276,31 +284,38 @@ function renderMobileDropdown() {
         return;
     }
 
+    console.log('Rendering mobile dropdown with stations:', currentGridStations.length);
+    console.log('Current band:', state.currentBand);
+    console.log('Filtered stations:', state.filteredStations);
+
     // Clear existing options and add band-specific placeholder
     const bandText = state.currentBand === 'SAT' ? 'Satellite' : state.currentBand;
     dropdown.innerHTML = `<option value="" class="text-gray-500">Choose a ${bandText} station...</option>`;
     
     // Add station options from current band only
-    currentGridStations.forEach((station, index) => {
-        const option = document.createElement('option');
-        option.value = index;
-        
-        // Format the display text based on band
-        let displayText = station.name;
-        if (station.frequency.startsWith('AM:')) {
-            displayText += ` - ${station.frequency.replace('AM:', 'AM ')}`;
-        } else if (station.frequency.startsWith('FM:')) {
-            displayText += ` - ${station.frequency.replace('FM:', 'FM ')}`;
-        } else if (station.frequency.includes('Satellite')) {
-            displayText += ` - SAT`;
-        }
-        
-        option.textContent = displayText;
-        option.className = 'text-white';
-        dropdown.appendChild(option);
-    });
-
-    console.log(`Added ${currentGridStations.length} ${state.currentBand} stations to mobile dropdown`);
+    if (currentGridStations && currentGridStations.length > 0) {
+        currentGridStations.forEach((station, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            
+            // Format the display text based on band
+            let displayText = station.name;
+            if (station.frequency.startsWith('AM:')) {
+                displayText += ` - ${station.frequency.replace('AM:', 'AM ')}`;
+            } else if (station.frequency.startsWith('FM:')) {
+                displayText += ` - ${station.frequency.replace('FM:', 'FM ')}`;
+            } else if (station.frequency.includes('Satellite')) {
+                displayText += ` - SAT`;
+            }
+            
+            option.textContent = displayText;
+            option.className = 'text-white';
+            dropdown.appendChild(option);
+        });
+        console.log(`✅ Added ${currentGridStations.length} ${state.currentBand} stations to mobile dropdown`);
+    } else {
+        console.warn('⚠️ No stations available for mobile dropdown');
+    }
 }
 
 function renderDesktopGrid() {
@@ -433,6 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
         stationDropdown.addEventListener('change', (e) => {
             const selectedIndex = parseInt(e.target.value);
             if (!isNaN(selectedIndex) && selectedIndex >= 0) {
+                console.log('📱 Mobile dropdown selection:', selectedIndex, currentGridStations[selectedIndex]?.name);
                 selectStationFromGrid(selectedIndex);
             }
         });
@@ -442,9 +458,22 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', () => {
         // Only re-render if we have stations loaded
         if (currentGridStations.length > 0) {
+            console.log('📱 Window resized, re-rendering station grid');
             renderStationGrid();
         }
     });
+    
+    // Debug function for mobile dropdown
+    window.debugMobileDropdown = () => {
+        const dropdown = document.getElementById('station-dropdown');
+        console.log('📱 Mobile dropdown debug:', {
+            element: dropdown,
+            options: dropdown?.options?.length || 0,
+            currentBand: state.currentBand,
+            filteredStations: state.filteredStations.length,
+            currentGridStations: currentGridStations.length
+        });
+    };
     
     // Note: Station grid initialization is handled by app.js after stations are loaded
 });

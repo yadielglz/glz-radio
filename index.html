@@ -169,7 +169,7 @@
                     
                     <!-- Mobile Dropdown -->
                     <div id="mobile-station-selector" class="block sm:hidden mb-4">
-                        <select id="station-dropdown" class="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <select id="station-dropdown" class="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:bg-white/15 hover:border-white/30">
                             <option value="" class="text-gray-500">Choose a station...</option>
                         </select>
                     </div>
@@ -222,30 +222,6 @@
         </footer>
     </div>
 
-    <!-- Station Picker Modal -->
-    <div id="station-modal" class="fixed inset-0 bg-black/60 backdrop-blur-lg hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white/5 backdrop-blur-xl border border-white/20 max-w-md w-full max-h-[85vh] overflow-hidden rounded-3xl shadow-2xl">
-            <!-- Modal Header -->
-            <div class="p-6 border-b border-white/10">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center">
-                            <i data-lucide="list-music" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <h3 class="text-xl lg:text-2xl font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">Select Station</h3>
-                    </div>
-                    <button id="close-modal" class="bg-white/5 backdrop-blur-sm border border-white/10 p-2 rounded-xl hover:scale-110 transition-all duration-200 group" aria-label="Close station picker">
-                        <i data-lucide="x" class="w-5 h-5 text-slate-400 group-hover:text-white transition-colors"></i>
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Station List -->
-            <div id="station-list" class="max-h-96 overflow-y-auto p-3">
-                <!-- Stations will be populated here -->
-            </div>
-        </div>
-    </div>
 
     <!-- Audio Element -->
     <audio id="audio-player" preload="none"></audio>
