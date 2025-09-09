@@ -72,9 +72,15 @@
             <!-- Station List -->
             <div id="station-list" class="station-list">
                 <h2>Select a Station</h2>
-                <select id="station-dropdown" class="station-dropdown">
-                    <option value="">Choose a radio station...</option>
-                </select>
+                <div class="custom-dropdown">
+                    <div id="dropdown-trigger" class="dropdown-trigger">
+                        <span id="dropdown-text">Choose a radio station...</span>
+                        <span class="dropdown-arrow">▼</span>
+                    </div>
+                    <div id="dropdown-menu" class="dropdown-menu hidden">
+                        <!-- Options will be populated by JavaScript -->
+                    </div>
+                </div>
             </div>
         </main>
 

@@ -158,7 +158,9 @@ const elements = {
     playPauseBtn: document.getElementById('play-pause-btn'),
     playPauseText: document.getElementById('play-pause-text'),
     stopBtn: document.getElementById('stop-btn'),
-    stationDropdown: document.getElementById('station-dropdown'),
+    dropdownTrigger: document.getElementById('dropdown-trigger'),
+    dropdownText: document.getElementById('dropdown-text'),
+    dropdownMenu: document.getElementById('dropdown-menu'),
     audioPlayer: document.getElementById('audio-player'),
     weatherIcon: document.getElementById('weather-icon'),
     weatherTemp: document.getElementById('weather-temp'),
@@ -206,8 +208,15 @@ function setupEventListeners() {
     // Stop button
     elements.stopBtn.addEventListener('click', stop);
     
-    // Station dropdown
-    elements.stationDropdown.addEventListener('change', handleStationChange);
+    // Custom dropdown
+    elements.dropdownTrigger.addEventListener('click', toggleDropdown);
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-dropdown')) {
+            closeDropdown();
+        }
+    });
     
     // Settings events
     elements.settingsBtn.addEventListener('click', openSettings);
@@ -237,26 +246,69 @@ function setupEventListeners() {
     });
 }
 
-// Load stations into the dropdown
+// Load stations into the custom dropdown
 function loadStations() {
     const stationNames = Object.keys(RADIO_STATIONS);
     
+    // Clear existing options
+    elements.dropdownMenu.innerHTML = '';
+    
     stationNames.forEach(stationName => {
         const station = RADIO_STATIONS[stationName];
-        const option = document.createElement('option');
-        option.value = stationName;
-        option.textContent = `${stationName} - ${station.frequency}`;
-        elements.stationDropdown.appendChild(option);
+        const option = document.createElement('div');
+        option.className = 'dropdown-option';
+        option.dataset.stationName = stationName;
+        
+        option.innerHTML = `
+            <img src="${station.logo}" alt="${stationName}" class="dropdown-option-logo" onerror="this.src='images/generic-station-logo.svg'">
+            <div class="dropdown-option-content">
+                <div class="dropdown-option-name">${stationName}</div>
+                <div class="dropdown-option-frequency">${station.frequency}</div>
+            </div>
+        `;
+        
+        option.addEventListener('click', () => {
+            selectStation(stationName, station);
+            closeDropdown();
+        });
+        
+        elements.dropdownMenu.appendChild(option);
     });
 }
 
-// Handle station dropdown change
-function handleStationChange(event) {
-    const selectedStationName = event.target.value;
-    if (!selectedStationName) return;
+// Toggle dropdown menu
+function toggleDropdown() {
+    if (elements.dropdownMenu.classList.contains('hidden')) {
+        openDropdown();
+    } else {
+        closeDropdown();
+    }
+}
+
+// Open dropdown menu
+function openDropdown() {
+    elements.dropdownMenu.classList.remove('hidden');
+    elements.dropdownTrigger.classList.add('open');
+}
+
+// Close dropdown menu
+function closeDropdown() {
+    elements.dropdownMenu.classList.add('hidden');
+    elements.dropdownTrigger.classList.remove('open');
+}
+
+// Update dropdown selection display
+function updateDropdownSelection(stationName) {
+    elements.dropdownText.textContent = stationName;
     
-    const station = RADIO_STATIONS[selectedStationName];
-    selectStation(selectedStationName, station);
+    // Update visual selection in dropdown menu
+    const options = elements.dropdownMenu.querySelectorAll('.dropdown-option');
+    options.forEach(option => {
+        option.classList.remove('selected');
+        if (option.dataset.stationName === stationName) {
+            option.classList.add('selected');
+        }
+    });
 }
 
 // Select a station
@@ -271,7 +323,7 @@ function selectStation(name, station) {
     showNowPlaying();
     
     // Update dropdown selection
-    elements.stationDropdown.value = name;
+    updateDropdownSelection(name);
     
     // Update RDS for the station
     updateRDSForStation(station);
@@ -393,7 +445,9 @@ function stop() {
         hideNowPlaying();
         
         // Reset dropdown
-        elements.stationDropdown.value = '';
+        elements.dropdownText.textContent = 'Choose a radio station...';
+        const options = elements.dropdownMenu.querySelectorAll('.dropdown-option');
+        options.forEach(option => option.classList.remove('selected'));
     } catch (error) {
         console.error('Stop error:', error);
         updateStatus('Error stopping stream');
