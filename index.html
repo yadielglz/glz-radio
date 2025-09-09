@@ -167,13 +167,20 @@
                 <div class="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8 shadow-xl">
                     <h3 class="text-xl lg:text-2xl font-bold text-white mb-6 text-center">Select Station</h3>
                     
-                    <!-- Station Grid -->
-                    <div id="station-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-4">
+                    <!-- Mobile Dropdown -->
+                    <div id="mobile-station-selector" class="block sm:hidden mb-4">
+                        <select id="station-dropdown" class="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl px-4 py-3 text-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="" class="text-gray-500">Choose a station...</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Desktop Station Grid -->
+                    <div id="station-grid" class="hidden sm:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 lg:gap-4">
                         <!-- Stations will be populated here -->
                     </div>
                     
-                    <!-- Show more/less toggle for mobile -->
-                    <div id="show-more-container" class="mt-6 text-center hidden">
+                    <!-- Show more/less toggle for desktop -->
+                    <div id="show-more-container" class="mt-6 text-center hidden sm:block">
                         <button id="show-more-btn" class="bg-white/5 backdrop-blur-sm border border-white/10 px-6 py-3 rounded-xl text-sm text-slate-300 hover:text-white hover:bg-white/10 transition-all duration-300 font-medium">
                             <span id="show-more-text">Show All Stations</span>
                             <i id="show-more-icon" data-lucide="chevron-down" class="w-4 h-4 ml-2 inline"></i>
@@ -206,7 +213,7 @@
                         </div>
                         <span class="font-medium">GLZ Technical Systems</span>
                         <span class="text-slate-500">•</span>
-                        <span>Ver 12.2</span>
+                        <span>Ver 12.3</span>
                         <span class="text-slate-500">•</span>
                         <span>Build: <span id="build-timestamp" class="font-mono text-blue-400"></span></span>
                     </div>

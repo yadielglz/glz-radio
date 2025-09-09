@@ -250,18 +250,51 @@ window.debugStationGrid = {
 };
 
 function renderStationGrid() {
+    const isMobile = window.innerWidth < 640;
+    
+    if (isMobile) {
+        // Render mobile dropdown
+        renderMobileDropdown();
+    } else {
+        // Render desktop grid
+        renderDesktopGrid();
+    }
+}
+
+function renderMobileDropdown() {
+    const dropdown = document.getElementById('station-dropdown');
+    if (!dropdown) {
+        console.error('Station dropdown not found');
+        return;
+    }
+
+    // Clear existing options except the first one
+    dropdown.innerHTML = '<option value="" class="text-gray-500">Choose a station...</option>';
+    
+    // Add station options
+    currentGridStations.forEach((station, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `${station.name} - ${station.frequency.replace('AM:', 'AM ').replace('FM:', 'FM ').replace('Satellite Radio', 'SAT')}`;
+        option.className = 'text-white';
+        dropdown.appendChild(option);
+    });
+
+    console.log(`Added ${currentGridStations.length} stations to mobile dropdown`);
+}
+
+function renderDesktopGrid() {
     if (!dom.stationGrid) {
         console.error('Station grid element not found');
         return;
     }
 
     // Determine how many stations to show
-    const isMobile = window.innerWidth < 640;
-    const stationsToShow = (isMobile && !showingAllStations) 
-        ? currentGridStations.slice(0, MOBILE_STATION_LIMIT)
+    const stationsToShow = !showingAllStations 
+        ? currentGridStations.slice(0, 12) // Show 12 initially on desktop
         : currentGridStations;
     
-    console.log(`Rendering grid: isMobile=${isMobile}, windowWidth=${window.innerWidth}, showingAll=${showingAllStations}, totalStations=${currentGridStations.length}, stationsToShow=${stationsToShow.length}`);
+    console.log(`Rendering desktop grid: showingAll=${showingAllStations}, totalStations=${currentGridStations.length}, stationsToShow=${stationsToShow.length}`);
     
     // Clear the grid
     dom.stationGrid.innerHTML = '';
@@ -274,7 +307,7 @@ function renderStationGrid() {
     });
     
     // Show/hide the "show more" button
-    if (isMobile && currentGridStations.length > MOBILE_STATION_LIMIT) {
+    if (currentGridStations.length > 12) {
         if (dom.showMoreContainer) {
             dom.showMoreContainer.classList.remove('hidden');
         }
@@ -284,7 +317,7 @@ function renderStationGrid() {
         }
     }
 
-    console.log(`Added ${stationsToShow.length} station cards to grid`);
+    console.log(`Added ${stationsToShow.length} station cards to desktop grid`);
 
     // Create icons
     if (window.lucide) {
@@ -372,6 +405,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show more/less button
     if (dom.showMoreBtn) {
         dom.showMoreBtn.addEventListener('click', toggleShowMore);
+    }
+
+    // Mobile dropdown event listener
+    const stationDropdown = document.getElementById('station-dropdown');
+    if (stationDropdown) {
+        stationDropdown.addEventListener('change', (e) => {
+            const selectedIndex = parseInt(e.target.value);
+            if (!isNaN(selectedIndex) && selectedIndex >= 0) {
+                selectStationFromGrid(selectedIndex);
+            }
+        });
     }
 
     // Handle window resize to adjust mobile/desktop view
