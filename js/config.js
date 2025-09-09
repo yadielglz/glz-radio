@@ -144,8 +144,8 @@ const RADIO_STATIONS = {
 
 // App Constants
 const STATIONS_ORDER = Object.keys(RADIO_STATIONS);
-const APP_VERSION = "12.0";
-const APP_BUILD_DATE = "2025-09-07";
+const APP_VERSION = "12.2";
+const APP_BUILD_DATE = "2025-01-27";
 
 // Update intervals
 const RDS_ROTATION_INTERVAL = 4000; // 4 seconds
