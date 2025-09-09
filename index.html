@@ -19,6 +19,14 @@
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Suppress Tailwind production warning for development
+        tailwind.config = {
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
 
     <!-- Custom Styles -->
     <link rel="stylesheet" href="css/styles.css">

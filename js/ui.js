@@ -167,6 +167,8 @@ export function updateBandSelectors(selectedBand) {
 export function showStationBrowser(band) {
     currentStations = [...state.filteredStations];
     console.log('🎛️ Showing station browser for', band, 'with', currentStations.length, 'stations');
+    console.log('📻 Filtered stations:', state.filteredStations);
+    console.log('📻 Current stations:', currentStations);
     
     // Update band display
     if (dom.currentBandDisplay) {
@@ -176,6 +178,9 @@ export function showStationBrowser(band) {
     // Show station browser
     if (dom.stationBrowser) {
         dom.stationBrowser.classList.remove('hidden');
+        console.log('✅ Station browser shown');
+    } else {
+        console.error('❌ Station browser element not found!');
     }
     
     // Hide welcome screen
@@ -184,6 +189,7 @@ export function showStationBrowser(band) {
     }
     
     // Render stations
+    console.log('🎯 About to render stations...');
     renderStations();
 }
 
@@ -198,31 +204,80 @@ export function hideStationBrowser() {
 
 function renderStations() {
     const isMobile = window.innerWidth < 1024;
+    console.log('📱 Rendering stations - isMobile:', isMobile, 'width:', window.innerWidth);
+    console.log('📻 Current stations:', currentStations.length);
+    console.log('📻 Station browser element:', dom.stationBrowser);
+    console.log('📻 Mobile list element:', dom.mobileStationList);
+    console.log('📻 Desktop grid element:', dom.desktopStationGrid);
     
+    // Always render both mobile and desktop, but show/hide based on screen size
+    console.log('📱 Rendering mobile stations');
+    renderMobileStations();
+    
+    console.log('🖥️ Rendering desktop stations');
+    renderDesktopStations();
+    
+    // Show/hide based on screen size
     if (isMobile) {
-        renderMobileStations();
+        if (dom.mobileStationList) {
+            dom.mobileStationList.classList.remove('hidden');
+        }
+        if (dom.desktopStationGrid) {
+            dom.desktopStationGrid.classList.add('hidden');
+        }
     } else {
-        renderDesktopStations();
+        if (dom.mobileStationList) {
+            dom.mobileStationList.classList.add('hidden');
+        }
+        if (dom.desktopStationGrid) {
+            dom.desktopStationGrid.classList.remove('hidden');
+        }
     }
 }
 
 function renderMobileStations() {
     const mobileList = dom.mobileStationList;
-    if (!mobileList) return;
+    console.log('📱 Mobile list element:', mobileList);
+    console.log('📱 Current stations array:', currentStations);
+    console.log('📱 Stations per page:', STATIONS_PER_PAGE);
+    console.log('📱 Showing all stations:', showingAllStations);
+    
+    if (!mobileList) {
+        console.error('❌ Mobile station list element not found!');
+        return;
+    }
 
     // Clear existing stations
     mobileList.innerHTML = '';
+    console.log('📱 Cleared mobile list');
     
     // Determine how many stations to show
     const stationsToShow = !showingAllStations 
         ? currentStations.slice(0, STATIONS_PER_PAGE)
         : currentStations;
     
+    console.log('📱 Stations to show:', stationsToShow.length, 'showingAll:', showingAllStations);
+    console.log('📱 Stations to show array:', stationsToShow);
+    
+    if (stationsToShow.length === 0) {
+        console.warn('⚠️ No stations to show!');
+        return;
+    }
+    
     // Add station items
     stationsToShow.forEach((station, index) => {
+        console.log('📱 Creating mobile item for:', station.name, 'at index:', index);
         const stationItem = createMobileStationItem(station, index);
-        mobileList.appendChild(stationItem);
+        if (stationItem) {
+            mobileList.appendChild(stationItem);
+            console.log('📱 Successfully added station item for:', station.name);
+        } else {
+            console.error('❌ Failed to create station item for:', station.name);
+        }
     });
+    
+    console.log('📱 Added', stationsToShow.length, 'mobile station items');
+    console.log('📱 Mobile list now has', mobileList.children.length, 'children');
     
     // Update load more button
     updateLoadMoreButton();
@@ -439,3 +494,22 @@ function filterByBand(band) {
             return state.stations.filter(s => s.frequency.startsWith('Satellite') || s.frequency.includes('Satellite'));
     }
 }
+
+// Debug functions
+window.debugMobileStations = () => {
+    const mobileGrid = dom.mobileStationList;
+    console.log('📱 Mobile station cards debug:', {
+        element: mobileGrid,
+        cards: mobileGrid?.children?.length || 0,
+        currentBand: state.currentBand,
+        filteredStations: state.filteredStations.length,
+        currentStations: currentStations.length,
+        windowWidth: window.innerWidth,
+        isMobile: window.innerWidth < 1024
+    });
+};
+
+window.testMobileRendering = () => {
+    console.log('🧪 Testing mobile rendering...');
+    showStationBrowser('FM');
+};
