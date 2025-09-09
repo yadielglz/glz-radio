@@ -260,43 +260,52 @@ function renderMobileDropdown() {
     console.log('📱 FM stations:', fmStations.length, fmStations);
     console.log('📱 SAT stations:', satStations.length, satStations);
     
-    // Add AM stations
+    // Add AM stations (mobile-friendly without optgroup)
     if (amStations.length > 0) {
-        const amGroup = document.createElement('optgroup');
-        amGroup.label = 'AM Stations';
+        // Add separator
+        const amSeparator = document.createElement('option');
+        amSeparator.disabled = true;
+        amSeparator.textContent = '─── AM Stations ───';
+        mobileSelector.appendChild(amSeparator);
+        
         amStations.forEach(station => {
             const option = document.createElement('option');
             option.value = station.name;
             option.textContent = `${station.name} - ${station.frequency.replace('AM:', 'AM ')}`;
-            amGroup.appendChild(option);
+            mobileSelector.appendChild(option);
         });
-        mobileSelector.appendChild(amGroup);
     }
     
-    // Add FM stations
+    // Add FM stations (mobile-friendly without optgroup)
     if (fmStations.length > 0) {
-        const fmGroup = document.createElement('optgroup');
-        fmGroup.label = 'FM Stations';
+        // Add separator
+        const fmSeparator = document.createElement('option');
+        fmSeparator.disabled = true;
+        fmSeparator.textContent = '─── FM Stations ───';
+        mobileSelector.appendChild(fmSeparator);
+        
         fmStations.forEach(station => {
             const option = document.createElement('option');
             option.value = station.name;
             option.textContent = `${station.name} - ${station.frequency.replace('FM:', 'FM ')}`;
-            fmGroup.appendChild(option);
+            mobileSelector.appendChild(option);
         });
-        mobileSelector.appendChild(fmGroup);
     }
     
-    // Add Satellite stations
+    // Add Satellite stations (mobile-friendly without optgroup)
     if (satStations.length > 0) {
-        const satGroup = document.createElement('optgroup');
-        satGroup.label = 'Satellite Stations';
+        // Add separator
+        const satSeparator = document.createElement('option');
+        satSeparator.disabled = true;
+        satSeparator.textContent = '─── Satellite Stations ───';
+        mobileSelector.appendChild(satSeparator);
+        
         satStations.forEach(station => {
             const option = document.createElement('option');
             option.value = station.name;
             option.textContent = `${station.name} - SAT`;
-            satGroup.appendChild(option);
+            mobileSelector.appendChild(option);
         });
-        mobileSelector.appendChild(satGroup);
     }
     
     console.log('📱 Added', mobileSelector.children.length - 1, 'station groups to dropdown');
@@ -307,6 +316,15 @@ function renderMobileDropdown() {
     const options = mobileSelector.querySelectorAll('option');
     console.log('📱 Total options in dropdown:', options.length);
     console.log('📱 First few options:', Array.from(options).slice(0, 5).map(opt => opt.textContent));
+    
+    // Mobile browser detection
+    const isMobileBrowser = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('📱 Mobile browser detected:', isMobileBrowser);
+    console.log('📱 User agent:', navigator.userAgent);
+    
+    // Test dropdown functionality
+    console.log('📱 Dropdown value:', mobileSelector.value);
+    console.log('📱 Dropdown selectedIndex:', mobileSelector.selectedIndex);
     
     // Create icons
     if (window.lucide) {
