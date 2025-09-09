@@ -144,7 +144,7 @@ const RADIO_STATIONS = {
 
 // App Constants
 const STATIONS_ORDER = Object.keys(RADIO_STATIONS);
-const APP_VERSION = "12.3";
+const APP_VERSION = "12.4";
 const APP_BUILD_DATE = "2025-01-27";
 
 // Update intervals

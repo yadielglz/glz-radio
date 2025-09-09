@@ -221,7 +221,15 @@ export function updateStationGrid() {
     console.log('Updating station grid with', currentGridStations.length, 'stations');
     console.log('Filtered stations:', state.filteredStations);
     console.log('Current band:', state.currentBand);
+    
+    // Update both mobile dropdown and desktop grid
     renderStationGrid();
+    
+    // Reset dropdown selection when band changes
+    const dropdown = document.getElementById('station-dropdown');
+    if (dropdown) {
+        dropdown.selectedIndex = 0; // Reset to "Choose a station..." option
+    }
 }
 
 // Debug function to test if grid is working
@@ -268,19 +276,31 @@ function renderMobileDropdown() {
         return;
     }
 
-    // Clear existing options except the first one
-    dropdown.innerHTML = '<option value="" class="text-gray-500">Choose a station...</option>';
+    // Clear existing options and add band-specific placeholder
+    const bandText = state.currentBand === 'SAT' ? 'Satellite' : state.currentBand;
+    dropdown.innerHTML = `<option value="" class="text-gray-500">Choose a ${bandText} station...</option>`;
     
-    // Add station options
+    // Add station options from current band only
     currentGridStations.forEach((station, index) => {
         const option = document.createElement('option');
         option.value = index;
-        option.textContent = `${station.name} - ${station.frequency.replace('AM:', 'AM ').replace('FM:', 'FM ').replace('Satellite Radio', 'SAT')}`;
+        
+        // Format the display text based on band
+        let displayText = station.name;
+        if (station.frequency.startsWith('AM:')) {
+            displayText += ` - ${station.frequency.replace('AM:', 'AM ')}`;
+        } else if (station.frequency.startsWith('FM:')) {
+            displayText += ` - ${station.frequency.replace('FM:', 'FM ')}`;
+        } else if (station.frequency.includes('Satellite')) {
+            displayText += ` - SAT`;
+        }
+        
+        option.textContent = displayText;
         option.className = 'text-white';
         dropdown.appendChild(option);
     });
 
-    console.log(`Added ${currentGridStations.length} stations to mobile dropdown`);
+    console.log(`Added ${currentGridStations.length} ${state.currentBand} stations to mobile dropdown`);
 }
 
 function renderDesktopGrid() {
