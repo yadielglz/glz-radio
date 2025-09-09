@@ -8,22 +8,39 @@
     <meta name="theme-color" content="#1a1a1a">
     <title>GLZ Radio</title>
     <link rel="manifest" href="manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
         <!-- Header -->
         <header>
-            <div class="header-content">
-                <h1>GLZ Radio</h1>
+            <!-- Top Line: GLZ Radio (Left), RDS (Center), Weather (Right) -->
+            <div class="header-top">
+                <div class="header-left">
+                    <h1>GLZ Radio</h1>
+                </div>
+                <div class="header-center">
+                    <div id="rds-display" class="rds-display">
+                        <span id="rds-text">GLZ Radio</span>
+                    </div>
+                </div>
                 <div class="header-right">
                     <div id="weather" class="weather">
                         <div id="weather-icon" class="weather-icon">🌤️</div>
                         <div id="weather-temp" class="weather-temp">--°F</div>
                     </div>
-                    <div id="rds-display" class="rds-display">
-                        <span id="rds-text">GLZ Radio</span>
-                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Line: Clock (Left&Center), Weather (Right) -->
+            <div class="header-bottom">
+                <div class="clock-section">
+                    <div id="clock" class="clock">--:-- --</div>
+                </div>
+                <div class="status-section">
                     <div id="status" class="status">Ready</div>
                 </div>
             </div>

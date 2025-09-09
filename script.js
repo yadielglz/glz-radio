@@ -162,7 +162,8 @@ const elements = {
     audioPlayer: document.getElementById('audio-player'),
     weatherIcon: document.getElementById('weather-icon'),
     weatherTemp: document.getElementById('weather-temp'),
-    rdsText: document.getElementById('rds-text')
+    rdsText: document.getElementById('rds-text'),
+    clock: document.getElementById('clock')
 };
 
 // Initialize the app
@@ -183,6 +184,9 @@ function init() {
     
     // Initialize RDS
     initRDS();
+    
+    // Initialize clock
+    initClock();
     
     // Update status
     updateStatus('Ready');
@@ -526,6 +530,37 @@ function updateRDSForStation(station) {
         currentRdsIndex = 0;
         elements.rdsText.textContent = rdsTexts[0];
     }
+}
+
+// Clock functionality
+function initClock() {
+    // Update clock immediately
+    updateClock();
+    
+    // Update clock every second
+    setInterval(updateClock, 1000);
+}
+
+function updateClock() {
+    const now = new Date();
+    const timeString = formatTime12Hour(now);
+    elements.clock.textContent = timeString;
+}
+
+function formatTime12Hour(date) {
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    // Convert to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    
+    // Format with leading zeros
+    const formattedHours = hours.toString().padStart(2, '0');
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    
+    return `${formattedHours}:${formattedMinutes} ${ampm}`;
 }
 
 // Initialize when DOM is loaded
