@@ -231,9 +231,16 @@ function renderStations() {
 function renderMobileDropdown() {
     const mobileSelector = dom.mobileStationSelector;
     console.log('📱 Mobile selector element:', mobileSelector);
+    console.log('📱 State stations:', state.stations);
+    console.log('📱 State stations length:', state.stations ? state.stations.length : 'undefined');
     
     if (!mobileSelector) {
         console.error('❌ Mobile station selector element not found!');
+        return;
+    }
+
+    if (!state.stations || state.stations.length === 0) {
+        console.error('❌ No stations loaded in state!');
         return;
     }
 
@@ -246,9 +253,9 @@ function renderMobileDropdown() {
     const fmStations = state.stations.filter(s => s.frequency.startsWith('FM'));
     const satStations = state.stations.filter(s => s.frequency.startsWith('Satellite') || s.frequency.includes('Satellite'));
     
-    console.log('📱 AM stations:', amStations.length);
-    console.log('📱 FM stations:', fmStations.length);
-    console.log('📱 SAT stations:', satStations.length);
+    console.log('📱 AM stations:', amStations.length, amStations);
+    console.log('📱 FM stations:', fmStations.length, fmStations);
+    console.log('📱 SAT stations:', satStations.length, satStations);
     
     // Add AM stations
     if (amStations.length > 0) {

@@ -42,6 +42,7 @@ function init() {
         const isMobile = window.innerWidth < 1024;
         if (isMobile) {
             console.log('📱 Mobile detected, initializing dropdown');
+            console.log('📱 Stations available for mobile:', state.stations.length);
             ui.showStationBrowser('ALL');
         }
 
