@@ -4,7 +4,11 @@
   "description": "A modern, responsive Progressive Web App (PWA) for streaming Puerto Rican radio stations with a sleek glassmorphism design.",
   "main": "sw.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx http-server . -p 8000 -o",
+    "dev": "npx http-server . -p 3000 -o",
+    "build": "echo 'Static site - no build needed'",
+    "test": "echo 'Open http://localhost:8000 to test the app'",
+    "serve": "npx http-server . -p 8080 -o"
   },
   "repository": {
     "type": "git",

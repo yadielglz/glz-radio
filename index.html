@@ -5,78 +5,150 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#1a1a1a">
+    <meta name="theme-color" content="#0a0a0a">
     <title>GLZ Radio</title>
     <link rel="manifest" href="manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="background-animation">
+        <div class="wave wave-1"></div>
+        <div class="wave wave-2"></div>
+        <div class="wave wave-3"></div>
+        <div class="radio-waves">
+            <div class="radio-wave"></div>
+            <div class="radio-wave"></div>
+            <div class="radio-wave"></div>
+        </div>
+    </div>
+
     <div id="app">
-        <!-- Header -->
-        <header>
-            <!-- Top Line: GLZ Radio (Left), Clock (Center), Weather (Right) -->
-            <div class="header-top">
-                <div class="header-left">
-                    <h1>GLZ Radio</h1>
+        <!-- Modern Header -->
+        <header class="modern-header">
+            <div class="header-content">
+                <div class="brand-section">
+                    <div class="radio-icon">
+                        <div class="radio-dial">
+                            <div class="dial-center"></div>
+                            <div class="dial-needle"></div>
+                        </div>
+                    </div>
+                    <div class="brand-text">
+                        <h1>GLZ Radio</h1>
+                        <span class="brand-subtitle">Puerto Rican Stations</span>
+                    </div>
                 </div>
-                <div class="header-center">
-                    <div id="clock" class="clock">--:-- --</div>
-                </div>
-                <div class="header-right">
-                    <div id="weather" class="weather">
-                        <div id="weather-icon" class="weather-icon">🌤️</div>
-                        <div id="weather-temp" class="weather-temp">--°F</div>
+                
+                <div class="info-panel">
+                    <div class="time-weather">
+                        <div id="clock" class="clock">--:-- --</div>
+                        <div id="weather" class="weather">
+                            <div id="weather-icon" class="weather-icon">🌤️</div>
+                            <div id="weather-temp" class="weather-temp">--°F</div>
+                        </div>
                     </div>
                     <button id="settings-btn" class="settings-btn" title="Settings">
-                        ⚙️
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1m15.5-6.5l-4.24 4.24M6.76 17.24l-4.24 4.24m0-12.73l4.24 4.24m10.61 4.24l4.24 4.24"></path>
+                        </svg>
                     </button>
                 </div>
             </div>
             
-            <!-- Bottom Line: RDS (Left&Center), Status (Right) -->
-            <div class="header-bottom">
-                <div class="rds-section">
-                    <div id="rds-display" class="rds-display">
-                        <span id="rds-text">GLZ Radio</span>
-                    </div>
+            <!-- RDS Display -->
+            <div class="rds-container">
+                <div class="rds-label">RDS</div>
+                <div id="rds-display" class="rds-display">
+                    <span id="rds-text">GLZ Radio</span>
                 </div>
-                <div class="status-section">
-                    <div id="status" class="status">Ready</div>
-                </div>
+                <div id="status" class="status-indicator">Ready</div>
             </div>
         </header>
 
         <!-- Main Content -->
-        <main>
-            <!-- Now Playing -->
-            <div id="now-playing" class="now-playing hidden">
-                <div class="station-info">
-                    <img id="station-logo" src="" alt="Station Logo" class="station-logo">
-                    <div class="station-details">
-                        <h2 id="station-name">Station Name</h2>
-                        <p id="station-frequency">Frequency</p>
-                        <p id="station-callsign">Call Sign</p>
+        <main class="main-content">
+            <!-- Now Playing Card -->
+            <div id="now-playing" class="now-playing-card hidden">
+                <div class="card-header">
+                    <div class="playing-indicator">
+                        <div class="pulse-dot"></div>
+                        <span>NOW PLAYING</span>
                     </div>
                 </div>
-                <div class="controls">
-                    <button id="play-pause-btn" class="btn btn-primary">
+                
+                <div class="station-display">
+                    <div class="station-logo-container">
+                        <img id="station-logo" src="" alt="Station Logo" class="station-logo">
+                        <div class="logo-glow"></div>
+                    </div>
+                    
+                    <div class="station-info">
+                        <h2 id="station-name" class="station-name">Station Name</h2>
+                        <div class="station-details">
+                            <span id="station-frequency" class="frequency">Frequency</span>
+                            <span class="separator">•</span>
+                            <span id="station-callsign" class="callsign">Call Sign</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="controls-panel">
+                    <button id="play-pause-btn" class="control-btn primary-btn">
+                        <div class="btn-icon">
+                            <svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M8 5v14l11-7z"/>
+                            </svg>
+                            <svg id="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+                                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+                            </svg>
+                        </div>
                         <span id="play-pause-text">Play</span>
                     </button>
-                    <button id="stop-btn" class="btn btn-secondary">Stop</button>
+                    
+                    <button id="stop-btn" class="control-btn secondary-btn">
+                        <div class="btn-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 6h12v12H6z"/>
+                            </svg>
+                        </div>
+                        <span>Stop</span>
+                    </button>
                 </div>
             </div>
 
-            <!-- Station List -->
-            <div id="station-list" class="station-list">
-                <h2>Select a Station</h2>
+            <!-- Station Selector -->
+            <div class="station-selector">
+                <div class="selector-header">
+                    <h2>Select Station</h2>
+                    <div class="station-count">
+                        <span id="station-count">0</span> stations available
+                    </div>
+                </div>
+                
                 <div class="custom-dropdown">
                     <div id="dropdown-trigger" class="dropdown-trigger">
-                        <span id="dropdown-text">Choose a radio station...</span>
-                        <span class="dropdown-arrow">▼</span>
+                        <div class="trigger-content">
+                            <div class="trigger-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    <polyline points="3.27,6.96 12,12.01 20.73,6.96"></polyline>
+                                    <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                                </svg>
+                            </div>
+                            <span id="dropdown-text" class="trigger-text">Choose a radio station...</span>
+                        </div>
+                        <div class="dropdown-arrow">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="6,9 12,15 18,9"></polyline>
+                            </svg>
+                        </div>
                     </div>
+                    
                     <div id="dropdown-menu" class="dropdown-menu hidden">
                         <!-- Options will be populated by JavaScript -->
                     </div>
@@ -85,23 +157,36 @@
         </main>
 
         <!-- Settings Panel -->
-        <div id="settings-panel" class="settings-panel hidden">
-            <div class="settings-content">
+        <div id="settings-panel" class="settings-overlay hidden">
+            <div class="settings-panel">
                 <div class="settings-header">
                     <h3>Settings</h3>
-                    <button id="close-settings" class="close-btn">✕</button>
+                    <button id="close-settings" class="close-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div>
-                <div class="settings-body">
+                
+                <div class="settings-content">
                     <div class="setting-group">
-                        <label for="weather-location">Weather Location:</label>
-                        <div class="weather-input-group">
-                            <input type="text" id="weather-location" placeholder="Enter city or zip code" class="weather-input">
-                            <button id="update-weather" class="btn btn-primary">Update</button>
+                        <label for="weather-location">Weather Location</label>
+                        <div class="input-group">
+                            <input type="text" id="weather-location" placeholder="Enter city or zip code" class="modern-input">
+                            <button id="update-weather" class="update-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M23 4v6h-6"></path>
+                                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                                </svg>
+                                Update
+                            </button>
                         </div>
-                        <p class="setting-description">Leave empty to use station location from RDS</p>
+                        <p class="setting-hint">Leave empty to use station location from RDS</p>
                     </div>
+                    
                     <div class="setting-group">
-                        <label>Current Weather Source:</label>
+                        <label>Current Weather Source</label>
                         <div id="weather-source" class="weather-source">Auto-detecting...</div>
                     </div>
                 </div>
@@ -109,8 +194,15 @@
         </div>
 
         <!-- Footer -->
-        <footer>
-            <p>GLZ Technical Systems - Version 1.0</p>
+        <footer class="modern-footer">
+            <div class="footer-content">
+                <p>GLZ Technical Systems</p>
+                <div class="footer-info">
+                    <span>Version 2.0</span>
+                    <span class="separator">•</span>
+                    <span>Puerto Rico</span>
+                </div>
+            </div>
         </footer>
     </div>
 

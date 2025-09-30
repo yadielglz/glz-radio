@@ -157,6 +157,8 @@ const elements = {
     stationCallsign: document.getElementById('station-callsign'),
     playPauseBtn: document.getElementById('play-pause-btn'),
     playPauseText: document.getElementById('play-pause-text'),
+    playIcon: document.getElementById('play-icon'),
+    pauseIcon: document.getElementById('pause-icon'),
     stopBtn: document.getElementById('stop-btn'),
     dropdownTrigger: document.getElementById('dropdown-trigger'),
     dropdownText: document.getElementById('dropdown-text'),
@@ -171,7 +173,8 @@ const elements = {
     closeSettings: document.getElementById('close-settings'),
     weatherLocation: document.getElementById('weather-location'),
     updateWeather: document.getElementById('update-weather'),
-    weatherSource: document.getElementById('weather-source')
+    weatherSource: document.getElementById('weather-source'),
+    stationCount: document.getElementById('station-count')
 };
 
 // Initialize the app
@@ -249,6 +252,9 @@ function setupEventListeners() {
 // Load stations into the custom dropdown
 function loadStations() {
     const stationNames = Object.keys(RADIO_STATIONS);
+    
+    // Update station count
+    elements.stationCount.textContent = stationNames.length;
     
     // Clear existing options
     elements.dropdownMenu.innerHTML = '';
@@ -458,9 +464,13 @@ function stop() {
 function updatePlayPauseButton() {
     if (isPlaying) {
         elements.playPauseText.textContent = 'Pause';
+        elements.playIcon.style.display = 'none';
+        elements.pauseIcon.style.display = 'block';
         elements.playPauseBtn.classList.add('playing');
     } else {
         elements.playPauseText.textContent = 'Play';
+        elements.playIcon.style.display = 'block';
+        elements.pauseIcon.style.display = 'none';
         elements.playPauseBtn.classList.remove('playing');
     }
 }
@@ -763,8 +773,105 @@ async function fetchWeatherByLocation(location) {
     }
 }
 
+// Add visual effects and animations
+function addVisualEffects() {
+    // Add hover effects to station logos
+    const stationLogos = document.querySelectorAll('.station-logo');
+    stationLogos.forEach(logo => {
+        logo.addEventListener('mouseenter', () => {
+            logo.style.transform = 'scale(1.05)';
+        });
+        logo.addEventListener('mouseleave', () => {
+            logo.style.transform = 'scale(1)';
+        });
+    });
+    
+    // Add click ripple effect to buttons
+    const buttons = document.querySelectorAll('.control-btn, .settings-btn, .update-btn');
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const ripple = document.createElement('span');
+            const rect = this.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            this.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
+    });
+    
+    // Add typing effect to RDS display
+    function typeRDSText(text, element, speed = 100) {
+        element.textContent = '';
+        let i = 0;
+        const timer = setInterval(() => {
+            if (i < text.length) {
+                element.textContent += text.charAt(i);
+                i++;
+            } else {
+                clearInterval(timer);
+            }
+        }, speed);
+    }
+    
+    // Enhanced RDS update function
+    const originalUpdateRDS = updateRDS;
+    updateRDS = function() {
+        if (currentStation && currentStation.rdsText) {
+            const text = currentStation.rdsText[currentRdsIndex % currentStation.rdsText.length];
+            typeRDSText(text, elements.rdsText, 50);
+            currentRdsIndex++;
+        } else {
+            const text = rdsTexts[currentRdsIndex % rdsTexts.length];
+            typeRDSText(text, elements.rdsText, 50);
+            currentRdsIndex++;
+        }
+    };
+}
+
+// Add CSS for ripple effect
+function addRippleCSS() {
+    const style = document.createElement('style');
+    style.textContent = `
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+        
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .control-btn, .settings-btn, .update-btn {
+            position: relative;
+            overflow: hidden;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
 // Initialize when DOM is loaded
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    addRippleCSS();
+    addVisualEffects();
+});
 
 // Handle page unload
 window.addEventListener('beforeunload', () => {
