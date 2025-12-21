@@ -135,7 +135,7 @@ const RADIO_STATIONS = {
     },
     "La Vieja Z": {
         "logo": "https://i.ibb.co/d4VZVjj2/LVZ8-removebg-preview.png",
-        "streamUrl": "https://s3.free-shoutcast.com/stream/18094",
+        "streamUrl": "https://s3.free-shoutcast.com/stream/18050",
         "frequency": "Satellite Radio",
         "callSign": null,
         "rdsText": ["La Vieja Z", "Central Florida", "Salsa!"]
