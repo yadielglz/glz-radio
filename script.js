@@ -163,6 +163,7 @@ const el = {
     playIcon: document.getElementById('play-icon'),
     pauseIcon: document.getElementById('pause-icon'),
     stopBtn: document.getElementById('stop-btn'),
+    openStationsBtn: document.getElementById('open-stations-btn'),
     rdsText: document.getElementById('rds-text'),
     stationList: document.getElementById('station-list'),
     stationCount: document.getElementById('station-count'),
@@ -200,6 +201,9 @@ function init() {
 function bindControls() {
     el.playPauseBtn.addEventListener('click', togglePlayPause);
     el.stopBtn.addEventListener('click', stop);
+    if (el.openStationsBtn) {
+        el.openStationsBtn.addEventListener('click', () => switchView('stations'));
+    }
 }
 
 function setupNavigation() {
