@@ -13,6 +13,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/feather-icons"></script>
 </head>
@@ -28,19 +29,17 @@
                 <div>
                     <div class="brand-title">GLZ Radio</div>
                     <p class="brand-subtitle">Live Puerto Rico air</p>
+                    <div class="status-inline">
+                        <span class="label">Status</span>
+                        <span id="status" class="value">Ready</span>
+                    </div>
                 </div>
             </div>
             <div class="header-chips">
-                <div class="chip header-chip status-chip">
-                    <span class="status-dot"></span>
-                    <span id="status">Ready</span>
-                </div>
-                <div class="chip header-chip">
+                <div class="chip header-chip dual-chip" id="weather-inline">
                     <span class="label">Clock</span>
                     <span id="clock" class="value">--:--</span>
-                </div>
-                <div class="chip header-chip" id="weather-inline">
-                    <span class="label">Weather</span>
+                    <span class="dot-divider">•</span>
                     <span id="weather-temp">--°F</span>
                     <span id="weather-desc" class="muted">Waiting</span>
                 </div>
@@ -70,8 +69,10 @@
                             <div class="live-pill">LIVE</div>
                         </div>
                         <div class="rds-card" id="rds-display">
-                            <span class="label">RDS</span>
-                            <div id="rds-text">RDS idle</div>
+                            <div class="rds-row">
+                                <span class="label">RDS</span>
+                                <span id="rds-text">RDS idle</span>
+                            </div>
                         </div>
                     </div>
 
@@ -82,11 +83,6 @@
                             <span id="station-frequency">--</span>
                             <span class="dot">•</span>
                             <span id="station-callsign">--</span>
-                        </div>
-                        <div class="pill-row">
-                            <span class="chip accent">High fidelity</span>
-                            <span class="chip">Stereo</span>
-                            <span class="chip">Ad-free player</span>
                         </div>
                         <div class="controls">
                             <button id="play-pause-btn" class="btn primary" type="button">
