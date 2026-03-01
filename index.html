@@ -2,169 +2,31 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#0f766e">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#333">
     <title>GLZ Radio</title>
     <link rel="icon" href="images/generic-station-logo.svg">
     <link rel="manifest" href="manifest.json">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script src="https://unpkg.com/feather-icons"></script>
 </head>
 <body>
-    <div class="bg-glow glow-1"></div>
-    <div class="bg-glow glow-2"></div>
-    <div class="bg-grid"></div>
+    <div class="app">
+        <h1>GLZ Radio</h1>
+        <p class="status" id="status">Ready</p>
 
-    <div class="app" id="top">
-        <header class="shell-header compact-bar">
-            <div class="brand-block compact">
-                <div class="brand-mark small">GLZ</div>
-                <div>
-                    <div class="brand-title">GLZ Radio</div>
-                    <p class="brand-subtitle">Live Puerto Rico air</p>
-                    <div class="status-inline">
-                        <span class="label">Status</span>
-                        <span id="status" class="value">Ready</span>
-                    </div>
-                </div>
+        <div class="player">
+            <div id="station-name" class="station-name">Choose a station</div>
+            <div id="station-frequency" class="station-frequency"></div>
+            <div class="controls">
+                <button id="play-pause-btn" type="button">Play</button>
+                <button id="stop-btn" type="button">Stop</button>
             </div>
-            <div class="header-chips">
-                <div class="chip header-chip dual-chip" id="weather-inline">
-                    <span class="label">Clock</span>
-                    <span id="clock" class="value">--:--</span>
-                    <span class="dot-divider">•</span>
-                    <span id="weather-temp">--°F</span>
-                    <span id="weather-desc" class="muted">Waiting</span>
-                </div>
-            </div>
-        </header>
+        </div>
 
-        <main class="grid-shell">
-            <section class="panel now-playing view-section" id="home">
-                <div class="panel-head">
-                    <div>
-                        <div class="eyebrow">Live stream</div>
-                        <div class="panel-title">Now playing</div>
-                    </div>
-                    <div class="panel-actions">
-                        <button class="chip ghost" type="button" id="open-stations-btn">
-                            <i data-feather="layers"></i>
-                            Browse stations
-                        </button>
-                    </div>
-                </div>
-
-                <div class="player-shell">
-                    <div class="cover-block">
-                        <div class="cover-wrap">
-                            <div class="cover-glow"></div>
-                            <img id="station-logo" src="" alt="Station Logo" class="station-logo">
-                            <div class="live-pill">LIVE</div>
-                        </div>
-                        <div class="rds-card" id="rds-display">
-                            <div class="rds-row">
-                                <span class="label">RDS</span>
-                                <span id="rds-text">RDS idle</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="player-meta">
-                        <div class="kicker">On air</div>
-                        <div id="station-name" class="station-name">Choose a station</div>
-                        <div class="station-sub">
-                            <span id="station-frequency">--</span>
-                            <span class="dot">•</span>
-                            <span id="station-callsign">--</span>
-                        </div>
-                        <div class="controls">
-                            <button id="play-pause-btn" class="btn primary" type="button">
-                                <div class="btn-icon">
-                                    <svg id="play-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M8 5v14l11-7z"></path>
-                                    </svg>
-                                    <svg id="pause-icon" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none">
-                                        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"></path>
-                                    </svg>
-                                </div>
-                                <span id="play-pause-text">Play</span>
-                            </button>
-                            <button id="stop-btn" class="btn ghost" type="button">
-                                <div class="btn-icon">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M6 6h12v12H6z"></path>
-                                    </svg>
-                                </div>
-                                <span>Stop</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="panel view-section hidden" id="stations">
-                <div class="panel-head">
-                    <div>
-                        <div class="eyebrow">Stations</div>
-                        <div class="panel-title">Browse the full lineup</div>
-                    </div>
-                    <div class="pill ghost tight">
-                        <span id="station-count">0</span>
-                        <span class="muted small">live</span>
-                    </div>
-                </div>
-                <div id="station-list" class="station-list"></div>
-            </section>
-
-            <section class="panel weather view-section hidden" id="weather-view">
-                <div class="panel-head">
-                    <div>
-                        <div class="eyebrow">Local weather</div>
-                        <div class="panel-title">Sky report</div>
-                    </div>
-                    <div class="muted" id="weather-location-label">Local</div>
-                </div>
-                <div class="weather-current">
-                    <div class="temp-block">
-                        <div id="weather-temp-big">--°F</div>
-                        <div id="weather-desc-text" class="muted">Waiting for location</div>
-                        <div id="weather-wind" class="muted small">Wind -- mph</div>
-                    </div>
-                    <div class="meta-block compact">
-                        <span class="label">Updated</span>
-                        <span id="weather-updated" class="value">--</span>
-                    </div>
-                </div>
-                <div class="weather-forecast" id="weather-forecast"></div>
-            </section>
-        </main>
-
-        <nav class="bottom-nav">
-            <button class="nav-btn" data-target="home" type="button">
-                <i data-feather="home"></i>
-                <span>Player</span>
-            </button>
-            <button class="nav-btn" data-target="stations" type="button">
-                <i data-feather="radio"></i>
-                <span>Stations</span>
-            </button>
-            <button class="nav-btn" data-target="weather" type="button">
-                <i data-feather="cloud"></i>
-                <span>Weather</span>
-            </button>
-        </nav>
-
-        <audio id="audio-player" preload="none" playsinline></audio>
+        <div class="station-list" id="station-list"></div>
     </div>
 
-    <script src="script.js?v=2"></script>
-    <script>feather.replace();</script>
+    <audio id="audio-player" preload="none" playsinline></audio>
+    <script src="script.js"></script>
 </body>
 </html>
