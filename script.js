@@ -135,7 +135,7 @@ const RADIO_STATIONS = {
     },
     "La Vieja Z": {
         logo: "https://i.ibb.co/d4VZVjj2/LVZ8-removebg-preview.png",
-        streamUrl: "http://178.32.146.184:2716/stream?nocache=1",
+        streamUrl: "http://178.32.146.184:2716/stream",
         frequency: "Satellite Radio",
         callSign: null,
         rdsText: ["La Vieja Z", "Central Florida", "Salsa!"]
@@ -295,7 +295,13 @@ async function play() {
         updatePlayPauseButton();
     } catch (err) {
         console.error('Play error', err);
-        updateStatus('Play blocked');
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const isBlocked = err.name === 'NotAllowedError' || err.name === 'NotSupportedError';
+        if (isMobile && isBlocked) {
+            updateStatus('Blocked: use Wi‑Fi or HTTPS stream');
+        } else {
+            updateStatus('Play blocked');
+        }
     }
 }
 
