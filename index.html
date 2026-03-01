@@ -11,11 +11,20 @@
 </head>
 <body>
     <div class="app">
-        <h1>GLZ Radio</h1>
+        <header class="header">
+            <h1>GLZ Radio</h1>
+            <p class="rds" id="rds-text" aria-live="polite"></p>
+        </header>
         <p class="status" id="status">Ready</p>
 
         <div class="player">
-            <div id="station-name" class="station-name">Choose a station</div>
+            <div class="dropdown" id="station-dropdown">
+                <button type="button" class="dropdown-trigger" id="dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
+                    <img class="dropdown-trigger-icon" id="dropdown-trigger-icon" src="" alt="" hidden>
+                    <span class="dropdown-trigger-text" id="dropdown-trigger-text">Choose a station</span>
+                </button>
+                <ul class="dropdown-list" id="dropdown-list" role="listbox" hidden></ul>
+            </div>
             <div id="station-frequency" class="station-frequency"></div>
             <div class="controls">
                 <button id="play-pause-btn" type="button">Play</button>
@@ -23,7 +32,24 @@
             </div>
         </div>
 
-        <div class="station-list" id="station-list"></div>
+        <section class="clock-weather" aria-label="Clock and weather">
+            <div class="clock-block">
+                <div id="clock" class="clock-time">--:--</div>
+                <div id="clock-date" class="clock-date">--</div>
+            </div>
+            <div class="weather-block">
+                <div class="weather-main">
+                    <span id="weather-temp" class="weather-temp">--°F</span>
+                    <span id="weather-desc" class="weather-desc">Loading</span>
+                </div>
+                <div class="weather-meta">
+                    <span id="weather-wind">Wind -- mph</span>
+                    <span class="weather-sep">·</span>
+                    <span id="weather-updated">Updated --</span>
+                </div>
+                <div id="weather-forecast" class="weather-forecast"></div>
+            </div>
+        </section>
     </div>
 
     <audio id="audio-player" preload="none" playsinline></audio>
