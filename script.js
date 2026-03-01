@@ -1,4 +1,4 @@
-// GLZ Radio - simple player
+// Glz Radio - simple player
 const RADIO_STATIONS = {
     "WKAQ 580": {
         logo: "https://i.iheart.com/v3/re/assets/images/77d5680e-688b-4488-8c56-9b4963cb0813.png",
@@ -146,12 +146,16 @@ const state = {
     currentStation: null,
     isPlaying: false,
     audio: null,
-    rdsInterval: null
+    rdsInterval: null,
+    streamTimerStart: null,
+    streamTimerInterval: null
 };
 
 const el = {
     status: document.getElementById('status'),
+    stationType: document.getElementById('station-type'),
     rdsText: document.getElementById('rds-text'),
+    streamTimer: document.getElementById('stream-timer'),
     dropdownTrigger: document.getElementById('dropdown-trigger'),
     dropdownTriggerIcon: document.getElementById('dropdown-trigger-icon'),
     dropdownTriggerText: document.getElementById('dropdown-trigger-text'),
@@ -205,17 +209,48 @@ function closeDropdown() {
 function setupAudioEvents() {
     state.audio.addEventListener('loadstart', () => updateStatus('Loading...'));
     state.audio.addEventListener('canplay', () => updateStatus('Ready'));
-    state.audio.addEventListener('playing', () => updateStatus('Playing'));
-    state.audio.addEventListener('pause', () => updateStatus('Paused'));
+    state.audio.addEventListener('playing', () => {
+        updateStatus('Playing');
+        startStreamTimer();
+    });
+    state.audio.addEventListener('pause', () => {
+        updateStatus('Paused');
+        stopStreamTimer();
+    });
     state.audio.addEventListener('error', () => {
         state.isPlaying = false;
         updatePlayPauseButton();
+        stopStreamTimer();
         setStreamErrorStatus();
     });
     state.audio.addEventListener('ended', () => {
         state.isPlaying = false;
         updatePlayPauseButton();
+        stopStreamTimer();
     });
+}
+
+function startStreamTimer() {
+    stopStreamTimer();
+    state.streamTimerStart = Date.now();
+    function tick() {
+        if (!state.streamTimerStart || !el.streamTimer) return;
+        const sec = Math.floor((Date.now() - state.streamTimerStart) / 1000);
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        el.streamTimer.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+    }
+    tick();
+    state.streamTimerInterval = setInterval(tick, 1000);
+}
+
+function stopStreamTimer() {
+    if (state.streamTimerInterval) {
+        clearInterval(state.streamTimerInterval);
+        state.streamTimerInterval = null;
+    }
+    state.streamTimerStart = null;
+    if (el.streamTimer) el.streamTimer.textContent = '--:--';
 }
 
 // Not CORS: <audio src> is blocked as "mixed content" when page is HTTPS and stream is HTTP.
@@ -268,7 +303,10 @@ function selectStation(name) {
     el.dropdownTriggerIcon.hidden = false;
     el.dropdownTriggerText.textContent = name;
     el.dropdownTrigger.classList.add('has-selection');
-    el.stationFrequency.textContent = station.frequency + (station.callSign ? ' · ' + station.callSign : '');
+    el.stationFrequency.textContent = getStationType(station.frequency) === 'Satellite'
+        ? ''
+        : station.frequency + (station.callSign ? ' · ' + station.callSign : '');
+    if (el.stationType) el.stationType.textContent = getStationType(station.frequency);
     startRdsTicker(station.rdsText || [name]);
     updateStatus('Loading...');
     play();
@@ -321,7 +359,9 @@ function stop() {
     el.dropdownTrigger.classList.remove('has-selection');
     el.stationFrequency.textContent = '';
     state.currentStation = null;
+    if (el.stationType) el.stationType.textContent = '—';
     startRdsTicker([]);
+    stopStreamTimer();
     updateStatus('Stopped');
 }
 
@@ -339,6 +379,14 @@ function updatePlayPauseButton() {
 
 function updateStatus(text) {
     el.status.textContent = text;
+}
+
+function getStationType(frequency) {
+    if (!frequency) return '—';
+    if (frequency.startsWith('AM ')) return 'AM';
+    if (frequency.startsWith('FM ')) return 'FM';
+    if (frequency === 'Satellite' || frequency.toLowerCase().includes('satellite')) return 'Satellite';
+    return frequency;
 }
 
 function updateClock() {

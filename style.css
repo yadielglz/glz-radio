@@ -38,17 +38,102 @@ h1 {
     margin-bottom: 2px;
 }
 
-.rds {
-    font-size: 0.75rem;
-    color: #999;
-    min-height: 1.2em;
+/* Title bar: three equal columns — Type (left) | Status (center) | Timer (right) */
+.title-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    margin-top: 8px;
+    font-size: 0.8125rem;
+    background: #f5f5f5;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    min-height: 36px;
+    margin-bottom: 12px;
 }
 
-.status {
-    font-size: 0.875rem;
-    color: #666;
-    margin-bottom: 16px;
+.title-bar-col {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.title-bar-left {
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+}
+
+.title-bar-center {
     text-align: center;
+    font-weight: 600;
+    color: #333;
+}
+
+.title-bar-right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #666;
+}
+
+.title-bar-right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: #666;
+}
+
+/* Player bar below dropdown: RDS (left) | Play/Pause + Stop (rest) */
+.player-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    margin-top: 12px;
+    font-size: 0.8125rem;
+    background: #f5f5f5;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    min-height: 36px;
+}
+
+.player-bar-rds {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #666;
+}
+
+.player-bar-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    flex: 1;
+    min-width: 0;
+}
+
+.player-bar-controls button {
+    padding: 8px 16px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    border: 1px solid #ccc;
+    background: #fff;
+    color: #333;
+    border-radius: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.player-bar-controls button:hover {
+    background: #eee;
+}
+
+.player-bar-controls button:active {
+    background: #ddd;
 }
 
 .player {
@@ -150,31 +235,6 @@ h1 {
     object-fit: cover;
     background: #eee;
     flex-shrink: 0;
-}
-
-.controls {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-}
-
-.controls button {
-    padding: 10px 20px;
-    font-size: 1rem;
-    font-weight: 600;
-    border: 1px solid #ccc;
-    background: #f5f5f5;
-    color: #333;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.controls button:hover {
-    background: #eee;
-}
-
-.controls button:active {
-    background: #ddd;
 }
 
 /* Clock & Weather below the line */

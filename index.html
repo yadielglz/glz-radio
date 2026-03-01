@@ -16,9 +16,12 @@
                 <img class="header-logo" src="https://i.ibb.co/svTmnHKh/Chat-GPT-Image-Feb-28-2026-09-46-35-PM.png" alt="" width="32" height="32">
                 <h1>Glz Radio</h1>
             </div>
-            <p class="rds" id="rds-text" aria-live="polite"></p>
+            <div class="title-bar" aria-label="Stream info">
+                <div class="title-bar-col title-bar-left" id="station-type" aria-label="Station type">—</div>
+                <div class="title-bar-col title-bar-center" id="status">Ready</div>
+                <div class="title-bar-col title-bar-right" id="stream-timer" aria-label="Stream time">--:--</div>
+            </div>
         </header>
-        <p class="status" id="status">Ready</p>
 
         <div class="player">
             <div class="dropdown" id="station-dropdown">
@@ -29,9 +32,12 @@
                 <ul class="dropdown-list" id="dropdown-list" role="listbox" hidden></ul>
             </div>
             <div id="station-frequency" class="station-frequency"></div>
-            <div class="controls">
-                <button id="play-pause-btn" type="button">Play</button>
-                <button id="stop-btn" type="button">Stop</button>
+            <div class="player-bar" aria-label="RDS and controls">
+                <div class="player-bar-rds" id="rds-text" aria-live="polite"></div>
+                <div class="player-bar-controls">
+                    <button id="play-pause-btn" type="button">Play</button>
+                    <button id="stop-btn" type="button">Stop</button>
+                </div>
             </div>
         </div>
 
