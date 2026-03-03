@@ -170,14 +170,28 @@ const el = {
     weatherDesc: document.getElementById('weather-desc'),
     weatherWind: document.getElementById('weather-wind'),
     weatherUpdated: document.getElementById('weather-updated'),
-    weatherForecast: document.getElementById('weather-forecast')
+    weatherForecast: document.getElementById('weather-forecast'),
+    nowPlayingArtwork: document.getElementById('now-playing-artwork'),
+    nowPlayingTitle: document.getElementById('now-playing-title'),
+    nowPlayingSubtitle: document.getElementById('now-playing-subtitle'),
+    nowPlayingMeta: document.getElementById('now-playing-meta'),
+    nowPlayingTypeChip: document.getElementById('now-playing-type-chip'),
+    nowPlayingFrequencyChip: document.getElementById('now-playing-frequency-chip'),
+    settingsToggleBtn: document.getElementById('settings-toggle-btn'),
+    settingsPanel: document.getElementById('settings-panel'),
+    setting24h: document.getElementById('setting-24h'),
+    settingShowWeather: document.getElementById('setting-show-weather'),
+    weatherBlock: document.getElementById('weather-block'),
+    stationSearchInput: null
 };
 
 function init() {
     state.audio = el.audioPlayer;
+    if (el.nowPlayingFrequencyChip) el.nowPlayingFrequencyChip.classList.add('hidden');
     setupAudioEvents();
     populateDropdown();
     bindControls();
+    setupPreferences();
     updateClock();
     setInterval(updateClock, 1000);
     fetchWeather();
@@ -193,6 +207,38 @@ function bindControls() {
     });
     el.playPauseBtn.addEventListener('click', togglePlayPause);
     el.stopBtn.addEventListener('click', stop);
+}
+
+function setupPreferences() {
+    const saved24h = localStorage.getItem('glz_pref_24h');
+    const savedShowWeather = localStorage.getItem('glz_pref_show_weather');
+    if (saved24h === 'true' && el.setting24h) {
+        el.setting24h.checked = true;
+    }
+    if (savedShowWeather === 'false' && el.settingShowWeather && el.weatherBlock) {
+        el.settingShowWeather.checked = false;
+        el.weatherBlock.classList.add('hidden');
+    }
+    if (el.settingsToggleBtn && el.settingsPanel) {
+        el.settingsToggleBtn.addEventListener('click', () => {
+            const isOpen = el.settingsPanel.style.display === 'block';
+            el.settingsPanel.style.display = isOpen ? 'none' : 'block';
+            el.settingsToggleBtn.textContent = isOpen ? 'Open' : 'Close';
+        });
+    }
+    if (el.setting24h) {
+        el.setting24h.addEventListener('change', () => {
+            localStorage.setItem('glz_pref_24h', el.setting24h.checked ? 'true' : 'false');
+            updateClock();
+        });
+    }
+    if (el.settingShowWeather && el.weatherBlock) {
+        el.settingShowWeather.addEventListener('change', () => {
+            const show = el.settingShowWeather.checked;
+            localStorage.setItem('glz_pref_show_weather', show ? 'true' : 'false');
+            el.weatherBlock.classList.toggle('hidden', !show);
+        });
+    }
 }
 
 function toggleDropdown() {
@@ -268,6 +314,11 @@ function setStreamErrorStatus() {
 
 function populateDropdown() {
     el.dropdownList.innerHTML = '';
+    const searchWrapper = document.createElement('li');
+    searchWrapper.className = 'dropdown-search';
+    searchWrapper.innerHTML = '<input type="search" id="station-search" placeholder="Search stations…">';
+    el.dropdownList.appendChild(searchWrapper);
+    el.stationSearchInput = searchWrapper.querySelector('input');
     Object.keys(RADIO_STATIONS).forEach((name) => {
         const station = RADIO_STATIONS[name];
         const li = document.createElement('li');
@@ -280,6 +331,16 @@ function populateDropdown() {
         });
         el.dropdownList.appendChild(li);
     });
+    if (el.stationSearchInput) {
+        el.stationSearchInput.addEventListener('input', () => {
+            const term = el.stationSearchInput.value.trim().toLowerCase();
+            const options = el.dropdownList.querySelectorAll('.dropdown-option');
+            options.forEach((opt) => {
+                const text = opt.textContent.toLowerCase();
+                opt.parentElement.style.display = !term || text.includes(term) ? '' : 'none';
+            });
+        });
+    }
 }
 
 function startRdsTicker(texts) {
@@ -303,10 +364,29 @@ function selectStation(name) {
     el.dropdownTriggerIcon.hidden = false;
     el.dropdownTriggerText.textContent = name;
     el.dropdownTrigger.classList.add('has-selection');
-    el.stationFrequency.textContent = getStationType(station.frequency) === 'Satellite'
+    const type = getStationType(station.frequency);
+    el.stationFrequency.textContent = type === 'Satellite'
         ? ''
         : station.frequency + (station.callSign ? ' · ' + station.callSign : '');
-    if (el.stationType) el.stationType.textContent = getStationType(station.frequency);
+    if (el.stationType) el.stationType.textContent = type;
+    if (el.nowPlayingArtwork) el.nowPlayingArtwork.src = station.logo;
+    if (el.nowPlayingTitle) el.nowPlayingTitle.textContent = name;
+    if (el.nowPlayingSubtitle) {
+        const subtitle = station.rdsText?.[1] || station.callSign || station.rdsText?.[0] || 'Live broadcast';
+        el.nowPlayingSubtitle.textContent = subtitle;
+    }
+    if (el.nowPlayingMeta) {
+        const frequencyLabel = station.frequency && station.callSign
+            ? station.frequency + ' · ' + station.callSign
+            : station.frequency || station.callSign || '';
+        el.nowPlayingMeta.textContent = frequencyLabel;
+    }
+    if (el.nowPlayingTypeChip) el.nowPlayingTypeChip.textContent = type;
+    if (el.nowPlayingFrequencyChip) {
+        const secondaryChip = station.callSign || (station.frequency && station.frequency !== type ? station.frequency : '');
+        el.nowPlayingFrequencyChip.textContent = secondaryChip;
+        el.nowPlayingFrequencyChip.classList.toggle('hidden', !secondaryChip);
+    }
     startRdsTicker(station.rdsText || [name]);
     updateStatus('Loading...');
     play();
@@ -360,6 +440,17 @@ function stop() {
     el.stationFrequency.textContent = '';
     state.currentStation = null;
     if (el.stationType) el.stationType.textContent = '—';
+    if (el.nowPlayingArtwork) {
+        el.nowPlayingArtwork.src = 'https://i.ibb.co/svTmnHKh/Chat-GPT-Image-Feb-28-2026-09-46-35-PM.png';
+    }
+    if (el.nowPlayingTitle) el.nowPlayingTitle.textContent = 'Not playing';
+    if (el.nowPlayingSubtitle) el.nowPlayingSubtitle.textContent = 'Choose a station to start listening.';
+    if (el.nowPlayingMeta) el.nowPlayingMeta.textContent = '';
+    if (el.nowPlayingTypeChip) el.nowPlayingTypeChip.textContent = '—';
+    if (el.nowPlayingFrequencyChip) {
+        el.nowPlayingFrequencyChip.textContent = '';
+        el.nowPlayingFrequencyChip.classList.add('hidden');
+    }
     startRdsTicker([]);
     stopStreamTimer();
     updateStatus('Stopped');
@@ -375,6 +466,13 @@ function togglePlayPause() {
 
 function updatePlayPauseButton() {
     el.playPauseBtn.textContent = state.isPlaying ? 'Pause' : 'Play';
+    el.playPauseBtn.setAttribute('aria-pressed', state.isPlaying ? 'true' : 'false');
+    updateFrequencyVisibility();
+}
+
+function updateFrequencyVisibility() {
+    if (!el.stationFrequency) return;
+    el.stationFrequency.classList.toggle('hidden', state.isPlaying);
 }
 
 function updateStatus(text) {
@@ -391,7 +489,8 @@ function getStationType(frequency) {
 
 function updateClock() {
     const now = new Date();
-    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+    const use24h = el.setting24h && el.setting24h.checked;
+    const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: !use24h });
     const date = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
     if (el.clock) el.clock.textContent = time;
     if (el.clockDate) el.clockDate.textContent = date;

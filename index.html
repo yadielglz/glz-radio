@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#333">
     <title>Glz Radio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="icon" href="images/app-icon.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
@@ -14,14 +17,39 @@
         <header class="header">
             <div class="header-brand">
                 <img class="header-logo" src="https://i.ibb.co/svTmnHKh/Chat-GPT-Image-Feb-28-2026-09-46-35-PM.png" alt="" width="32" height="32">
-                <h1>Glz Radio</h1>
+                <div class="header-title-group">
+                    <h1>Glz Radio</h1>
+                    <div class="header-subtitle">Puerto Rican Radio · Live</div>
+                </div>
             </div>
             <div class="title-bar" aria-label="Stream info">
-                <div class="title-bar-col title-bar-left" id="station-type" aria-label="Station type">—</div>
+                <div class="title-bar-col title-bar-left">
+                    <span class="title-pill-badge">
+                        <span class="title-pill-dot"></span>
+                        <span id="station-type" aria-label="Station type">—</span>
+                    </span>
+                </div>
                 <div class="title-bar-col title-bar-center" id="status">Ready</div>
                 <div class="title-bar-col title-bar-right" id="stream-timer" aria-label="Stream time">--:--</div>
             </div>
         </header>
+
+        <section class="now-playing" aria-label="Now playing">
+            <img id="now-playing-artwork" class="now-playing-artwork" src="https://i.ibb.co/svTmnHKh/Chat-GPT-Image-Feb-28-2026-09-46-35-PM.png" alt="Current station artwork">
+            <div>
+                <div id="now-playing-title" class="now-playing-meta-primary">Not playing</div>
+                <div id="now-playing-subtitle" class="now-playing-meta-secondary">Choose a station to start listening.</div>
+                <div class="now-playing-rds-wrap" aria-label="Now on air">
+                    <span class="now-playing-rds-label">On Air</span>
+                    <div class="now-playing-rds" id="rds-text" aria-live="polite"></div>
+                </div>
+                <div id="now-playing-meta" class="now-playing-meta-tertiary"></div>
+                <div class="now-playing-chip-row">
+                    <span class="now-playing-chip" id="now-playing-type-chip">—</span>
+                    <span class="now-playing-chip" id="now-playing-frequency-chip"></span>
+                </div>
+            </div>
+        </section>
 
         <div class="player">
             <div class="dropdown" id="station-dropdown">
@@ -32,16 +60,19 @@
                 <ul class="dropdown-list" id="dropdown-list" role="listbox" hidden></ul>
             </div>
             <div id="station-frequency" class="station-frequency"></div>
-            <div class="player-bar" aria-label="RDS and controls">
-                <div class="player-bar-rds" id="rds-text" aria-live="polite"></div>
+            <div class="player-bar" aria-label="Player controls">
                 <div class="player-bar-controls">
-                    <button id="play-pause-btn" type="button">Play</button>
-                    <button id="stop-btn" type="button">Stop</button>
+                    <button id="play-pause-btn" type="button" class="btn-primary" aria-pressed="false">Play</button>
+                    <button id="stop-btn" type="button" class="btn-danger">Stop</button>
                 </div>
             </div>
         </div>
 
-        <section class="clock-weather" aria-label="Clock and weather">
+        <div class="section-separator" aria-hidden="true"></div>
+
+        <section class="weather-section" id="weather-block" aria-label="Clock and weather">
+            <div class="section-title">Weather & Time</div>
+            <div class="clock-weather">
             <div class="clock-block">
                 <div id="clock" class="clock-time">--:--</div>
                 <div id="clock-date" class="clock-date">--</div>
@@ -57,6 +88,33 @@
                     <span id="weather-updated">Updated --</span>
                 </div>
                 <div id="weather-forecast" class="weather-forecast"></div>
+            </div>
+            </div>
+        </section>
+
+        <div class="settings-row">
+            <div>Quick preferences</div>
+            <button type="button" class="settings-link" id="settings-toggle-btn">Open</button>
+        </div>
+        <section class="settings-panel" id="settings-panel" aria-label="Settings">
+            <div class="settings-panel-header">Playback & display</div>
+            <div class="settings-option">
+                <div class="settings-option-label">Use 24‑hour clock</div>
+                <label class="toggle">
+                    <input type="checkbox" id="setting-24h">
+                    <span class="toggle-track">
+                        <span class="toggle-thumb"></span>
+                    </span>
+                </label>
+            </div>
+            <div class="settings-option">
+                <div class="settings-option-label">Show weather section</div>
+                <label class="toggle">
+                    <input type="checkbox" id="setting-show-weather" checked>
+                    <span class="toggle-track">
+                        <span class="toggle-thumb"></span>
+                    </span>
+                </label>
             </div>
         </section>
     </div>
