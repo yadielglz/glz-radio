@@ -148,7 +148,8 @@ const state = {
     audio: null,
     rdsInterval: null,
     streamTimerStart: null,
-    streamTimerInterval: null
+    streamTimerInterval: null,
+    mediaHandlersBound: false
 };
 
 const el = {
@@ -189,6 +190,7 @@ function init() {
     state.audio = el.audioPlayer;
     if (el.nowPlayingFrequencyChip) el.nowPlayingFrequencyChip.classList.add('hidden');
     setupAudioEvents();
+    setupMediaSession();
     populateDropdown();
     bindControls();
     setupPreferences();
@@ -254,26 +256,110 @@ function closeDropdown() {
 
 function setupAudioEvents() {
     state.audio.addEventListener('loadstart', () => updateStatus('Loading...'));
-    state.audio.addEventListener('canplay', () => updateStatus('Ready'));
+    state.audio.addEventListener('canplay', () => {
+        updateStatus('Ready');
+        updateMediaSessionPlaybackState();
+    });
     state.audio.addEventListener('playing', () => {
         updateStatus('Playing');
         startStreamTimer();
+        updateMediaSessionPlaybackState();
     });
     state.audio.addEventListener('pause', () => {
         updateStatus('Paused');
         stopStreamTimer();
+        updateMediaSessionPlaybackState();
     });
     state.audio.addEventListener('error', () => {
         state.isPlaying = false;
         updatePlayPauseButton();
         stopStreamTimer();
         setStreamErrorStatus();
+        updateMediaSessionPlaybackState();
     });
     state.audio.addEventListener('ended', () => {
         state.isPlaying = false;
         updatePlayPauseButton();
         stopStreamTimer();
+        updateMediaSessionPlaybackState();
     });
+}
+
+function setupMediaSession() {
+    if (!('mediaSession' in navigator) || state.mediaHandlersBound) return;
+    state.mediaHandlersBound = true;
+    const bind = (action, handler) => {
+        try {
+            navigator.mediaSession.setActionHandler(action, handler);
+        } catch (_err) {
+            // Some browsers do not support every action.
+        }
+    };
+    bind('play', () => {
+        if (!state.currentStation) {
+            const first = Object.keys(RADIO_STATIONS)[0];
+            if (first) selectStation(first);
+            return;
+        }
+        play();
+    });
+    bind('pause', () => pause());
+    bind('stop', () => stop());
+    bind('nexttrack', () => tuneRelativeStation(1));
+    bind('previoustrack', () => tuneRelativeStation(-1));
+    bind('seekforward', null);
+    bind('seekbackward', null);
+    bind('seekto', null);
+    updateMediaSessionMetadata();
+    updateMediaSessionPlaybackState();
+}
+
+function tuneRelativeStation(direction) {
+    const names = Object.keys(RADIO_STATIONS);
+    if (!names.length) return;
+    const currentIdx = state.currentStation ? names.indexOf(state.currentStation) : -1;
+    const baseIdx = currentIdx >= 0 ? currentIdx : 0;
+    const nextIdx = (baseIdx + direction + names.length) % names.length;
+    selectStation(names[nextIdx]);
+}
+
+function buildMediaArtwork(station) {
+    const artwork = [
+        { src: 'images/app-icon.png', sizes: '96x96', type: 'image/png' },
+        { src: 'images/app-icon.png', sizes: '192x192', type: 'image/png' },
+        { src: 'images/app-icon.png', sizes: '512x512', type: 'image/png' }
+    ];
+    if (station && station.logo) {
+        artwork.unshift({ src: station.logo, sizes: '512x512', type: 'image/png' });
+    }
+    return artwork;
+}
+
+function updateMediaSessionMetadata() {
+    const stationName = state.currentStation || 'Glz Radio';
+    const station = state.currentStation ? RADIO_STATIONS[state.currentStation] : null;
+    const album = station?.frequency
+        ? station.frequency + (station.callSign ? ' · ' + station.callSign : '')
+        : 'Live Radio';
+    if ('mediaSession' in navigator && typeof window.MediaMetadata !== 'undefined') {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: 'Glz Radio',
+            artist: stationName,
+            album,
+            artwork: buildMediaArtwork(station)
+        });
+    }
+    document.title = state.currentStation ? `Glz Radio · ${stationName}` : 'Glz Radio';
+}
+
+function updateMediaSessionPlaybackState() {
+    if (!('mediaSession' in navigator)) return;
+    const hasStation = Boolean(state.currentStation);
+    if (!hasStation) {
+        navigator.mediaSession.playbackState = 'none';
+        return;
+    }
+    navigator.mediaSession.playbackState = state.isPlaying ? 'playing' : 'paused';
 }
 
 function startStreamTimer() {
@@ -387,6 +473,8 @@ function selectStation(name) {
         el.nowPlayingFrequencyChip.textContent = secondaryChip;
         el.nowPlayingFrequencyChip.classList.toggle('hidden', !secondaryChip);
     }
+    updateMediaSessionMetadata();
+    updateMediaSessionPlaybackState();
     startRdsTicker(station.rdsText || [name]);
     updateStatus('Loading...');
     play();
@@ -404,6 +492,7 @@ async function play() {
         await state.audio.play();
         state.isPlaying = true;
         updatePlayPauseButton();
+        updateMediaSessionPlaybackState();
     } catch (err) {
         console.error('Play error', err);
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
@@ -425,6 +514,7 @@ function pause() {
     state.audio.pause();
     state.isPlaying = false;
     updatePlayPauseButton();
+    updateMediaSessionPlaybackState();
 }
 
 function stop() {
@@ -451,6 +541,8 @@ function stop() {
         el.nowPlayingFrequencyChip.textContent = '';
         el.nowPlayingFrequencyChip.classList.add('hidden');
     }
+    updateMediaSessionMetadata();
+    updateMediaSessionPlaybackState();
     startRdsTicker([]);
     stopStreamTimer();
     updateStatus('Stopped');
@@ -468,11 +560,20 @@ function updatePlayPauseButton() {
     el.playPauseBtn.textContent = state.isPlaying ? 'Pause' : 'Play';
     el.playPauseBtn.setAttribute('aria-pressed', state.isPlaying ? 'true' : 'false');
     updateFrequencyVisibility();
+    updateSelectorVisibility();
 }
 
 function updateFrequencyVisibility() {
     if (!el.stationFrequency) return;
     el.stationFrequency.classList.toggle('hidden', state.isPlaying);
+}
+
+function updateSelectorVisibility() {
+    if (!el.dropdownTrigger || !el.dropdownList) return;
+    const dropdownContainer = document.getElementById('station-dropdown');
+    if (!dropdownContainer) return;
+    if (state.isPlaying) closeDropdown();
+    dropdownContainer.classList.toggle('hidden', state.isPlaying);
 }
 
 function updateStatus(text) {
