@@ -2,122 +2,236 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#333">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f6f3ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Glz Radio">
     <title>Glz Radio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="icon" href="images/app-icon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="images/glz-radio-logo-new.png">
+    <link rel="apple-touch-icon" href="images/glz-radio-logo-new.png">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="app">
-        <header class="header">
-            <div class="header-brand">
-                <img class="header-logo" src="https://i.ibb.co/svTmnHKh/Chat-GPT-Image-Feb-28-2026-09-46-35-PM.png" alt="" width="32" height="32">
-                <div class="header-title-group">
-                    <h1>Glz Radio</h1>
-                    <div class="header-subtitle">Puerto Rican Radio · Live</div>
-                </div>
-            </div>
-            <div class="title-bar" aria-label="Stream info">
-                <div class="title-bar-col title-bar-left">
-                    <span class="title-pill-badge">
-                        <span class="title-pill-dot"></span>
-                        <span id="station-type" aria-label="Station type">—</span>
-                    </span>
-                </div>
-                <div class="title-bar-col title-bar-center" id="status">Ready</div>
-                <div class="title-bar-col title-bar-right" id="stream-timer" aria-label="Stream time">--:--</div>
+    <div class="app-shell">
+        <header class="topbar">
+            <a class="brand" href="#" aria-label="Glz Radio home">
+                <img src="images/glz-radio-logo-new.png" alt="" class="brand-mark">
+                <span class="brand-copy">
+                    <span class="brand-name">Glz Radio</span>
+                    <span class="brand-subtitle">Puerto Rico live radio</span>
+                </span>
+            </a>
+            <div class="topbar-actions">
+                <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
+                    <span aria-hidden="true">T</span>
+                </button>
+                <button class="install-button" id="studio-button" type="button">Studio</button>
+                <button class="install-button" id="settings-button" type="button">Settings</button>
+                <button class="install-button" id="install-button" type="button" hidden>Install</button>
             </div>
         </header>
 
-        <section class="now-playing" aria-label="Now playing">
-            <img id="now-playing-artwork" class="now-playing-artwork" src="https://i.ibb.co/svTmnHKh/Chat-GPT-Image-Feb-28-2026-09-46-35-PM.png" alt="Current station artwork">
-            <div>
-                <div id="now-playing-title" class="now-playing-meta-primary">Not playing</div>
-                <div id="now-playing-subtitle" class="now-playing-meta-secondary">Choose a station to start listening.</div>
-                <div class="now-playing-rds-wrap" aria-label="Now on air">
-                    <span class="now-playing-rds-label">On Air</span>
-                    <div class="now-playing-rds" id="rds-text" aria-live="polite"></div>
+        <main class="layout">
+            <section class="browse-panel" aria-label="Stations">
+                <div class="browse-header">
+                    <div>
+                        <p class="eyebrow">Stations</p>
+                        <h2>On the dial</h2>
+                    </div>
+                    <div class="station-count" id="station-count">0 stations</div>
                 </div>
-                <div id="now-playing-meta" class="now-playing-meta-tertiary"></div>
-                <div class="now-playing-chip-row">
-                    <span class="now-playing-chip" id="now-playing-type-chip">—</span>
-                    <span class="now-playing-chip" id="now-playing-frequency-chip"></span>
-                </div>
-            </div>
-        </section>
 
-        <div class="player">
-            <div class="dropdown" id="station-dropdown">
-                <button type="button" class="dropdown-trigger" id="dropdown-trigger" aria-haspopup="listbox" aria-expanded="false">
-                    <img class="dropdown-trigger-icon" id="dropdown-trigger-icon" src="" alt="" hidden>
-                    <span class="dropdown-trigger-text" id="dropdown-trigger-text">Choose a station</span>
-                </button>
-                <ul class="dropdown-list" id="dropdown-list" role="listbox" hidden></ul>
-            </div>
-            <div id="station-frequency" class="station-frequency"></div>
-            <div class="player-bar" aria-label="Player controls">
-                <div class="player-bar-controls">
-                    <button id="play-pause-btn" type="button" class="btn-primary" aria-pressed="false">Play</button>
-                    <button id="stop-btn" type="button" class="btn-danger">Stop</button>
+                <div class="search-row">
+                    <label class="search-field" for="station-search">
+                        <span aria-hidden="true">Search</span>
+                        <input id="station-search" type="search" autocomplete="off" placeholder="Name, city, call sign, frequency">
+                    </label>
+                    <button class="filter-reset" id="clear-search" type="button">Clear</button>
                 </div>
-            </div>
-        </div>
 
-        <div class="section-separator" aria-hidden="true"></div>
-
-        <section class="weather-section" id="weather-block" aria-label="Clock and weather">
-            <div class="section-title">Weather & Time</div>
-            <div class="clock-weather">
-            <div class="clock-block">
-                <div id="clock" class="clock-time">--:--</div>
-                <div id="clock-date" class="clock-date">--</div>
-            </div>
-            <div class="weather-block">
-                <div class="weather-main">
-                    <span id="weather-temp" class="weather-temp">--°F</span>
-                    <span id="weather-desc" class="weather-desc">Loading</span>
+                <div class="segmented" aria-label="Station filters">
+                    <button class="segment active" type="button" data-filter="all">All</button>
+                    <button class="segment" type="button" data-filter="AM">AM</button>
+                    <button class="segment" type="button" data-filter="FM">FM</button>
+                    <button class="segment" type="button" data-filter="Satellite">Satellite</button>
+                    <button class="segment" type="button" data-filter="favorites">Favorites</button>
                 </div>
-                <div class="weather-meta">
-                    <span id="weather-wind">Wind -- mph</span>
-                    <span class="weather-sep">·</span>
-                    <span id="weather-updated">Updated --</span>
-                </div>
-                <div id="weather-forecast" class="weather-forecast"></div>
-            </div>
-            </div>
-        </section>
 
-        <div class="settings-row">
-            <div>Quick preferences</div>
-            <button type="button" class="settings-link" id="settings-toggle-btn">Open</button>
-        </div>
-        <section class="settings-panel" id="settings-panel" aria-label="Settings">
-            <div class="settings-panel-header">Playback & display</div>
-            <div class="settings-option">
-                <div class="settings-option-label">Use 24‑hour clock</div>
-                <label class="toggle">
-                    <input type="checkbox" id="setting-24h">
-                    <span class="toggle-track">
-                        <span class="toggle-thumb"></span>
-                    </span>
-                </label>
-            </div>
-            <div class="settings-option">
-                <div class="settings-option-label">Show weather section</div>
-                <label class="toggle">
-                    <input type="checkbox" id="setting-show-weather" checked>
-                    <span class="toggle-track">
-                        <span class="toggle-thumb"></span>
-                    </span>
-                </label>
-            </div>
-        </section>
+                <div class="library-strip">
+                    <div class="side-section">
+                        <div class="section-heading">
+                            <h2>Favorites</h2>
+                            <span id="favorite-count">0</span>
+                        </div>
+                        <div class="chip-list" id="favorites-list"></div>
+                    </div>
+
+                    <div class="side-section">
+                        <div class="section-heading">
+                            <h2>Recent</h2>
+                            <span id="recent-count">0</span>
+                        </div>
+                        <div class="chip-list" id="recent-list"></div>
+                    </div>
+
+                </div>
+
+                <div class="station-grid" id="station-grid"></div>
+                <div class="empty-state" id="empty-state" hidden>No stations match this view.</div>
+            </section>
+        </main>
     </div>
+
+    <section class="player-panel" aria-label="Player">
+        <div class="now-playing">
+            <div class="artwork-wrap">
+                <img id="now-art" class="artwork" src="images/glz-radio-logo-new.png" alt="Current station artwork">
+                <div class="level-meter" aria-hidden="true">
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
+            </div>
+            <div class="now-copy">
+                <p id="now-kicker" class="now-kicker">Standby</p>
+                <h1 id="now-title">Choose a station</h1>
+                <p id="now-subtitle">Live AM, FM, and satellite streams curated for Puerto Rico.</p>
+                <div id="rds-text" class="rds-text" aria-live="polite"></div>
+            </div>
+        </div>
+
+        <div class="player-utility">
+            <div class="utility-item">
+                <span class="utility-label">Time</span>
+                <strong id="clock">--:--</strong>
+                <span id="clock-date">--</span>
+            </div>
+            <div class="utility-item">
+                <span class="utility-label">Weather</span>
+                <strong id="weather-temp">-- F</strong>
+                <span id="weather-desc">Loading</span>
+            </div>
+        </div>
+
+        <div class="controls" aria-label="Playback controls">
+            <button class="control-button ghost" id="prev-button" type="button" aria-label="Previous station" title="Previous station">Prev</button>
+            <button class="control-button primary" id="play-button" type="button" aria-label="Play or pause" aria-pressed="false">Play</button>
+            <button class="control-button ghost" id="next-button" type="button" aria-label="Next station" title="Next station">Next</button>
+            <button class="control-button danger" id="stop-button" type="button">Stop</button>
+        </div>
+
+        <div class="signal-row">
+            <span class="live-badge"><span class="live-dot"></span><span id="status">Ready</span></span>
+            <span id="stream-timer" class="timer">00:00</span>
+        </div>
+    </section>
+
+    <div class="settings-overlay" id="settings-overlay" hidden></div>
+    <aside class="settings-drawer" id="settings-drawer" aria-label="Settings" aria-hidden="true">
+        <div class="settings-head">
+            <div>
+                <p class="eyebrow">Control room</p>
+                <h2>Settings</h2>
+            </div>
+            <button class="icon-button" id="settings-close" type="button" aria-label="Close settings">X</button>
+        </div>
+
+        <div class="settings-stack">
+            <section class="settings-card">
+                <div class="settings-card-head">
+                    <h3>Weather</h3>
+                    <label class="switch">
+                        <input id="setting-weather-enabled" type="checkbox" checked>
+                        <span></span>
+                    </label>
+                </div>
+                <label class="field-label" for="setting-weather-mode">Location</label>
+                <select class="field-input" id="setting-weather-mode">
+                    <option value="auto">Device location</option>
+                    <option value="puerto-rico">Puerto Rico center</option>
+                </select>
+            </section>
+
+            <section class="settings-card">
+                <div class="settings-card-head">
+                    <h3>Theme</h3>
+                </div>
+                <div class="choice-grid" id="theme-choice">
+                    <button class="choice active" type="button" data-theme="system">System</button>
+                    <button class="choice" type="button" data-theme="light">Light</button>
+                    <button class="choice" type="button" data-theme="dark">Dark</button>
+                </div>
+            </section>
+
+            <section class="settings-card">
+                <div class="settings-card-head">
+                    <h3>Playback</h3>
+                </div>
+                <label class="check-row">
+                    <input id="setting-autoplay-next" type="checkbox">
+                    <span>Keep station when filters change</span>
+                </label>
+                <button class="text-button" id="reset-listening-data" type="button">Clear favorites and recents</button>
+            </section>
+
+        </div>
+    </aside>
+
+    <div class="studio-overlay" id="studio-overlay" hidden></div>
+    <aside class="station-studio" id="station-studio" aria-label="Station Studio" aria-hidden="true">
+        <div class="studio-head">
+            <div>
+                <p class="eyebrow">Maintainer</p>
+                <h2>Station Studio</h2>
+            </div>
+            <button class="icon-button" id="studio-close" type="button" aria-label="Close station studio">X</button>
+        </div>
+
+        <div class="studio-lock" id="editor-unlock-row">
+            <span class="locked-pill" id="editor-lock-state">Locked</span>
+            <input class="field-input" id="editor-code" type="password" autocomplete="off" placeholder="Maintainer code">
+            <button class="install-button" id="editor-unlock" type="button">Unlock</button>
+        </div>
+
+        <div class="studio-body" id="editor-panel" hidden>
+            <section class="studio-list-panel">
+                <div class="editor-toolbar">
+                    <input class="field-input" id="editor-search" type="search" autocomplete="off" placeholder="Search station list">
+                    <button class="install-button" id="editor-new" type="button">New</button>
+                </div>
+                <div class="editor-station-list" id="editor-station-list"></div>
+            </section>
+
+            <section class="studio-form-panel">
+                <div class="editor-toolbar">
+                    <select class="field-input" id="editor-station-select"></select>
+                    <button class="install-button" id="editor-restore" type="button">Restore</button>
+                </div>
+                <form class="station-form" id="station-form">
+                    <label class="field-label">Name<input class="field-input" id="editor-name" required></label>
+                    <label class="field-label">Logo URL<input class="field-input" id="editor-logo" required></label>
+                    <label class="field-label">Stream URL<input class="field-input" id="editor-stream" required></label>
+                    <div class="form-grid">
+                        <label class="field-label">Frequency<input class="field-input" id="editor-frequency" required></label>
+                        <label class="field-label">Call sign<input class="field-input" id="editor-callsign"></label>
+                    </div>
+                    <div class="rds-editor-head">
+                        <label class="field-label" for="editor-rds">RDS rotation</label>
+                        <button class="install-button" id="editor-add-rds" type="button">Add line</button>
+                    </div>
+                    <textarea class="field-input" id="editor-rds" rows="5" placeholder="One RDS message per line"></textarea>
+                    <div class="editor-rds-preview" id="editor-rds-preview"></div>
+                    <div class="editor-actions">
+                        <button class="control-button primary" type="submit">Save station</button>
+                        <button class="control-button danger" id="editor-remove" type="button">Delete station</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </aside>
 
     <audio id="audio-player" preload="none" playsinline></audio>
     <script src="script.js"></script>

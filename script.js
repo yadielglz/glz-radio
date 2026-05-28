@@ -142,6 +142,7 @@ const RADIO_STATIONS = {
     }
 };
 
+/*
 const state = {
     currentStation: null,
     isPlaying: false,
@@ -670,3 +671,873 @@ function buildForecast(data) {
 }
 
 init();
+*/
+
+const APP_ICON = 'images/glz-radio-logo-new.png';
+const STORAGE_KEYS = {
+    favorites: 'glz_radio_favorites_v2',
+    recents: 'glz_radio_recents_v2',
+    theme: 'glz_radio_theme_v2',
+    settings: 'glz_radio_settings_v2',
+    stationOverrides: 'glz_radio_station_overrides_v2',
+    hiddenStations: 'glz_radio_hidden_stations_v2',
+    editorUnlocked: 'glz_radio_editor_unlocked_v2'
+};
+
+let stations = buildStationList();
+
+const app = {
+    audio: null,
+    currentName: null,
+    isPlaying: false,
+    filter: 'all',
+    query: '',
+    settings: readStoredObject(STORAGE_KEYS.settings, {
+        weatherEnabled: true,
+        weatherMode: 'auto',
+        theme: 'system',
+        keepStationOnFilter: true
+    }),
+    stationOverrides: readStoredObject(STORAGE_KEYS.stationOverrides, {}),
+    hiddenStations: new Set(readStoredArray(STORAGE_KEYS.hiddenStations)),
+    editorUnlocked: localStorage.getItem(STORAGE_KEYS.editorUnlocked) === 'true',
+    favorites: new Set(readStoredArray(STORAGE_KEYS.favorites)),
+    recents: readStoredArray(STORAGE_KEYS.recents),
+    rdsTimer: null,
+    timer: null,
+    timerStartedAt: null,
+    deferredInstallPrompt: null
+};
+
+const ui = {
+    status: document.getElementById('status'),
+    streamTimer: document.getElementById('stream-timer'),
+    nowArt: document.getElementById('now-art'),
+    nowKicker: document.getElementById('now-kicker'),
+    nowTitle: document.getElementById('now-title'),
+    nowSubtitle: document.getElementById('now-subtitle'),
+    rdsText: document.getElementById('rds-text'),
+    playButton: document.getElementById('play-button'),
+    stopButton: document.getElementById('stop-button'),
+    prevButton: document.getElementById('prev-button'),
+    nextButton: document.getElementById('next-button'),
+    stationGrid: document.getElementById('station-grid'),
+    stationSearch: document.getElementById('station-search'),
+    clearSearch: document.getElementById('clear-search'),
+    segments: Array.from(document.querySelectorAll('.segment')),
+    stationCount: document.getElementById('station-count'),
+    emptyState: document.getElementById('empty-state'),
+    favoritesList: document.getElementById('favorites-list'),
+    favoriteCount: document.getElementById('favorite-count'),
+    recentList: document.getElementById('recent-list'),
+    recentCount: document.getElementById('recent-count'),
+    clock: document.getElementById('clock'),
+    clockDate: document.getElementById('clock-date'),
+    weatherTemp: document.getElementById('weather-temp'),
+    weatherDesc: document.getElementById('weather-desc'),
+    themeToggle: document.getElementById('theme-toggle'),
+    studioButton: document.getElementById('studio-button'),
+    studioClose: document.getElementById('studio-close'),
+    stationStudio: document.getElementById('station-studio'),
+    studioOverlay: document.getElementById('studio-overlay'),
+    settingsButton: document.getElementById('settings-button'),
+    settingsClose: document.getElementById('settings-close'),
+    settingsDrawer: document.getElementById('settings-drawer'),
+    settingsOverlay: document.getElementById('settings-overlay'),
+    settingWeatherEnabled: document.getElementById('setting-weather-enabled'),
+    settingWeatherMode: document.getElementById('setting-weather-mode'),
+    settingAutoplayNext: document.getElementById('setting-autoplay-next'),
+    themeChoices: Array.from(document.querySelectorAll('#theme-choice .choice')),
+    resetListeningData: document.getElementById('reset-listening-data'),
+    editorLockState: document.getElementById('editor-lock-state'),
+    editorUnlockRow: document.getElementById('editor-unlock-row'),
+    editorCode: document.getElementById('editor-code'),
+    editorUnlock: document.getElementById('editor-unlock'),
+    editorPanel: document.getElementById('editor-panel'),
+    editorSearch: document.getElementById('editor-search'),
+    editorStationList: document.getElementById('editor-station-list'),
+    editorStationSelect: document.getElementById('editor-station-select'),
+    editorNew: document.getElementById('editor-new'),
+    editorAddRds: document.getElementById('editor-add-rds'),
+    stationForm: document.getElementById('station-form'),
+    editorName: document.getElementById('editor-name'),
+    editorLogo: document.getElementById('editor-logo'),
+    editorStream: document.getElementById('editor-stream'),
+    editorFrequency: document.getElementById('editor-frequency'),
+    editorCallsign: document.getElementById('editor-callsign'),
+    editorRds: document.getElementById('editor-rds'),
+    editorRdsPreview: document.getElementById('editor-rds-preview'),
+    editorRemove: document.getElementById('editor-remove'),
+    editorRestore: document.getElementById('editor-restore'),
+    installButton: document.getElementById('install-button'),
+    audioPlayer: document.getElementById('audio-player')
+};
+
+function initModernApp() {
+    app.audio = ui.audioPlayer;
+    applyStoredTheme();
+    applySettingsToForm();
+    registerServiceWorker();
+    bindModernEvents();
+    setupAudioEventsModern();
+    setupMediaSessionModern();
+    renderStations();
+    renderQuickLists();
+    updateClockModern();
+    setInterval(updateClockModern, 1000);
+    refreshWeatherVisibility();
+    updateNowPlaying(null);
+    setStatus('Ready');
+}
+
+function bindModernEvents() {
+    ui.playButton.addEventListener('click', () => {
+        if (app.isPlaying) {
+            pauseStation();
+            return;
+        }
+        if (!app.currentName) {
+            selectStationModern(stations[0].name, { autoplay: true });
+            return;
+        }
+        playStation();
+    });
+    ui.stopButton.addEventListener('click', stopStation);
+    ui.prevButton.addEventListener('click', () => tuneRelative(-1));
+    ui.nextButton.addEventListener('click', () => tuneRelative(1));
+    ui.stationSearch.addEventListener('input', () => {
+        app.query = ui.stationSearch.value.trim().toLowerCase();
+        renderStations();
+    });
+    ui.clearSearch.addEventListener('click', () => {
+        ui.stationSearch.value = '';
+        app.query = '';
+        renderStations();
+        ui.stationSearch.focus();
+    });
+    ui.segments.forEach((button) => {
+        button.addEventListener('click', () => {
+            app.filter = button.dataset.filter;
+            ui.segments.forEach((segment) => segment.classList.toggle('active', segment === button));
+            renderStations();
+            if (!app.settings.keepStationOnFilter && app.currentName && !getVisibleStations().some((station) => station.name === app.currentName)) {
+                stopStation();
+            }
+        });
+    });
+    ui.themeToggle.addEventListener('click', toggleTheme);
+    ui.studioButton.addEventListener('click', openStudio);
+    ui.studioClose.addEventListener('click', closeStudio);
+    ui.studioOverlay.addEventListener('click', closeStudio);
+    ui.settingsButton.addEventListener('click', openSettings);
+    ui.settingsClose.addEventListener('click', closeSettings);
+    ui.settingsOverlay.addEventListener('click', closeSettings);
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeSettings();
+            closeStudio();
+        }
+    });
+    ui.settingWeatherEnabled.addEventListener('change', () => {
+        app.settings.weatherEnabled = ui.settingWeatherEnabled.checked;
+        saveSettings();
+        refreshWeatherVisibility();
+    });
+    ui.settingWeatherMode.addEventListener('change', () => {
+        app.settings.weatherMode = ui.settingWeatherMode.value;
+        saveSettings();
+        refreshWeatherVisibility();
+    });
+    ui.settingAutoplayNext.addEventListener('change', () => {
+        app.settings.keepStationOnFilter = ui.settingAutoplayNext.checked;
+        saveSettings();
+    });
+    ui.themeChoices.forEach((button) => {
+        button.addEventListener('click', () => setThemePreference(button.dataset.theme));
+    });
+    ui.resetListeningData.addEventListener('click', resetListeningData);
+    ui.editorUnlock.addEventListener('click', unlockEditor);
+    ui.editorCode.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') unlockEditor();
+    });
+    ui.editorSearch.addEventListener('input', renderEditorStationList);
+    ui.editorStationSelect.addEventListener('change', () => loadStationIntoEditor(ui.editorStationSelect.value));
+    ui.editorNew.addEventListener('click', () => loadStationIntoEditor(''));
+    ui.editorAddRds.addEventListener('click', addRdsLine);
+    ui.editorRds.addEventListener('input', updateRdsPreview);
+    ui.stationForm.addEventListener('submit', saveStationFromEditor);
+    ui.editorRemove.addEventListener('click', removeStationFromEditor);
+    ui.editorRestore.addEventListener('click', restoreStationFromEditor);
+    window.addEventListener('beforeinstallprompt', (event) => {
+        event.preventDefault();
+        app.deferredInstallPrompt = event;
+        ui.installButton.hidden = false;
+    });
+    ui.installButton.addEventListener('click', async () => {
+        if (!app.deferredInstallPrompt) return;
+        app.deferredInstallPrompt.prompt();
+        await app.deferredInstallPrompt.userChoice;
+        app.deferredInstallPrompt = null;
+        ui.installButton.hidden = true;
+    });
+}
+
+function setupAudioEventsModern() {
+    app.audio.addEventListener('loadstart', () => setStatus('Loading'));
+    app.audio.addEventListener('canplay', () => setStatus(app.isPlaying ? 'Playing' : 'Ready'));
+    app.audio.addEventListener('playing', () => {
+        app.isPlaying = true;
+        document.body.classList.add('is-playing');
+        ui.playButton.textContent = 'Pause';
+        ui.playButton.setAttribute('aria-pressed', 'true');
+        setStatus('Playing');
+        startTimer();
+        updateMediaSessionPlaybackModern();
+    });
+    app.audio.addEventListener('pause', () => {
+        app.isPlaying = false;
+        document.body.classList.remove('is-playing');
+        ui.playButton.textContent = 'Play';
+        ui.playButton.setAttribute('aria-pressed', 'false');
+        stopTimer(false);
+        updateMediaSessionPlaybackModern();
+    });
+    app.audio.addEventListener('error', () => {
+        app.isPlaying = false;
+        document.body.classList.remove('is-playing');
+        ui.playButton.textContent = 'Play';
+        stopTimer(false);
+        setStreamError();
+        updateMediaSessionPlaybackModern();
+    });
+}
+
+function renderStations() {
+    const visibleStations = getVisibleStations();
+    ui.stationGrid.innerHTML = visibleStations.map(renderStationCard).join('');
+    ui.stationGrid.querySelectorAll('.station-card').forEach((card) => {
+        card.addEventListener('click', () => selectStationModern(card.dataset.station, { autoplay: true }));
+        card.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter' && event.key !== ' ') return;
+            event.preventDefault();
+            selectStationModern(card.dataset.station, { autoplay: true });
+        });
+    });
+    ui.stationGrid.querySelectorAll('.favorite-button').forEach((button) => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            toggleFavorite(button.dataset.station);
+        });
+    });
+    ui.stationCount.textContent = `${visibleStations.length} of ${stations.length} stations`;
+    ui.emptyState.hidden = visibleStations.length !== 0;
+}
+
+function renderStationCard(station) {
+    const active = station.name === app.currentName ? ' active' : '';
+    const favorite = app.favorites.has(station.name);
+    const call = station.callSign || station.frequency;
+    return `
+        <article class="station-card${active}" data-station="${escapeAttr(station.name)}" tabindex="0" role="button" aria-label="Play ${escapeAttr(station.name)}">
+            <div class="station-card-top">
+                <img class="station-logo" src="${escapeAttr(station.logo)}" alt="">
+                <button class="favorite-button${favorite ? ' active' : ''}" type="button" data-station="${escapeAttr(station.name)}" aria-label="Favorite ${escapeAttr(station.name)}">${favorite ? 'Saved' : 'Save'}</button>
+            </div>
+            <div>
+                <h3 class="station-name">${escapeHtml(station.name)}</h3>
+                <p class="station-detail">${escapeHtml(station.city || station.location)}</p>
+            </div>
+            <div class="station-card-bottom">
+                <span class="band-pill">${escapeHtml(station.frequency)}</span>
+                <span class="call-pill">${escapeHtml(call || 'Live')}</span>
+            </div>
+        </article>
+    `;
+}
+
+function getVisibleStations() {
+    return stations.filter((station) => {
+        const matchesFilter =
+            app.filter === 'all' ||
+            station.band === app.filter ||
+            (app.filter === 'favorites' && app.favorites.has(station.name));
+        const haystack = [
+            station.name,
+            station.frequency,
+            station.callSign,
+            station.location,
+            ...(station.rdsText || [])
+        ].filter(Boolean).join(' ').toLowerCase();
+        return matchesFilter && (!app.query || haystack.includes(app.query));
+    });
+}
+
+function selectStationModern(name, options = {}) {
+    const station = getStation(name);
+    if (!station) return;
+    app.currentName = name;
+    updateNowPlaying(station);
+    addRecent(name);
+    renderStations();
+    renderQuickLists();
+    updateMediaSessionMetadataModern();
+    updateMediaSessionPlaybackModern();
+    startRds(station.rdsText || [name]);
+    if (options.autoplay) playStation();
+}
+
+async function playStation() {
+    if (!app.currentName) return;
+    const station = getStation(app.currentName);
+    if (!station) return;
+    if (app.audio.src !== station.streamUrl) {
+        app.audio.src = station.streamUrl;
+        app.audio.load();
+    }
+    try {
+        await app.audio.play();
+    } catch (error) {
+        console.error('Playback error', error);
+        setStreamError();
+    }
+}
+
+function pauseStation() {
+    app.audio.pause();
+    setStatus('Paused');
+}
+
+function stopStation() {
+    app.audio.pause();
+    app.audio.removeAttribute('src');
+    app.audio.load();
+    app.currentName = null;
+    app.isPlaying = false;
+    document.body.classList.remove('is-playing');
+    ui.playButton.textContent = 'Play';
+    ui.playButton.setAttribute('aria-pressed', 'false');
+    stopTimer(true);
+    startRds([]);
+    updateNowPlaying(null);
+    renderStations();
+    setStatus('Stopped');
+    updateMediaSessionMetadataModern();
+    updateMediaSessionPlaybackModern();
+}
+
+function tuneRelative(direction) {
+    const list = getVisibleStations().length ? getVisibleStations() : stations;
+    const currentIndex = list.findIndex((station) => station.name === app.currentName);
+    const base = currentIndex >= 0 ? currentIndex : 0;
+    const next = list[(base + direction + list.length) % list.length];
+    selectStationModern(next.name, { autoplay: true });
+}
+
+function updateNowPlaying(station) {
+    if (!station) {
+        ui.nowArt.src = APP_ICON;
+        ui.nowKicker.textContent = 'Standby';
+        ui.nowTitle.textContent = 'Choose a station';
+        ui.nowSubtitle.textContent = 'Live AM, FM, and satellite streams curated for Puerto Rico.';
+        ui.rdsText.textContent = '';
+        document.title = 'Glz Radio';
+        return;
+    }
+    ui.nowArt.src = station.logo;
+    ui.nowKicker.textContent = `${station.band} live`;
+    ui.nowTitle.textContent = station.name;
+    ui.nowSubtitle.textContent = station.city || station.location;
+    document.title = `Glz Radio · ${station.name}`;
+}
+
+function toggleFavorite(name) {
+    if (app.favorites.has(name)) {
+        app.favorites.delete(name);
+    } else {
+        app.favorites.add(name);
+    }
+    localStorage.setItem(STORAGE_KEYS.favorites, JSON.stringify([...app.favorites]));
+    renderStations();
+    renderQuickLists();
+}
+
+function renderQuickLists() {
+    const favoriteNames = [...app.favorites].filter((name) => getStation(name));
+    const recentNames = app.recents.filter((name) => getStation(name));
+    ui.favoriteCount.textContent = favoriteNames.length;
+    ui.recentCount.textContent = recentNames.length;
+    ui.favoritesList.innerHTML = favoriteNames.length
+        ? favoriteNames.map((name) => renderChip(name)).join('')
+        : '<span class="chip muted">No favorites yet</span>';
+    ui.recentList.innerHTML = recentNames.length
+        ? recentNames.map((name) => renderChip(name)).join('')
+        : '<span class="chip muted">No recent stations</span>';
+    document.querySelectorAll('.chip[data-station]').forEach((chip) => {
+        chip.addEventListener('click', () => selectStationModern(chip.dataset.station, { autoplay: true }));
+    });
+}
+
+function renderChip(name) {
+    return `<button class="chip" type="button" data-station="${escapeAttr(name)}">${escapeHtml(name)}</button>`;
+}
+
+function addRecent(name) {
+    app.recents = [name, ...app.recents.filter((item) => item !== name)].slice(0, 6);
+    localStorage.setItem(STORAGE_KEYS.recents, JSON.stringify(app.recents));
+}
+
+function startRds(texts) {
+    if (app.rdsTimer) clearInterval(app.rdsTimer);
+    if (!texts.length) {
+        ui.rdsText.textContent = '';
+        return;
+    }
+    let index = 0;
+    ui.rdsText.textContent = texts[index];
+    app.rdsTimer = setInterval(() => {
+        index = (index + 1) % texts.length;
+        ui.rdsText.textContent = texts[index];
+    }, 3000);
+}
+
+function startTimer() {
+    if (!app.timerStartedAt) app.timerStartedAt = Date.now();
+    if (app.timer) return;
+    const tick = () => {
+        const elapsed = Math.floor((Date.now() - app.timerStartedAt) / 1000);
+        const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+        const seconds = (elapsed % 60).toString().padStart(2, '0');
+        ui.streamTimer.textContent = `${minutes}:${seconds}`;
+    };
+    tick();
+    app.timer = setInterval(tick, 1000);
+}
+
+function stopTimer(reset) {
+    if (app.timer) {
+        clearInterval(app.timer);
+        app.timer = null;
+    }
+    if (reset) {
+        app.timerStartedAt = null;
+        ui.streamTimer.textContent = '00:00';
+    }
+}
+
+function setStreamError() {
+    const station = getStation(app.currentName);
+    if (location.protocol === 'https:' && station?.streamUrl.startsWith('http://')) {
+        setStatus('HTTP stream blocked');
+    } else {
+        setStatus('Stream unavailable');
+    }
+}
+
+function setupMediaSessionModern() {
+    if (!('mediaSession' in navigator)) return;
+    const bind = (action, handler) => {
+        try {
+            navigator.mediaSession.setActionHandler(action, handler);
+        } catch (_error) {}
+    };
+    bind('play', () => playStation());
+    bind('pause', () => pauseStation());
+    bind('stop', () => stopStation());
+    bind('nexttrack', () => tuneRelative(1));
+    bind('previoustrack', () => tuneRelative(-1));
+    updateMediaSessionMetadataModern();
+    updateMediaSessionPlaybackModern();
+}
+
+function updateMediaSessionMetadataModern() {
+    if (!('mediaSession' in navigator) || typeof MediaMetadata === 'undefined') return;
+    const station = getStation(app.currentName);
+    navigator.mediaSession.metadata = new MediaMetadata({
+        title: station ? station.name : 'Glz Radio',
+        artist: station ? station.location : 'Puerto Rico live radio',
+        album: station ? `${station.frequency}${station.callSign ? ' · ' + station.callSign : ''}` : 'Live radio',
+        artwork: [
+            { src: station?.logo || APP_ICON, sizes: '512x512', type: 'image/png' },
+            { src: APP_ICON, sizes: '192x192', type: 'image/png' }
+        ]
+    });
+}
+
+function updateMediaSessionPlaybackModern() {
+    if (!('mediaSession' in navigator)) return;
+    navigator.mediaSession.playbackState = app.currentName ? (app.isPlaying ? 'playing' : 'paused') : 'none';
+}
+
+function updateClockModern() {
+    const now = new Date();
+    ui.clock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    ui.clockDate.textContent = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+async function fetchWeatherModern() {
+    if (!app.settings.weatherEnabled) return;
+    try {
+        const coords = await getCoordinatesModern();
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lon}&current_weather=true&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto&forecast_days=1`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+        const current = data.current_weather;
+        ui.weatherTemp.textContent = `${Math.round(current.temperature)} F`;
+        ui.weatherDesc.textContent = weatherDescriptionModern(current.weathercode);
+    } catch (error) {
+        console.error('Weather error', error);
+        ui.weatherTemp.textContent = '-- F';
+        ui.weatherDesc.textContent = 'Unavailable';
+    }
+}
+
+function getCoordinatesModern() {
+    if (app.settings.weatherMode === 'puerto-rico') {
+        return Promise.resolve({ lat: 18.22, lon: -66.59 });
+    }
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve({ lat: 18.22, lon: -66.59 });
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => resolve({ lat: position.coords.latitude, lon: position.coords.longitude }),
+            () => resolve({ lat: 18.22, lon: -66.59 }),
+            { timeout: 6000, enableHighAccuracy: false }
+        );
+    });
+}
+
+function weatherDescriptionModern(code) {
+    const map = {
+        0: 'Clear',
+        1: 'Mainly clear',
+        2: 'Partly cloudy',
+        3: 'Overcast',
+        45: 'Fog',
+        48: 'Fog',
+        51: 'Drizzle',
+        53: 'Drizzle',
+        55: 'Drizzle',
+        61: 'Rain',
+        63: 'Rain',
+        65: 'Heavy rain',
+        80: 'Showers',
+        81: 'Showers',
+        82: 'Heavy showers',
+        95: 'Thunder'
+    };
+    return map[code] || 'Live';
+}
+
+function refreshWeatherVisibility() {
+    const weatherCard = ui.weatherTemp.closest('.utility-item');
+    weatherCard.classList.toggle('hidden', !app.settings.weatherEnabled);
+    if (!app.settings.weatherEnabled) return;
+    ui.weatherTemp.textContent = '-- F';
+    ui.weatherDesc.textContent = 'Loading';
+    fetchWeatherModern();
+}
+
+function applyStoredTheme() {
+    const saved = app.settings.theme || localStorage.getItem(STORAGE_KEYS.theme) || 'system';
+    const prefersDark = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+    document.body.classList.toggle('dark', saved === 'system' ? prefersDark : saved === 'dark');
+    ui.themeChoices?.forEach((button) => button.classList.toggle('active', button.dataset.theme === saved));
+}
+
+function toggleTheme() {
+    const nextTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+    setThemePreference(nextTheme);
+}
+
+function setThemePreference(theme) {
+    app.settings.theme = theme;
+    localStorage.setItem(STORAGE_KEYS.theme, theme);
+    saveSettings();
+    applyStoredTheme();
+}
+
+function applySettingsToForm() {
+    ui.settingWeatherEnabled.checked = app.settings.weatherEnabled;
+    ui.settingWeatherMode.value = app.settings.weatherMode;
+    ui.settingAutoplayNext.checked = app.settings.keepStationOnFilter;
+    updateEditorLockState();
+    renderEditorStationOptions();
+}
+
+function saveSettings() {
+    localStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(app.settings));
+}
+
+function openSettings() {
+    ui.settingsDrawer.classList.add('open');
+    ui.settingsDrawer.setAttribute('aria-hidden', 'false');
+    ui.settingsOverlay.hidden = false;
+}
+
+function closeSettings() {
+    ui.settingsDrawer.classList.remove('open');
+    ui.settingsDrawer.setAttribute('aria-hidden', 'true');
+    ui.settingsOverlay.hidden = true;
+}
+
+function resetListeningData() {
+    app.favorites.clear();
+    app.recents = [];
+    localStorage.removeItem(STORAGE_KEYS.favorites);
+    localStorage.removeItem(STORAGE_KEYS.recents);
+    renderStations();
+    renderQuickLists();
+}
+
+function openStudio() {
+    ui.stationStudio.classList.add('open');
+    ui.stationStudio.setAttribute('aria-hidden', 'false');
+    ui.studioOverlay.hidden = false;
+    updateEditorLockState();
+}
+
+function closeStudio() {
+    ui.stationStudio.classList.remove('open');
+    ui.stationStudio.setAttribute('aria-hidden', 'true');
+    ui.studioOverlay.hidden = true;
+}
+
+function unlockEditor() {
+    const code = ui.editorCode.value.trim().toLowerCase();
+    if (code !== 'glz' && code !== 'admin') {
+        ui.editorCode.value = '';
+        ui.editorCode.placeholder = 'Try GLZ';
+        return;
+    }
+    app.editorUnlocked = true;
+    localStorage.setItem(STORAGE_KEYS.editorUnlocked, 'true');
+    updateEditorLockState();
+}
+
+function updateEditorLockState() {
+    ui.editorPanel.hidden = !app.editorUnlocked;
+    ui.editorUnlockRow.classList.toggle('hidden', app.editorUnlocked);
+    ui.editorLockState.textContent = app.editorUnlocked ? 'Unlocked' : 'Locked';
+    ui.editorLockState.classList.toggle('unlocked', app.editorUnlocked);
+    if (app.editorUnlocked) {
+        renderEditorStationOptions();
+        renderEditorStationList();
+        loadStationIntoEditor(ui.editorStationSelect.value || stations[0]?.name || '');
+    }
+}
+
+function renderEditorStationOptions() {
+    if (!ui.editorStationSelect) return;
+    const selected = ui.editorStationSelect.value;
+    ui.editorStationSelect.innerHTML = getEditorStations().map((station) => (
+        `<option value="${escapeAttr(station.name)}">${escapeHtml(station.name)}${station.hidden ? ' (deleted)' : ''}</option>`
+    )).join('');
+    if (selected && getEditorStation(selected)) ui.editorStationSelect.value = selected;
+}
+
+function renderEditorStationList() {
+    const term = ui.editorSearch.value.trim().toLowerCase();
+    const filtered = getEditorStations().filter((station) => {
+        const haystack = [station.name, station.frequency, station.callSign, station.location].filter(Boolean).join(' ').toLowerCase();
+        return !term || haystack.includes(term);
+    });
+    ui.editorStationList.innerHTML = filtered.map((station) => {
+        const active = station.name === ui.editorStationSelect.value ? ' active' : '';
+        const source = station.hidden ? 'Deleted' : app.stationOverrides[station.name] ? 'Edited' : 'Curated';
+        return `
+            <button class="editor-station-item${active}" type="button" data-station="${escapeAttr(station.name)}">
+                <img src="${escapeAttr(station.logo)}" alt="">
+                <span><strong>${escapeHtml(station.name)}</strong><span>${escapeHtml(station.frequency)} · ${escapeHtml(station.callSign || source)}</span></span>
+                <span>${source}</span>
+            </button>
+        `;
+    }).join('');
+    ui.editorStationList.querySelectorAll('.editor-station-item').forEach((button) => {
+        button.addEventListener('click', () => loadStationIntoEditor(button.dataset.station));
+    });
+}
+
+function loadStationIntoEditor(name) {
+    const station = getEditorStation(name);
+    ui.editorStationSelect.value = station?.name || '';
+    ui.editorName.value = station?.name || '';
+    ui.editorLogo.value = station?.logo || '';
+    ui.editorStream.value = station?.streamUrl || '';
+    ui.editorFrequency.value = station?.frequency || '';
+    ui.editorCallsign.value = station?.callSign || '';
+    ui.editorRds.value = station?.rdsText?.join('\n') || '';
+    ui.editorRemove.disabled = !station;
+    ui.editorRestore.disabled = !station || (!app.stationOverrides[station.name] && !app.hiddenStations.has(station.name));
+    renderEditorStationList();
+    updateRdsPreview();
+}
+
+function saveStationFromEditor(event) {
+    event.preventDefault();
+    const originalName = ui.editorStationSelect.value;
+    const nextName = ui.editorName.value.trim();
+    if (!nextName) return;
+    if (originalName && originalName !== nextName) {
+        delete app.stationOverrides[originalName];
+        app.hiddenStations.add(originalName);
+    }
+    app.stationOverrides[nextName] = {
+        logo: ui.editorLogo.value.trim(),
+        streamUrl: ui.editorStream.value.trim(),
+        frequency: ui.editorFrequency.value.trim(),
+        callSign: ui.editorCallsign.value.trim() || null,
+        rdsText: ui.editorRds.value.split('\n').map((item) => item.trim()).filter(Boolean)
+    };
+    app.hiddenStations.delete(nextName);
+    persistStationEdits();
+    rebuildStationViews(nextName);
+}
+
+function removeStationFromEditor() {
+    const name = ui.editorStationSelect.value;
+    if (!name) return;
+    app.hiddenStations.add(name);
+    if (!RADIO_STATIONS[name]) delete app.stationOverrides[name];
+    persistStationEdits();
+    if (app.currentName === name) stopStation();
+    rebuildStationViews();
+}
+
+function restoreStationFromEditor() {
+    const name = ui.editorStationSelect.value;
+    if (!name) return;
+    delete app.stationOverrides[name];
+    app.hiddenStations.delete(name);
+    persistStationEdits();
+    rebuildStationViews(name);
+}
+
+function addRdsLine() {
+    const lines = ui.editorRds.value.trim() ? `${ui.editorRds.value.trim()}\n` : '';
+    ui.editorRds.value = `${lines}${ui.editorName.value.trim() || 'Station update'}`;
+    ui.editorRds.focus();
+    updateRdsPreview();
+}
+
+function updateRdsPreview() {
+    const lines = ui.editorRds.value.split('\n').map((item) => item.trim()).filter(Boolean);
+    ui.editorRdsPreview.textContent = lines.length ? lines.join('  ·  ') : 'No RDS messages configured.';
+}
+
+function persistStationEdits() {
+    localStorage.setItem(STORAGE_KEYS.stationOverrides, JSON.stringify(app.stationOverrides));
+    localStorage.setItem(STORAGE_KEYS.hiddenStations, JSON.stringify([...app.hiddenStations]));
+}
+
+function rebuildStationViews(selectedName) {
+    stations = buildStationList(app.stationOverrides, app.hiddenStations);
+    app.favorites = new Set([...app.favorites].filter((name) => getStation(name)));
+    app.recents = app.recents.filter((name) => getStation(name));
+    renderStations();
+    renderQuickLists();
+    renderEditorStationOptions();
+    renderEditorStationList();
+    loadStationIntoEditor(selectedName || getEditorStations()[0]?.name || '');
+}
+
+function buildStationList(overrides = readStoredObject(STORAGE_KEYS.stationOverrides, {}), hidden = new Set(readStoredArray(STORAGE_KEYS.hiddenStations))) {
+    const merged = { ...RADIO_STATIONS, ...overrides };
+    return Object.entries(merged)
+        .filter(([name]) => !hidden.has(name))
+        .map(([name, station], index) => ({
+            name,
+            index,
+            ...station,
+            band: getStationBand(station.frequency),
+            city: getStationCity(station),
+            location: station.rdsText?.slice(1).join(' · ') || station.callSign || 'Live broadcast'
+        }));
+}
+
+function getEditorStations() {
+    const merged = { ...RADIO_STATIONS, ...app.stationOverrides };
+    return Object.entries(merged).map(([name, station], index) => ({
+        name,
+        index,
+        ...station,
+        hidden: app.hiddenStations.has(name),
+        band: getStationBand(station.frequency),
+        city: getStationCity(station),
+        location: station.rdsText?.slice(1).join(' · ') || station.callSign || 'Live broadcast'
+    }));
+}
+
+function getEditorStation(name) {
+    return getEditorStations().find((station) => station.name === name);
+}
+
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch((error) => {
+            console.warn('Service worker registration failed', error);
+        });
+    });
+}
+
+function getStation(name) {
+    return stations.find((station) => station.name === name);
+}
+
+function getStationBand(frequency) {
+    if (!frequency) return 'Live';
+    if (frequency.startsWith('AM ')) return 'AM';
+    if (frequency.startsWith('FM ')) return 'FM';
+    if (frequency === 'Satellite' || frequency.toLowerCase().includes('satellite')) return 'Satellite';
+    return frequency;
+}
+
+function getStationCity(station) {
+    const candidates = (station.rdsText || []).slice(1).reverse();
+    const city = candidates.find((item) => item && !item.includes('!')) || candidates[0] || station.callSign || 'Live';
+    return city
+        .replace(/,\s*PR$/i, '')
+        .replace(/,\s*Puerto Rico$/i, '')
+        .trim();
+}
+
+function readStoredArray(key) {
+    try {
+        const value = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(value) ? value : [];
+    } catch (_error) {
+        return [];
+    }
+}
+
+function readStoredObject(key, fallback = {}) {
+    try {
+        const value = JSON.parse(localStorage.getItem(key) || 'null');
+        return value && typeof value === 'object' && !Array.isArray(value) ? value : fallback;
+    } catch (_error) {
+        return fallback;
+    }
+}
+
+function setStatus(text) {
+    ui.status.textContent = text;
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[char]);
+}
+
+function escapeAttr(value) {
+    return escapeHtml(value);
+}
+
+initModernApp();

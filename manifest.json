@@ -1,14 +1,15 @@
 {
   "name": "Glz Radio",
   "short_name": "Glz Radio",
-  "description": "Simple radio streaming app for Puerto Rican stations",
+  "description": "A modern streaming app for Puerto Rican radio stations.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1a1a",
-  "theme_color": "#1a1a1a",
-  "orientation": "portrait",
+  "display_override": ["window-controls-overlay", "standalone", "browser"],
+  "background_color": "#f6f3ee",
+  "theme_color": "#f6f3ee",
+  "orientation": "any",
+  "categories": ["music", "entertainment", "news"],
   "icons": [
-    { "src": "images/app-icon.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "images/app-icon.png", "sizes": "512x512", "type": "image/png" }
+    { "src": "images/glz-radio-logo-new.png", "sizes": "1254x1254", "type": "image/png", "purpose": "any maskable" }
   ]
 }
