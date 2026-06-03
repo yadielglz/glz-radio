@@ -717,6 +717,23 @@ const ui = {
     nowTitle: document.getElementById('now-title'),
     nowSubtitle: document.getElementById('now-subtitle'),
     rdsText: document.getElementById('rds-text'),
+    playerPanel: document.querySelector('.player-panel'),
+    mobilePlayerSheet: document.getElementById('mobile-player-sheet'),
+    mobilePlayerClose: document.getElementById('mobile-player-close'),
+    mobileStationsButton: document.getElementById('mobile-stations-button'),
+    mobilePlayerArt: document.getElementById('mobile-player-art'),
+    mobilePlayerKicker: document.getElementById('mobile-player-kicker'),
+    mobilePlayerTitle: document.getElementById('mobile-player-title'),
+    mobilePlayerSubtitle: document.getElementById('mobile-player-subtitle'),
+    mobilePlayerRds: document.getElementById('mobile-player-rds'),
+    mobilePlayerFrequency: document.getElementById('mobile-player-frequency'),
+    mobilePlayerCallsign: document.getElementById('mobile-player-callsign'),
+    mobilePlayerStatus: document.getElementById('mobile-player-status'),
+    mobilePlayerTimer: document.getElementById('mobile-player-timer'),
+    mobilePrevButton: document.getElementById('mobile-prev-button'),
+    mobilePlayButton: document.getElementById('mobile-play-button'),
+    mobileNextButton: document.getElementById('mobile-next-button'),
+    mobileStopButton: document.getElementById('mobile-stop-button'),
     playButton: document.getElementById('play-button'),
     stopButton: document.getElementById('stop-button'),
     prevButton: document.getElementById('prev-button'),
@@ -791,6 +808,26 @@ function initModernApp() {
 }
 
 function bindModernEvents() {
+    ui.playerPanel.addEventListener('click', (event) => {
+        if (event.target.closest('button') || !app.currentName) return;
+        openMobilePlayer();
+    });
+    ui.mobilePlayerClose.addEventListener('click', closeMobilePlayer);
+    ui.mobileStationsButton.addEventListener('click', showMobileStations);
+    ui.mobilePlayButton.addEventListener('click', () => {
+        if (app.isPlaying) {
+            pauseStation();
+            return;
+        }
+        if (!app.currentName) {
+            selectStationModern(stations[0].name, { autoplay: true });
+            return;
+        }
+        playStation();
+    });
+    ui.mobileStopButton.addEventListener('click', stopStation);
+    ui.mobilePrevButton.addEventListener('click', () => tuneRelative(-1));
+    ui.mobileNextButton.addEventListener('click', () => tuneRelative(1));
     ui.playButton.addEventListener('click', () => {
         if (app.isPlaying) {
             pauseStation();
@@ -834,6 +871,7 @@ function bindModernEvents() {
     ui.settingsOverlay.addEventListener('click', closeSettings);
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
+            closeMobilePlayer();
             closeSettings();
             closeStudio();
         }
@@ -890,6 +928,8 @@ function setupAudioEventsModern() {
         document.body.classList.add('is-playing');
         ui.playButton.textContent = 'Pause';
         ui.playButton.setAttribute('aria-pressed', 'true');
+        ui.mobilePlayButton.textContent = 'Pause';
+        ui.mobilePlayButton.setAttribute('aria-pressed', 'true');
         setStatus('Playing');
         startTimer();
         updateMediaSessionPlaybackModern();
@@ -899,6 +939,8 @@ function setupAudioEventsModern() {
         document.body.classList.remove('is-playing');
         ui.playButton.textContent = 'Play';
         ui.playButton.setAttribute('aria-pressed', 'false');
+        ui.mobilePlayButton.textContent = 'Play';
+        ui.mobilePlayButton.setAttribute('aria-pressed', 'false');
         stopTimer(false);
         updateMediaSessionPlaybackModern();
     });
@@ -906,6 +948,9 @@ function setupAudioEventsModern() {
         app.isPlaying = false;
         document.body.classList.remove('is-playing');
         ui.playButton.textContent = 'Play';
+        ui.playButton.setAttribute('aria-pressed', 'false');
+        ui.mobilePlayButton.textContent = 'Play';
+        ui.mobilePlayButton.setAttribute('aria-pressed', 'false');
         stopTimer(false);
         setStreamError();
         updateMediaSessionPlaybackModern();
@@ -976,6 +1021,9 @@ function selectStationModern(name, options = {}) {
     const station = getStation(name);
     if (!station) return;
     app.currentName = name;
+    document.body.classList.add('has-station');
+    document.body.classList.remove('show-stations');
+    closeMobilePlayer();
     updateNowPlaying(station);
     addRecent(name);
     renderStations();
@@ -1013,9 +1061,14 @@ function stopStation() {
     app.audio.load();
     app.currentName = null;
     app.isPlaying = false;
+    document.body.classList.remove('has-station');
     document.body.classList.remove('is-playing');
+    document.body.classList.remove('show-stations');
+    closeMobilePlayer();
     ui.playButton.textContent = 'Play';
     ui.playButton.setAttribute('aria-pressed', 'false');
+    ui.mobilePlayButton.textContent = 'Play';
+    ui.mobilePlayButton.setAttribute('aria-pressed', 'false');
     stopTimer(true);
     startRds([]);
     updateNowPlaying(null);
@@ -1040,6 +1093,13 @@ function updateNowPlaying(station) {
         ui.nowTitle.textContent = 'Choose a station';
         ui.nowSubtitle.textContent = 'Live AM, FM, and satellite streams curated for Puerto Rico.';
         ui.rdsText.textContent = '';
+        ui.mobilePlayerArt.src = APP_ICON;
+        ui.mobilePlayerKicker.textContent = 'Standby';
+        ui.mobilePlayerTitle.textContent = 'Choose a station';
+        ui.mobilePlayerSubtitle.textContent = 'Live AM, FM, and satellite streams curated for Puerto Rico.';
+        ui.mobilePlayerRds.textContent = '';
+        ui.mobilePlayerFrequency.textContent = '--';
+        ui.mobilePlayerCallsign.textContent = '--';
         document.title = 'Glz Radio';
         return;
     }
@@ -1047,6 +1107,12 @@ function updateNowPlaying(station) {
     ui.nowKicker.textContent = `${station.band} live`;
     ui.nowTitle.textContent = station.name;
     ui.nowSubtitle.textContent = station.city || station.location;
+    ui.mobilePlayerArt.src = station.logo;
+    ui.mobilePlayerKicker.textContent = `${station.band} live`;
+    ui.mobilePlayerTitle.textContent = station.name;
+    ui.mobilePlayerSubtitle.textContent = station.city || station.location;
+    ui.mobilePlayerFrequency.textContent = station.frequency || '--';
+    ui.mobilePlayerCallsign.textContent = station.callSign || 'Live';
     document.title = `Glz Radio · ${station.name}`;
 }
 
@@ -1090,13 +1156,16 @@ function startRds(texts) {
     if (app.rdsTimer) clearInterval(app.rdsTimer);
     if (!texts.length) {
         ui.rdsText.textContent = '';
+        ui.mobilePlayerRds.textContent = '';
         return;
     }
     let index = 0;
     ui.rdsText.textContent = texts[index];
+    ui.mobilePlayerRds.textContent = texts[index];
     app.rdsTimer = setInterval(() => {
         index = (index + 1) % texts.length;
         ui.rdsText.textContent = texts[index];
+        ui.mobilePlayerRds.textContent = texts[index];
     }, 3000);
 }
 
@@ -1108,6 +1177,7 @@ function startTimer() {
         const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
         const seconds = (elapsed % 60).toString().padStart(2, '0');
         ui.streamTimer.textContent = `${minutes}:${seconds}`;
+        ui.mobilePlayerTimer.textContent = `${minutes}:${seconds}`;
     };
     tick();
     app.timer = setInterval(tick, 1000);
@@ -1121,7 +1191,24 @@ function stopTimer(reset) {
     if (reset) {
         app.timerStartedAt = null;
         ui.streamTimer.textContent = '00:00';
+        ui.mobilePlayerTimer.textContent = '00:00';
     }
+}
+
+function openMobilePlayer() {
+    if (!app.currentName) return;
+    document.body.classList.add('player-expanded');
+    ui.mobilePlayerSheet.setAttribute('aria-hidden', 'false');
+}
+
+function closeMobilePlayer() {
+    document.body.classList.remove('player-expanded');
+    ui.mobilePlayerSheet.setAttribute('aria-hidden', 'true');
+}
+
+function showMobileStations() {
+    document.body.classList.add('show-stations');
+    closeMobilePlayer();
 }
 
 function setStreamError() {
@@ -1524,6 +1611,7 @@ function readStoredObject(key, fallback = {}) {
 
 function setStatus(text) {
     ui.status.textContent = text;
+    ui.mobilePlayerStatus.textContent = text;
 }
 
 function escapeHtml(value) {
