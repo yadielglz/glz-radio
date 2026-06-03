@@ -54,12 +54,12 @@
             </div>
         </header>
 
-        <main class="layout">
+        <main class="layout" aria-label="Pocket radio interface">
             <section class="browse-panel" aria-label="Stations">
                 <div class="browse-header">
                     <div>
-                        <p class="eyebrow">Stations</p>
-                        <h2>On the dial</h2>
+                        <p class="eyebrow">Glz Radio</p>
+                        <h2>Stations</h2>
                     </div>
                     <div class="station-count" id="station-count">0 stations</div>
                 </div>
@@ -82,7 +82,7 @@
                         <span aria-hidden="true">Search</span>
                         <input id="station-search" type="search" autocomplete="off" placeholder="Name, city, call sign, frequency">
                     </label>
-                    <button class="filter-reset" id="clear-search" type="button">Clear</button>
+                    <button class="filter-reset" id="clear-search" type="button" aria-label="Clear search">Clear</button>
                 </div>
 
                 <div class="segmented" aria-label="Station filters">
@@ -118,7 +118,7 @@
         </main>
     </div>
 
-    <section class="player-panel" aria-label="Player">
+    <section class="player-panel" aria-label="Click wheel player">
         <div class="now-playing">
             <div class="artwork-wrap">
                 <img id="now-art" class="artwork" src="images/glz-radio-logo-new.png" alt="Current station artwork">
@@ -134,11 +134,11 @@
             </div>
         </div>
 
-        <div class="controls" aria-label="Playback controls">
-            <button class="control-button ghost" id="prev-button" type="button" aria-label="Previous station" title="Previous station">Prev</button>
-            <button class="control-button primary" id="play-button" type="button" aria-label="Play or pause" aria-pressed="false">Play</button>
-            <button class="control-button ghost" id="next-button" type="button" aria-label="Next station" title="Next station">Next</button>
-            <button class="control-button danger" id="stop-button" type="button">Stop</button>
+        <div class="controls" aria-label="Menu wheel controls">
+            <button class="control-button ghost" id="prev-button" type="button" aria-label="Move up" title="Move up">Up</button>
+            <button class="control-button primary" id="play-button" type="button" aria-label="Select" aria-pressed="false">Select</button>
+            <button class="control-button ghost" id="next-button" type="button" aria-label="Move down" title="Move down">Down</button>
+            <button class="control-button danger" id="stop-button" type="button" aria-label="Menu or back">Menu</button>
         </div>
 
         <div class="signal-row">

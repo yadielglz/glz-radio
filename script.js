@@ -692,6 +692,9 @@ const app = {
     isPlaying: false,
     filter: 'all',
     query: '',
+    menuView: 'home',
+    menuStack: [],
+    menuSelectedIndex: 0,
     settings: readStoredObject(STORAGE_KEYS.settings, {
         weatherEnabled: true,
         weatherMode: 'auto',
@@ -826,22 +829,14 @@ function bindModernEvents() {
         playStation();
     });
     ui.mobileStopButton.addEventListener('click', stopStation);
-    ui.mobilePrevButton.addEventListener('click', () => tuneRelative(-1));
-    ui.mobileNextButton.addEventListener('click', () => tuneRelative(1));
+    ui.mobilePrevButton.addEventListener('click', () => moveMenuSelection(-1));
+    ui.mobileNextButton.addEventListener('click', () => moveMenuSelection(1));
     ui.playButton.addEventListener('click', () => {
-        if (app.isPlaying) {
-            pauseStation();
-            return;
-        }
-        if (!app.currentName) {
-            selectStationModern(stations[0].name, { autoplay: true });
-            return;
-        }
-        playStation();
+        activateMenuSelection();
     });
-    ui.stopButton.addEventListener('click', stopStation);
-    ui.prevButton.addEventListener('click', () => tuneRelative(-1));
-    ui.nextButton.addEventListener('click', () => tuneRelative(1));
+    ui.stopButton.addEventListener('click', goBackMenu);
+    ui.prevButton.addEventListener('click', () => moveMenuSelection(-1));
+    ui.nextButton.addEventListener('click', () => moveMenuSelection(1));
     ui.stationSearch.addEventListener('input', () => {
         app.query = ui.stationSearch.value.trim().toLowerCase();
         renderStations();
@@ -874,6 +869,23 @@ function bindModernEvents() {
             closeMobilePlayer();
             closeSettings();
             closeStudio();
+        }
+        if (event.target.closest('input, textarea, select')) return;
+        if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            moveMenuSelection(-1);
+        }
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            moveMenuSelection(1);
+        }
+        if (event.key === 'ArrowLeft' || event.key === 'Backspace') {
+            event.preventDefault();
+            goBackMenu();
+        }
+        if (event.key === 'ArrowRight' || event.key === 'Enter') {
+            event.preventDefault();
+            activateMenuSelection();
         }
     });
     ui.settingWeatherEnabled.addEventListener('change', () => {
@@ -926,10 +938,10 @@ function setupAudioEventsModern() {
     app.audio.addEventListener('playing', () => {
         app.isPlaying = true;
         document.body.classList.add('is-playing');
-        ui.playButton.textContent = 'Pause';
         ui.playButton.setAttribute('aria-pressed', 'true');
         ui.mobilePlayButton.textContent = 'Pause';
         ui.mobilePlayButton.setAttribute('aria-pressed', 'true');
+        syncWheelLabels();
         setStatus('Playing');
         startTimer();
         updateMediaSessionPlaybackModern();
@@ -937,20 +949,20 @@ function setupAudioEventsModern() {
     app.audio.addEventListener('pause', () => {
         app.isPlaying = false;
         document.body.classList.remove('is-playing');
-        ui.playButton.textContent = 'Play';
         ui.playButton.setAttribute('aria-pressed', 'false');
         ui.mobilePlayButton.textContent = 'Play';
         ui.mobilePlayButton.setAttribute('aria-pressed', 'false');
+        syncWheelLabels();
         stopTimer(false);
         updateMediaSessionPlaybackModern();
     });
     app.audio.addEventListener('error', () => {
         app.isPlaying = false;
         document.body.classList.remove('is-playing');
-        ui.playButton.textContent = 'Play';
         ui.playButton.setAttribute('aria-pressed', 'false');
         ui.mobilePlayButton.textContent = 'Play';
         ui.mobilePlayButton.setAttribute('aria-pressed', 'false');
+        syncWheelLabels();
         stopTimer(false);
         setStreamError();
         updateMediaSessionPlaybackModern();
@@ -958,46 +970,191 @@ function setupAudioEventsModern() {
 }
 
 function renderStations() {
-    const visibleStations = getVisibleStations();
-    ui.stationGrid.innerHTML = visibleStations.map(renderStationCard).join('');
-    ui.stationGrid.querySelectorAll('.station-card').forEach((card) => {
-        card.addEventListener('click', () => selectStationModern(card.dataset.station, { autoplay: true }));
+    const items = getMenuItems();
+    if (app.menuSelectedIndex >= items.length) app.menuSelectedIndex = Math.max(0, items.length - 1);
+    ui.stationGrid.innerHTML = items.map(renderMenuItem).join('');
+    ui.stationGrid.querySelectorAll('.station-card').forEach((card, index) => {
+        card.addEventListener('click', () => {
+            app.menuSelectedIndex = index;
+            activateMenuSelection();
+        });
         card.addEventListener('keydown', (event) => {
             if (event.key !== 'Enter' && event.key !== ' ') return;
             event.preventDefault();
-            selectStationModern(card.dataset.station, { autoplay: true });
+            app.menuSelectedIndex = index;
+            activateMenuSelection();
         });
     });
-    ui.stationGrid.querySelectorAll('.favorite-button').forEach((button) => {
-        button.addEventListener('click', (event) => {
-            event.stopPropagation();
-            toggleFavorite(button.dataset.station);
-        });
-    });
-    ui.stationCount.textContent = `${visibleStations.length} of ${stations.length} stations`;
-    ui.emptyState.hidden = visibleStations.length !== 0;
+    ui.stationCount.textContent = app.menuView === 'home' ? `${stations.length} stations` : `${items.length} items`;
+    ui.emptyState.hidden = items.length !== 0;
+    updateMenuHeader();
+    syncWheelLabels();
 }
 
-function renderStationCard(station) {
-    const active = station.name === app.currentName ? ' active' : '';
-    const favorite = app.favorites.has(station.name);
-    const call = station.callSign || station.frequency;
+function renderMenuItem(item, index) {
+    const active = index === app.menuSelectedIndex ? ' active' : '';
+    const playing = item.stationName && item.stationName === app.currentName ? ' is-current' : '';
+    const art = item.logo || '';
+    const iconless = art ? '' : ' is-iconless';
     return `
-        <article class="station-card${active}" data-station="${escapeAttr(station.name)}" tabindex="0" role="button" aria-label="Play ${escapeAttr(station.name)}">
+        <article class="station-card${active}${playing}${iconless}" tabindex="0" role="button" aria-label="${escapeAttr(item.label)}">
             <div class="station-card-top">
-                <img class="station-logo" src="${escapeAttr(station.logo)}" alt="">
-                <button class="favorite-button${favorite ? ' active' : ''}" type="button" data-station="${escapeAttr(station.name)}" aria-label="Favorite ${escapeAttr(station.name)}">${favorite ? 'Saved' : 'Save'}</button>
+                ${art ? `<img class="station-logo" src="${escapeAttr(art)}" alt="">` : ''}
             </div>
             <div>
-                <h3 class="station-name">${escapeHtml(station.name)}</h3>
-                <p class="station-detail">${escapeHtml(station.city || station.location)}</p>
+                <h3 class="station-name">${escapeHtml(item.label)}</h3>
+                <p class="station-detail">${escapeHtml(item.meta || '')}</p>
             </div>
             <div class="station-card-bottom">
-                <span class="band-pill">${escapeHtml(station.frequency)}</span>
-                <span class="call-pill">${escapeHtml(call || 'Live')}</span>
+                <span class="band-pill">${escapeHtml(item.badge || '')}</span>
+                <span class="call-pill">${escapeHtml(item.value || '')}</span>
             </div>
         </article>
     `;
+}
+
+function getMenuItems() {
+    if (app.menuView === 'home') {
+        return [
+            { label: 'Now Playing', meta: app.currentName || 'Choose a station', badge: app.isPlaying ? 'Live' : 'Ready', action: 'view', view: 'now-playing' },
+            { label: 'Stations', meta: 'Browse every stream', badge: String(stations.length), action: 'view', view: 'stations' },
+            { label: 'Favorites', meta: app.favorites.size ? 'Saved stations' : 'No favorites yet', badge: String(app.favorites.size), action: 'view', view: 'favorites' },
+            { label: 'Recent', meta: app.recents.length ? 'Last listened' : 'No recent stations', badge: String(app.recents.length), action: 'view', view: 'recent' },
+            { label: 'AM', meta: 'Amplitude modulation', badge: stationCountForBand('AM'), action: 'view', view: 'AM' },
+            { label: 'FM', meta: 'Frequency modulation', badge: stationCountForBand('FM'), action: 'view', view: 'FM' },
+            { label: 'Satellite', meta: 'Online stations', badge: stationCountForBand('Satellite'), action: 'view', view: 'Satellite' },
+            { label: 'Settings', meta: 'Preferences and maintainer tools', badge: '>', action: 'settings' }
+        ];
+    }
+    if (app.menuView === 'now-playing') {
+        const station = getStation(app.currentName);
+        return station
+            ? [
+                stationToMenuItem(station),
+                { label: app.isPlaying ? 'Pause' : 'Play', meta: station.frequency, badge: app.isPlaying ? 'On' : 'Off', action: 'toggle-play' },
+                { label: app.favorites.has(station.name) ? 'Remove Favorite' : 'Add Favorite', meta: station.name, badge: app.favorites.has(station.name) ? 'Saved' : '+', action: 'favorite', stationName: station.name },
+                { label: 'Stop', meta: 'Clear now playing', badge: 'x', action: 'stop' }
+            ]
+            : [{ label: 'Stations', meta: 'Pick something to play', badge: '>', action: 'view', view: 'stations' }];
+    }
+    return getStationsForMenu(app.menuView).map(stationToMenuItem);
+}
+
+function stationToMenuItem(station) {
+    return {
+        label: station.name,
+        meta: station.city || station.location,
+        badge: station.frequency,
+        value: station.callSign || station.band,
+        logo: station.logo,
+        stationName: station.name,
+        action: 'station'
+    };
+}
+
+function getStationsForMenu(view) {
+    if (view === 'stations') return stations;
+    if (view === 'favorites') return [...app.favorites].map(getStation).filter(Boolean);
+    if (view === 'recent') return app.recents.map(getStation).filter(Boolean);
+    return stations.filter((station) => station.band === view);
+}
+
+function stationCountForBand(band) {
+    return String(stations.filter((station) => station.band === band).length);
+}
+
+function moveMenuSelection(direction) {
+    const items = getMenuItems();
+    if (!items.length) return;
+    app.menuSelectedIndex = (app.menuSelectedIndex + direction + items.length) % items.length;
+    renderStations();
+    const active = ui.stationGrid.querySelector('.station-card.active');
+    active?.focus();
+    active?.scrollIntoView({ block: 'nearest' });
+}
+
+function activateMenuSelection() {
+    const item = getMenuItems()[app.menuSelectedIndex];
+    if (!item) return;
+    if (item.action === 'view') {
+        app.menuStack.push(app.menuView);
+        app.menuView = item.view;
+        app.menuSelectedIndex = 0;
+        renderStations();
+        return;
+    }
+    if (item.action === 'station') {
+        selectStationModern(item.stationName, { autoplay: true });
+        app.menuView = 'now-playing';
+        app.menuSelectedIndex = 0;
+        renderStations();
+        return;
+    }
+    if (item.action === 'toggle-play') {
+        if (app.isPlaying) pauseStation();
+        else playStation();
+        renderStations();
+        return;
+    }
+    if (item.action === 'stop') {
+        stopStation();
+        app.menuView = 'home';
+        app.menuStack = [];
+        app.menuSelectedIndex = 0;
+        renderStations();
+        return;
+    }
+    if (item.action === 'favorite') {
+        toggleFavorite(item.stationName);
+        renderStations();
+        return;
+    }
+    if (item.action === 'settings') openSettings();
+}
+
+function goBackMenu() {
+    if (app.menuStack.length) {
+        app.menuView = app.menuStack.pop();
+        app.menuSelectedIndex = 0;
+        renderStations();
+        return;
+    }
+    if (app.menuView !== 'home') {
+        app.menuView = 'home';
+        app.menuSelectedIndex = 0;
+        renderStations();
+    }
+}
+
+function updateMenuHeader() {
+    const title = document.querySelector('.browse-header h2');
+    const kicker = document.querySelector('.browse-header .eyebrow');
+    if (title) title.textContent = menuTitle(app.menuView);
+    if (kicker) kicker.textContent = app.menuView === 'home' ? 'Glz Radio' : 'Menu';
+}
+
+function menuTitle(view) {
+    const titles = {
+        home: 'Glz Radio',
+        stations: 'Stations',
+        favorites: 'Favorites',
+        recent: 'Recent',
+        'now-playing': 'Now Playing',
+        AM: 'AM',
+        FM: 'FM',
+        Satellite: 'Satellite'
+    };
+    return titles[view] || 'Menu';
+}
+
+function syncWheelLabels() {
+    ui.stopButton.textContent = 'Menu';
+    ui.prevButton.textContent = 'Up';
+    ui.nextButton.textContent = 'Down';
+    const item = getMenuItems()[app.menuSelectedIndex];
+    ui.playButton.textContent = item?.action === 'toggle-play'
+        ? (app.isPlaying ? 'Pause' : 'Play')
+        : 'Select';
 }
 
 function getVisibleStations() {
@@ -1065,7 +1222,6 @@ function stopStation() {
     document.body.classList.remove('is-playing');
     document.body.classList.remove('show-stations');
     closeMobilePlayer();
-    ui.playButton.textContent = 'Play';
     ui.playButton.setAttribute('aria-pressed', 'false');
     ui.mobilePlayButton.textContent = 'Play';
     ui.mobilePlayButton.setAttribute('aria-pressed', 'false');
@@ -1084,6 +1240,18 @@ function tuneRelative(direction) {
     const base = currentIndex >= 0 ? currentIndex : 0;
     const next = list[(base + direction + list.length) % list.length];
     selectStationModern(next.name, { autoplay: true });
+}
+
+function focusRelativeStation(direction) {
+    const cards = Array.from(ui.stationGrid.querySelectorAll('.station-card'));
+    if (!cards.length) return;
+    const activeElement = document.activeElement;
+    const focusedIndex = cards.indexOf(activeElement);
+    const currentIndex = cards.findIndex((card) => card.dataset.station === app.currentName);
+    const base = focusedIndex >= 0 ? focusedIndex : Math.max(currentIndex, 0);
+    const next = cards[(base + direction + cards.length) % cards.length];
+    next.focus();
+    next.scrollIntoView({ block: 'nearest' });
 }
 
 function updateNowPlaying(station) {
