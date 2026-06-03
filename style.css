@@ -1233,3 +1233,25 @@ textarea.field-input {
         grid-auto-columns: minmax(245px, calc(100vw - 76px));
     }
 }
+
+/* Mobile: hide station list by default to keep UI compact; show compact list when a station is playing */
+@media (max-width: 620px) {
+    .station-grid {
+        display: none;
+    }
+
+    body.is-playing .station-grid {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(140px, 220px);
+        gap: 8px;
+        overflow-x: auto;
+        max-height: 140px;
+        padding-bottom: 8px;
+    }
+
+    body.is-playing .station-grid .station-card {
+        min-height: 110px;
+        padding: 10px;
+    }
+}
