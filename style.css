@@ -72,6 +72,18 @@ button {
     overflow-x: hidden;
 }
 
+@media (max-width: 620px) {
+    .app-shell {
+        padding: 10px;
+        padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    }
+
+    body.has-station .app-shell,
+    body.is-playing .app-shell {
+        padding-bottom: calc(120px + env(safe-area-inset-bottom));
+    }
+}
+
 .topbar {
     min-height: 64px;
     display: flex;
@@ -230,7 +242,7 @@ button {
 
 .browse-panel {
     padding: 18px;
-    min-height: calc(100vh - 214px);
+    min-height: auto;
 }
 
 .signal-row,
@@ -490,16 +502,16 @@ body.is-playing .level-meter {
 
 .utility-item {
     min-width: 0;
-    padding: 12px;
+    padding: 10px 12px;
     border: 1px solid var(--line);
     border-radius: var(--radius);
     background: var(--surface-3);
     display: grid;
-    gap: 4px;
+    gap: 3px;
 }
 
 .utility-item strong {
-    font-size: 1.35rem;
+    font-size: 1.15rem;
     font-variant-numeric: tabular-nums;
 }
 
@@ -556,17 +568,18 @@ body.is-playing .level-meter {
 
 .segmented {
     display: flex;
-    gap: 8px;
-    padding-bottom: 16px;
-    overflow-x: auto;
+    gap: 6px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .segment {
-    height: 38px;
-    padding: 0 14px;
+    height: 36px;
+    padding: 0 12px;
     white-space: nowrap;
     color: var(--muted);
     font-weight: 700;
+    font-size: 0.9rem;
 }
 
 .segment.active {
@@ -1105,12 +1118,14 @@ textarea.field-input {
     .app-shell {
         margin-left: 0;
         margin-right: 0;
-        padding-bottom: calc(18px + env(safe-area-inset-bottom));
+        padding: 10px;
+        padding-bottom: calc(120px + env(safe-area-inset-bottom));
     }
 
     body.has-station .app-shell,
     body.is-playing .app-shell {
-        padding-bottom: calc(122px + env(safe-area-inset-bottom));
+        padding: 10px;
+        padding-bottom: calc(120px + env(safe-area-inset-bottom));
     }
 
     body.has-station:not(.show-stations) .browse-header {
@@ -1129,8 +1144,9 @@ textarea.field-input {
     }
 
     .topbar {
-        min-height: 54px;
-        margin-bottom: 10px;
+        min-height: 48px;
+        margin-bottom: 8px;
+        gap: 8px;
     }
 
     .brand-mark {
@@ -1158,12 +1174,13 @@ textarea.field-input {
     }
 
     .browse-panel {
-        padding: 12px;
+        padding: 10px;
         min-height: auto;
     }
 
     .browse-header {
         align-items: flex-start;
+        margin-bottom: 10px;
     }
 
     .library-strip {
@@ -1176,13 +1193,13 @@ textarea.field-input {
 
     .player-panel {
         display: none;
-        left: 8px;
-        right: 8px;
-        bottom: calc(8px + env(safe-area-inset-bottom));
-        padding: 10px;
+        left: 6px;
+        right: 6px;
+        bottom: calc(6px + env(safe-area-inset-bottom));
+        padding: 8px;
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 8px;
-        border-radius: 8px;
+        gap: 6px;
+        border-radius: 6px;
     }
 
     body.has-station .player-panel,
@@ -1192,17 +1209,17 @@ textarea.field-input {
 
     .now-playing {
         grid-column: 1;
-        grid-template-columns: 44px minmax(0, 1fr);
-        gap: 9px;
+        grid-template-columns: 40px minmax(0, 1fr);
+        gap: 8px;
     }
 
     .artwork-wrap {
-        width: 44px;
-        height: 44px;
+        width: 40px;
+        height: 40px;
     }
 
     .artwork {
-        padding: 6px;
+        padding: 5px;
     }
 
     .now-kicker,
@@ -1221,11 +1238,12 @@ textarea.field-input {
 
     .now-copy h1 {
         grid-column: 1;
-        font-size: 1rem;
-        line-height: 1.12;
+        font-size: 0.95rem;
+        line-height: 1.1;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        margin: 0;
     }
 
     .now-copy p {
@@ -1265,9 +1283,9 @@ textarea.field-input {
     }
 
     .control-button {
-        height: 40px;
-        padding: 0 6px;
-        font-size: 0.78rem;
+        height: 38px;
+        padding: 0 4px;
+        font-size: 0.75rem;
     }
 
     .signal-row {
@@ -1281,6 +1299,7 @@ textarea.field-input {
     .utility-grid,
     .form-grid {
         grid-template-columns: 1fr;
+        margin-bottom: 10px;
     }
 
     .station-grid {
@@ -1295,12 +1314,12 @@ textarea.field-input {
     }
 
     .station-card {
-        min-height: 86px;
-        grid-template-columns: 52px minmax(0, 1fr) auto;
+        min-height: auto;
+        grid-template-columns: 48px minmax(0, 1fr) auto;
         grid-template-rows: auto auto;
         align-items: center;
-        gap: 6px 10px;
-        padding: 10px;
+        gap: 6px 8px;
+        padding: 8px;
         scroll-snap-align: none;
     }
 
@@ -1311,15 +1330,16 @@ textarea.field-input {
     .station-logo {
         grid-column: 1;
         grid-row: 1 / span 2;
-        width: 48px;
-        height: 48px;
+        width: 44px;
+        height: 44px;
     }
 
     .favorite-button {
         grid-column: 3;
         grid-row: 1 / span 2;
-        min-width: 50px;
-        height: 34px;
+        min-width: 46px;
+        height: 32px;
+        font-size: 0.7rem;
     }
 
     .station-card > div:not(.station-card-top):not(.station-card-bottom) {
@@ -1359,15 +1379,16 @@ textarea.field-input {
         z-index: 70;
         display: grid;
         grid-template-rows: auto 1fr;
-        gap: 12px;
-        padding: 14px;
-        padding-top: calc(14px + env(safe-area-inset-top));
-        padding-bottom: calc(18px + env(safe-area-inset-bottom));
+        gap: 10px;
+        padding: 12px;
+        padding-top: calc(12px + env(safe-area-inset-top));
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
         background: var(--surface);
         color: var(--ink);
         transform: translateY(100%);
         transition: transform 0.22s ease;
         pointer-events: none;
+        overflow-y: auto;
     }
 
     body.player-expanded .mobile-player-sheet {
@@ -1390,16 +1411,16 @@ textarea.field-input {
         min-height: 0;
         display: grid;
         grid-template-rows: auto auto auto auto;
-        align-content: center;
-        gap: 18px;
+        align-content: start;
+        gap: 14px;
     }
 
     .mobile-player-art {
-        width: min(62vw, 260px);
+        width: min(50vw, 200px);
         aspect-ratio: 1;
         justify-self: center;
         object-fit: contain;
-        padding: 18px;
+        padding: 14px;
         border: 1px solid var(--line);
         border-radius: 8px;
         background: var(--surface-3);
@@ -1413,8 +1434,8 @@ textarea.field-input {
 
     .mobile-player-copy h2 {
         margin: 0;
-        font-size: 1.7rem;
-        line-height: 1.08;
+        font-size: 1.4rem;
+        line-height: 1.1;
         overflow-wrap: anywhere;
     }
 
@@ -1433,17 +1454,17 @@ textarea.field-input {
     .mobile-station-facts {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
+        gap: 6px;
     }
 
     .mobile-station-facts > div {
         min-width: 0;
-        padding: 12px;
+        padding: 10px;
         border: 1px solid var(--line);
-        border-radius: 8px;
+        border-radius: 6px;
         background: var(--surface-3);
         display: grid;
-        gap: 4px;
+        gap: 3px;
     }
 
     .mobile-station-facts strong {
@@ -1451,13 +1472,17 @@ textarea.field-input {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 0.95rem;
+        font-size: 0.9rem;
     }
 
     .mobile-sheet-controls {
         display: grid;
         grid-template-columns: 1fr 1.35fr 1fr 1fr;
-        gap: 8px;
+        gap: 6px;
+    }
+
+    .mobile-sheet-controls .control-button {
+        height: 40px;
     }
 }
 /* Pocket player redesign */
@@ -2450,11 +2475,22 @@ body.dark .controls::before {
 
 /* Full-width mobile app surface */
 @media (max-width: 620px) {
+    html {
+        height: 100%;
+        overflow: hidden;
+    }
+
     body {
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
         padding: 0;
+        display: grid;
+        grid-template-rows: minmax(0, 1fr) auto;
         align-content: start;
         justify-items: stretch;
         background: var(--surface);
+        overflow: hidden;
     }
 
     .app-shell,
@@ -2467,18 +2503,158 @@ body.dark .controls::before {
     }
 
     .app-shell {
+        min-height: 0;
+        height: 100%;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr);
         border-top: 0;
         border-radius: 0;
-        padding: 14px 12px 10px;
+        padding: 10px 10px 8px;
+        overflow: hidden;
+    }
+
+    .topbar {
+        min-height: 34px;
+        margin-bottom: 8px;
+    }
+
+    .brand-mark {
+        width: 32px;
+        height: 32px;
+    }
+
+    .layout {
+        min-height: 0;
+        display: grid;
     }
 
     .player-panel {
         border-bottom: 0;
         border-radius: 0;
-        padding: 10px 12px calc(18px + env(safe-area-inset-bottom));
+        padding: 6px 10px calc(8px + env(safe-area-inset-bottom));
+        gap: 6px;
+        overflow: hidden;
     }
 
     .browse-panel {
-        min-height: min(58vh, 520px);
+        min-height: 0;
+        height: 100%;
+        max-height: none;
+        padding: 9px 0 0;
+        overflow: hidden;
+    }
+
+    .browse-header {
+        margin: 0 10px;
+        padding-bottom: 7px;
+    }
+
+    .browse-header h2 {
+        font-size: 1.05rem;
+    }
+
+    .station-grid {
+        min-height: 0;
+        margin-top: 7px;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .station-card {
+        grid-template-columns: 34px minmax(0, 1fr) minmax(32px, auto) 14px !important;
+        min-height: 54px;
+        padding: 6px 10px;
+        gap: 2px 7px;
+    }
+
+    .station-card.is-iconless {
+        grid-template-columns: minmax(0, 1fr) minmax(32px, auto) 14px !important;
+    }
+
+    .station-logo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .station-name {
+        font-size: 0.86rem;
+    }
+
+    .station-detail {
+        font-size: 0.7rem;
+    }
+
+    .band-pill,
+    .call-pill {
+        font-size: 0.64rem;
+    }
+
+    .now-playing {
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 7px;
+        padding: 6px;
+    }
+
+    .artwork-wrap {
+        width: 34px;
+        height: 34px;
+    }
+
+    .now-kicker {
+        font-size: 0.62rem;
+        margin-bottom: 2px;
+    }
+
+    .now-copy h1 {
+        font-size: 0.86rem;
+    }
+
+    .now-copy p,
+    .rds-text {
+        margin-top: 2px;
+        font-size: 0.68rem;
+    }
+
+    .controls {
+        width: min(176px, 52vw);
+        max-width: 176px;
+    }
+
+    .controls::before {
+        bottom: 10px;
+        font-size: 0.62rem;
+    }
+
+    .control-button {
+        width: 58px;
+        height: 34px;
+        font-size: 0.64rem;
+    }
+
+    .control-button.primary {
+        width: 48px;
+        height: 48px;
+        font-size: 0.66rem;
+    }
+
+    .player-panel .controls .control-button.primary {
+        width: 48px;
+    }
+
+    #prev-button {
+        left: 6px;
+    }
+
+    #next-button {
+        right: 6px;
+    }
+
+    #stop-button {
+        top: 6px;
+    }
+
+    .signal-row {
+        padding: 0 4px;
+        font-size: 0.76rem;
     }
 }
