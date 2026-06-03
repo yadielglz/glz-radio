@@ -146,6 +146,24 @@ button {
     font-weight: 700;
 }
 
+.button-icon {
+    width: 19px;
+    height: 19px;
+    display: block;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.icon-label-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .install-button,
 .filter-reset {
     height: 40px;
@@ -1128,17 +1146,11 @@ textarea.field-input {
     #studio-button {
         width: 40px;
         padding: 0;
-        font-size: 0;
     }
 
-    #settings-button::after {
-        content: "S";
-        font-size: 1rem;
-    }
-
-    #studio-button::after {
-        content: "E";
-        font-size: 1rem;
+    #settings-button .button-label,
+    #studio-button .button-label {
+        display: none;
     }
 
     .layout {

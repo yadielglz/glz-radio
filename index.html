@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#f6f3ee">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Glz Radio">
@@ -28,10 +29,27 @@
             </a>
             <div class="topbar-actions">
                 <button class="icon-button" id="theme-toggle" type="button" aria-label="Toggle theme" title="Toggle theme">
-                    <span aria-hidden="true">T</span>
+                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 3a9 9 0 1 0 9 9 7 7 0 0 1-9-9Z"></path>
+                    </svg>
                 </button>
-                <button class="install-button" id="studio-button" type="button">Studio</button>
-                <button class="install-button" id="settings-button" type="button">Settings</button>
+                <button class="install-button icon-label-button" id="studio-button" type="button">
+                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M4 5h16"></path>
+                        <path d="M4 12h16"></path>
+                        <path d="M4 19h16"></path>
+                        <path d="M8 5v6"></path>
+                        <path d="M16 12v7"></path>
+                    </svg>
+                    <span class="button-label">Studio</span>
+                </button>
+                <button class="install-button icon-label-button" id="settings-button" type="button">
+                    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"></path>
+                        <path d="M19.4 15a1.8 1.8 0 0 0 .36 1.98l.05.05a2.1 2.1 0 0 1-2.98 2.98l-.05-.05a1.8 1.8 0 0 0-1.98-.36 1.8 1.8 0 0 0-1.08 1.65V21a2.1 2.1 0 0 1-4.2 0v-.08a1.8 1.8 0 0 0-1.08-1.65 1.8 1.8 0 0 0-1.98.36l-.05.05a2.1 2.1 0 0 1-2.98-2.98l.05-.05A1.8 1.8 0 0 0 4.6 15a1.8 1.8 0 0 0-1.65-1.08H3a2.1 2.1 0 0 1 0-4.2h.08A1.8 1.8 0 0 0 4.73 8.6a1.8 1.8 0 0 0-.36-1.98l-.05-.05a2.1 2.1 0 0 1 2.98-2.98l.05.05a1.8 1.8 0 0 0 1.98.36 1.8 1.8 0 0 0 1.08-1.65V3a2.1 2.1 0 0 1 4.2 0v.08A1.8 1.8 0 0 0 15.7 4.73a1.8 1.8 0 0 0 1.98-.36l.05-.05a2.1 2.1 0 0 1 2.98 2.98l-.05.05a1.8 1.8 0 0 0-.36 1.98 1.8 1.8 0 0 0 1.65 1.08H21a2.1 2.1 0 0 1 0 4.2h-.08A1.8 1.8 0 0 0 19.4 15Z"></path>
+                    </svg>
+                    <span class="button-label">Settings</span>
+                </button>
                 <button class="install-button" id="install-button" type="button" hidden>Install</button>
             </div>
         </header>
@@ -131,7 +149,12 @@
 
     <section class="mobile-player-sheet" id="mobile-player-sheet" aria-label="Now playing" aria-hidden="true">
         <div class="mobile-player-head">
-            <button class="icon-button" id="mobile-player-close" type="button" aria-label="Close player">X</button>
+            <button class="icon-button" id="mobile-player-close" type="button" aria-label="Close player">
+                <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
             <button class="install-button" id="mobile-stations-button" type="button">Stations</button>
         </div>
         <div class="mobile-player-body">
@@ -176,7 +199,12 @@
                 <p class="eyebrow">Control room</p>
                 <h2>Settings</h2>
             </div>
-            <button class="icon-button" id="settings-close" type="button" aria-label="Close settings">X</button>
+            <button class="icon-button" id="settings-close" type="button" aria-label="Close settings">
+                <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
         </div>
 
         <div class="settings-stack">
@@ -227,7 +255,12 @@
                 <p class="eyebrow">Maintainer</p>
                 <h2>Station Studio</h2>
             </div>
-            <button class="icon-button" id="studio-close" type="button" aria-label="Close station studio">X</button>
+            <button class="icon-button" id="studio-close" type="button" aria-label="Close station studio">
+                <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18 6 6 18"></path>
+                    <path d="m6 6 12 12"></path>
+                </svg>
+            </button>
         </div>
 
         <div class="studio-lock" id="editor-unlock-row">
