@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#f6f3ee">
+    <meta name="theme-color" content="#0b0d10">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -58,8 +58,8 @@
             <section class="browse-panel" aria-label="Stations">
                 <div class="browse-header">
                     <div>
-                        <p class="eyebrow">Stations</p>
-                        <h2>On the dial</h2>
+                        <p class="eyebrow">Live Radio</p>
+                        <h2>Puerto Rico on air</h2>
                     </div>
                     <div class="station-count" id="station-count">0 stations</div>
                 </div>
@@ -115,37 +115,37 @@
                 <div class="station-grid" id="station-grid"></div>
                 <div class="empty-state" id="empty-state" hidden>No stations match this view.</div>
             </section>
+
+            <section class="player-panel" aria-label="Player">
+                <div class="now-playing">
+                    <div class="artwork-wrap">
+                        <img id="now-art" class="artwork" src="images/glz-radio-logo-new.png" alt="Current station artwork">
+                        <div class="level-meter" aria-hidden="true">
+                            <span></span><span></span><span></span><span></span><span></span>
+                        </div>
+                    </div>
+                    <div class="now-copy">
+                        <p id="now-kicker" class="now-kicker">Standby</p>
+                        <h1 id="now-title">Choose a station</h1>
+                        <p id="now-subtitle">Live AM, FM, and satellite streams curated for Puerto Rico.</p>
+                        <div id="rds-text" class="rds-text" aria-live="polite"></div>
+                    </div>
+                </div>
+
+                <div class="controls" aria-label="Playback controls">
+                    <button class="control-button ghost" id="prev-button" type="button" aria-label="Previous station" title="Previous station">Prev</button>
+                    <button class="control-button primary" id="play-button" type="button" aria-label="Play or pause" aria-pressed="false">Play</button>
+                    <button class="control-button ghost" id="next-button" type="button" aria-label="Next station" title="Next station">Next</button>
+                    <button class="control-button danger" id="stop-button" type="button">Stop</button>
+                </div>
+
+                <div class="signal-row">
+                    <span class="live-badge"><span class="live-dot"></span><span id="status">Ready</span></span>
+                    <span id="stream-timer" class="timer">00:00</span>
+                </div>
+            </section>
         </main>
     </div>
-
-    <section class="player-panel" aria-label="Player">
-        <div class="now-playing">
-            <div class="artwork-wrap">
-                <img id="now-art" class="artwork" src="images/glz-radio-logo-new.png" alt="Current station artwork">
-                <div class="level-meter" aria-hidden="true">
-                    <span></span><span></span><span></span><span></span><span></span>
-                </div>
-            </div>
-            <div class="now-copy">
-                <p id="now-kicker" class="now-kicker">Standby</p>
-                <h1 id="now-title">Choose a station</h1>
-                <p id="now-subtitle">Live AM, FM, and satellite streams curated for Puerto Rico.</p>
-                <div id="rds-text" class="rds-text" aria-live="polite"></div>
-            </div>
-        </div>
-
-        <div class="controls" aria-label="Playback controls">
-            <button class="control-button ghost" id="prev-button" type="button" aria-label="Previous station" title="Previous station">Prev</button>
-            <button class="control-button primary" id="play-button" type="button" aria-label="Play or pause" aria-pressed="false">Play</button>
-            <button class="control-button ghost" id="next-button" type="button" aria-label="Next station" title="Next station">Next</button>
-            <button class="control-button danger" id="stop-button" type="button">Stop</button>
-        </div>
-
-        <div class="signal-row">
-            <span class="live-badge"><span class="live-dot"></span><span id="status">Ready</span></span>
-            <span id="stream-timer" class="timer">00:00</span>
-        </div>
-    </section>
 
     <section class="mobile-player-sheet" id="mobile-player-sheet" aria-label="Now playing" aria-hidden="true">
         <div class="mobile-player-head">
@@ -243,6 +243,13 @@
                     <span>Keep station when filters change</span>
                 </label>
                 <button class="text-button" id="reset-listening-data" type="button">Clear favorites and recents</button>
+            </section>
+
+            <section class="settings-card">
+                <div class="settings-card-head">
+                    <h3>App Cache</h3>
+                </div>
+                <button class="text-button" id="clear-cache-reload" type="button">Clear cache and reload app</button>
             </section>
 
         </div>

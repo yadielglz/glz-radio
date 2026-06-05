@@ -766,6 +766,7 @@ const ui = {
     settingAutoplayNext: document.getElementById('setting-autoplay-next'),
     themeChoices: Array.from(document.querySelectorAll('#theme-choice .choice')),
     resetListeningData: document.getElementById('reset-listening-data'),
+    clearCacheReload: document.getElementById('clear-cache-reload'),
     editorLockState: document.getElementById('editor-lock-state'),
     editorUnlockRow: document.getElementById('editor-unlock-row'),
     editorCode: document.getElementById('editor-code'),
@@ -894,6 +895,7 @@ function bindModernEvents() {
         button.addEventListener('click', () => setThemePreference(button.dataset.theme));
     });
     ui.resetListeningData.addEventListener('click', resetListeningData);
+    ui.clearCacheReload.addEventListener('click', clearCacheAndReload);
     ui.editorUnlock.addEventListener('click', unlockEditor);
     ui.editorCode.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') unlockEditor();
@@ -1377,6 +1379,25 @@ function resetListeningData() {
     localStorage.removeItem(STORAGE_KEYS.recents);
     renderStations();
     renderQuickLists();
+}
+
+async function clearCacheAndReload() {
+    ui.clearCacheReload.disabled = true;
+    ui.clearCacheReload.textContent = 'Clearing cache...';
+    try {
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map((cacheName) => caches.delete(cacheName)));
+        }
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(registrations.map((registration) => registration.update().catch(() => {})));
+        }
+    } catch (error) {
+        console.warn('Cache clear failed', error);
+    } finally {
+        window.location.reload();
+    }
 }
 
 function openStudio() {
