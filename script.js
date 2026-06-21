@@ -44,7 +44,7 @@ const RADIO_STATIONS = {
     },
     "Radio Oro": {
         logo: "https://cdn-profiles.tunein.com/s21791/images/logod.png?t=637238626060000000",
-        streamUrl: "https://us2.internet-radio.com/proxy/woro?mp=/stream",
+        streamUrl: "https://streams.proftsc.com/listen/woro/woro.mp3",
         frequency: "FM 92.5",
         callSign: "WORO FM",
         rdsText: ["Radio Oro", "Corozal, PR"],
