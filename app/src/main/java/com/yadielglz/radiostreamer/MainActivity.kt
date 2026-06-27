@@ -56,6 +56,7 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -66,6 +67,21 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Pause
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -873,10 +889,18 @@ private fun AppBar(
             HeaderClock()
             Spacer(Modifier.weight(1f))
             IconButton(onClick = onToggleSearch) {
-                Text(if (searching) "×" else "⌕", color = Teal, fontSize = if (searching) 28.sp else 30.sp)
+                Icon(
+                    imageVector = if (searching) Icons.Filled.Close else Icons.Filled.Search,
+                    contentDescription = if (searching) "Close search" else "Search",
+                    tint = Teal
+                )
             }
-            FilledTonalButton(onClick = onMenu) {
-                Text("Menu")
+            IconButton(onClick = onMenu) {
+                Icon(
+                    imageVector = Icons.Filled.Menu,
+                    contentDescription = "Menu",
+                    tint = Teal
+                )
             }
         }
         AnimatedVisibility(searching) {
@@ -934,7 +958,11 @@ private fun SettingsFlyout(
                 .padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = onClose) { Text("Close") }
+                TextButton(onClick = onClose) {
+                    Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Close")
+                }
                 Text(
                     "Settings",
                     color = DarkInk,
@@ -1173,7 +1201,7 @@ private fun WeatherCard(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(horizontal = 14.dp, vertical = if (compact) 10.dp else 12.dp)
         ) {
-            Text("☁", color = Teal, fontSize = if (compact) 24.sp else 28.sp)
+                Icon(Icons.Filled.Cloud, contentDescription = null, tint = Teal, modifier = Modifier.size(if (compact) 24.dp else 28.dp))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 when (weather) {
@@ -1216,7 +1244,11 @@ private fun WeatherFlyout(
                 .padding(horizontal = 18.dp, vertical = 16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = onClose) { Text("Close") }
+                TextButton(onClick = onClose) {
+                    Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Close")
+                }
                 Text(
                     "Weather",
                     color = DarkInk,
@@ -1225,7 +1257,11 @@ private fun WeatherFlyout(
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
-                TextButton(onClick = onRefresh) { Text("Refresh") }
+            TextButton(onClick = onRefresh) {
+                Icon(Icons.Filled.Cloud, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Refresh")
+            }
             }
             LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -1298,7 +1334,7 @@ private fun WeatherLoadingPanel() {
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(28.dp)
         ) {
-            Text("☁", color = Teal, fontSize = 54.sp)
+            Icon(Icons.Filled.Cloud, contentDescription = null, tint = Teal, modifier = Modifier.size(54.dp))
             Spacer(Modifier.height(8.dp))
             Text("Updating forecast", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
             Text("Checking current conditions", color = DarkMuted, textAlign = TextAlign.Center)
@@ -1419,7 +1455,11 @@ private fun StationCard(
                 Text("${station.location} / ${station.tagline}", color = DarkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
             }
             IconButton(onClick = onFavorite) {
-                Text(if (saved) "♥" else "♡", color = if (saved) Teal else DarkInk, fontSize = 26.sp)
+                Icon(
+                    imageVector = if (saved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = if (saved) "Remove favorite" else "Save favorite",
+                    tint = if (saved) Teal else DarkInk
+                )
             }
         }
     }
@@ -1460,10 +1500,14 @@ private fun MiniPlayerBar(
                 }
             }
             IconButton(onClick = onPlayPause) {
-                Text(if (isPlaying) "⏸" else "▶", color = Teal, fontSize = 24.sp)
+                Icon(
+                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = if (isPlaying) "Pause" else "Play",
+                    tint = Teal
+                )
             }
             IconButton(onClick = onStop) {
-                Text("■", color = DarkInk, fontSize = 18.sp)
+                Icon(Icons.Filled.Stop, contentDescription = "Stop", tint = DarkInk)
             }
         }
     }
@@ -1494,7 +1538,11 @@ private fun FullPlayer(
     ) {
         Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = onDismiss) { Text("Close") }
+                TextButton(onClick = onDismiss) {
+                    Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Close")
+                }
                 Text(
                     "Now Playing",
                     color = DarkMuted,
@@ -1502,7 +1550,11 @@ private fun FullPlayer(
                     modifier = Modifier.weight(1f)
                 )
                 IconButton(onClick = onFavorite) {
-                    Text(if (saved) "♥" else "♡", color = if (saved) Teal else DarkInk, fontSize = 28.sp)
+                    Icon(
+                        imageVector = if (saved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (saved) "Remove favorite" else "Save favorite",
+                        tint = if (saved) Teal else DarkInk
+                    )
                 }
             }
             Spacer(Modifier.height(if (compact) 22.dp else 30.dp))
@@ -1524,10 +1576,13 @@ private fun FullPlayer(
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 FilledTonalButton(onClick = onPlayPause, modifier = Modifier.size(width = 88.dp, height = 56.dp)) {
-                    Text(if (isPlaying) "⏸" else "▶", fontSize = 24.sp)
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play"
+                    )
                 }
                 FilledTonalButton(onClick = onStop, modifier = Modifier.size(width = 88.dp, height = 56.dp)) {
-                    Text("■", fontSize = 18.sp)
+                    Icon(Icons.Filled.Stop, contentDescription = "Stop")
                 }
             }
             Spacer(Modifier.height(14.dp))
@@ -1536,6 +1591,8 @@ private fun FullPlayer(
                 colors = ButtonDefaults.filledTonalButtonColors(containerColor = if (recording) Gold else Coral, contentColor = Color.White),
                 modifier = Modifier.fillMaxWidth().height(48.dp)
             ) {
+                Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
                 Text(if (recording) "Stop recording" else "Record stream")
             }
         }
@@ -1590,10 +1647,26 @@ private fun MenuSheet(
     Column(Modifier.padding(20.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text("Glz Radio", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 24.sp)
         FilledTonalButton(onClick = onSettings, modifier = Modifier.fillMaxWidth()) { Text("Settings") }
-        FilledTonalButton(onClick = onRecordings, modifier = Modifier.fillMaxWidth()) { Text("Recordings") }
-        FilledTonalButton(onClick = onWeather, modifier = Modifier.fillMaxWidth()) { Text("Weather") }
-        FilledTonalButton(onClick = onStationEditor, modifier = Modifier.fillMaxWidth()) { Text("Station editor") }
-        FilledTonalButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) { Text("Stop playback") }
+        FilledTonalButton(onClick = onRecordings, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Recordings")
+        }
+        FilledTonalButton(onClick = onWeather, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Cloud, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Weather")
+        }
+        FilledTonalButton(onClick = onStationEditor, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Radio, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Station editor")
+        }
+        FilledTonalButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Stop playback")
+        }
         FilledTonalButton(onClick = onClearSaved, modifier = Modifier.fillMaxWidth()) { Text("Clear saved stations") }
         FilledTonalButton(onClick = onAbout, modifier = Modifier.fillMaxWidth()) { Text("About") }
         Spacer(Modifier.height(18.dp))
@@ -1835,27 +1908,39 @@ private fun RecordingRow(
                     Text(recordingTitle(file), color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     Text("${fileExtension(file)} / ${formatFileSize(file.length())}", color = DarkMuted, fontSize = 12.sp)
                 }
-                TextButton(onClick = onPlay) { Text("Play") }
-                TextButton(onClick = onDelete) { Text("Delete", color = Coral) }
+                IconButton(onClick = onPlay) {
+                    Icon(Icons.Filled.PlayArrow, contentDescription = "Play recording", tint = Teal)
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Filled.Delete, contentDescription = "Delete recording", tint = Coral)
+                }
             }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
                     FilledTonalButton(onClick = { onExport(ExportFormat.Mp3) }) {
+                        Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text("Export MP3")
                     }
                 }
                 item {
                     FilledTonalButton(onClick = { onExport(ExportFormat.Aac) }) {
+                        Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text("Export AAC")
                     }
                 }
                 item {
                     TextButton(onClick = { onShare(ExportFormat.Mp3) }) {
+                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text("Share MP3")
                     }
                 }
                 item {
                     TextButton(onClick = { onShare(ExportFormat.Aac) }) {
+                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text("Share AAC")
                     }
                 }
