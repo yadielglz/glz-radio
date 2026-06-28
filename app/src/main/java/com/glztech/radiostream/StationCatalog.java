@@ -1,4 +1,4 @@
-package com.yadielglz.radiostreamer;
+package com.glztech.radiostream;
 
 import java.util.Arrays;
 import java.util.Collections;

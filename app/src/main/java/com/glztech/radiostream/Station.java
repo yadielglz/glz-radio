@@ -1,4 +1,4 @@
-package com.yadielglz.radiostreamer;
+package com.glztech.radiostream;
 
 final class Station {
     final String name;

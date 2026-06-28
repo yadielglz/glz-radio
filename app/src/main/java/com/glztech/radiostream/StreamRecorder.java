@@ -1,4 +1,4 @@
-package com.yadielglz.radiostreamer;
+package com.glztech.radiostream;
 
 import android.content.Context;
 import android.os.Environment;

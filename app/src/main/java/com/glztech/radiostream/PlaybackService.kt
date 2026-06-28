@@ -1,4 +1,4 @@
-package com.yadielglz.radiostreamer
+package com.glztech.radiostream
 
 import androidx.media3.common.MediaItem
 import androidx.media3.session.LibraryResult

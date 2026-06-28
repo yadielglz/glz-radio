@@ -1,4 +1,4 @@
-package com.yadielglz.radiostreamer
+package com.glztech.radiostream
 
 import android.Manifest
 import android.app.Activity
@@ -9,9 +9,11 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.location.Location
+import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
 import android.os.Build
+import android.os.Looper
 import android.os.SystemClock
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -75,6 +77,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FiberManualRecord
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
@@ -89,6 +92,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -116,7 +120,10 @@ import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -126,6 +133,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import kotlin.coroutines.resume
 import kotlin.math.roundToInt
 
 private var DarkInk = Color(0xFFECFDF5)
@@ -147,6 +155,8 @@ private const val LAYOUT_PREF = "layout_mode"
 private const val PLAYER_SIZE_PREF = "player_size"
 private const val SAN_JUAN_LAT = 18.4655
 private const val SAN_JUAN_LON = -66.1057
+private const val STREAM_RETRY_BASE_DELAY_MS = 2_000L
+private const val STREAM_RETRY_MAX_DELAY_MS = 30_000L
 
 private data class SettingChoice(
     val name: String,
@@ -247,10 +257,13 @@ class MainActivity : ComponentActivity() {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller by mutableStateOf<MediaController?>(null)
     private lateinit var recorder: StreamRecorder
+    private val startupPermissionsLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recorder = StreamRecorder(this)
+        requestStartupPermissions()
         val token = SessionToken(this, ComponentName(this, PlaybackService::class.java))
         controllerFuture = MediaController.Builder(this, token).buildAsync().also { future ->
             future.addListener(
@@ -303,6 +316,22 @@ class MainActivity : ComponentActivity() {
 
     private fun handleMenuAction(action: MenuAction) {
         if (action == MenuAction.About) showAbout()
+    }
+
+    private fun requestStartupPermissions() {
+        val permissions = buildList {
+            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                add(Manifest.permission.ACCESS_COARSE_LOCATION)
+            }
+            if (Build.VERSION.SDK_INT >= 33 &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) {
+                add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+        if (permissions.isNotEmpty()) {
+            startupPermissionsLauncher.launch(permissions.toTypedArray())
+        }
     }
 
     private fun showAbout() {
@@ -373,6 +402,7 @@ private fun RadioApp(
 ) {
     val context = LocalContext.current
     val activity = context as Activity
+    val retryScope = rememberCoroutineScope()
     var stations by remember { mutableStateOf(StationStore.load(context)) }
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf("All") }
@@ -384,6 +414,7 @@ private fun RadioApp(
     var weatherOpen by rememberSaveable { mutableStateOf(false) }
     var editorOpen by rememberSaveable { mutableStateOf(false) }
     var searchOpen by rememberSaveable { mutableStateOf(false) }
+    var filterOpen by rememberSaveable { mutableStateOf(false) }
     var weatherRefresh by remember { mutableStateOf(0) }
     var weather by remember { mutableStateOf<WeatherState>(WeatherState.Loading) }
     var isPlaying by remember { mutableStateOf(false) }
@@ -395,6 +426,7 @@ private fun RadioApp(
     var stationHealth by remember { mutableStateOf<Map<String, StationHealth>>(emptyMap()) }
     var pendingExport by remember { mutableStateOf<RecordingExport?>(null) }
     var retryCount by remember { mutableStateOf(0) }
+    var reconnectEnabled by remember { mutableStateOf(false) }
     var elapsedMs by remember { mutableLongStateOf(0L) }
     var accumulatedMs by remember { mutableLongStateOf(0L) }
     var playStartedAtMs by remember { mutableLongStateOf(0L) }
@@ -411,7 +443,6 @@ private fun RadioApp(
     val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         weatherRefresh += 1
     }
-    val notificationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {}
     val exportMp3Launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.Mp3.mimeType)) { uri ->
         val export = pendingExport
         pendingExport = null
@@ -460,6 +491,7 @@ private fun RadioApp(
         elapsedMs = 0L
         rdsIndex = 0
         retryCount = 0
+        reconnectEnabled = autoplay
         intentionallyStopped = false
         player.setMediaItem(RadioPlayback.stationItem(station))
         player.prepare()
@@ -477,9 +509,11 @@ private fun RadioApp(
             return
         }
         if (player.isPlaying) {
+            reconnectEnabled = false
             player.pause()
             status = "Paused"
         } else {
+            reconnectEnabled = true
             player.play()
             status = "Loading ${station.name}"
         }
@@ -487,6 +521,7 @@ private fun RadioApp(
 
     fun stopPlayback() {
         intentionallyStopped = true
+        reconnectEnabled = false
         player.stop()
         player.clearMediaItems()
         syncElapsed(false)
@@ -552,6 +587,8 @@ private fun RadioApp(
                     }
                     Player.STATE_READY -> {
                         current?.let { stationHealth = stationHealth + (it.name to StationHealth.Online) }
+                        retryCount = 0
+                        reconnectEnabled = player.playWhenReady
                         if (player.isPlaying) "Live / ${current?.name.orEmpty()}" else "Ready"
                     }
                     Player.STATE_ENDED -> "Stream ended"
@@ -563,15 +600,20 @@ private fun RadioApp(
                 val station = current ?: return
                 if (intentionallyStopped) return
                 stationHealth = stationHealth + (station.name to StationHealth.Retrying)
-                status = "Retrying ${station.name}"
-                if (retryCount < 2) {
-                    retryCount += 1
-                    player.prepare()
-                    player.play()
-                } else {
-                    stationHealth = stationHealth + (station.name to StationHealth.Offline)
-                    status = "${station.name} unavailable"
-                    retryCount = 0
+                reconnectEnabled = true
+                retryCount += 1
+                val attempt = retryCount
+                val retryStation = station
+                status = "Reconnecting ${station.name} / attempt $attempt"
+                retryScope.launch {
+                    delay(streamRetryDelayMs(attempt))
+                    if (current?.name == retryStation.name && !intentionallyStopped && reconnectEnabled) {
+                        stationHealth = stationHealth + (retryStation.name to StationHealth.Retrying)
+                        status = "Reconnecting ${retryStation.name}"
+                        player.setMediaItem(RadioPlayback.stationItem(retryStation))
+                        player.prepare()
+                        player.play()
+                    }
                 }
             }
         }
@@ -600,14 +642,6 @@ private fun RadioApp(
     LaunchedEffect(weatherRefresh) {
         weather = WeatherState.Loading
         weather = loadWeather(context)
-    }
-
-    LaunchedEffect(Unit) {
-        if (Build.VERSION.SDK_INT >= 33 &&
-            context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-        ) {
-            notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-        }
     }
 
     if (current != null && player.mediaItemCount == 0 && !intentionallyStopped) {
@@ -639,22 +673,16 @@ private fun RadioApp(
                 AppBar(
                     searching = searchOpen,
                     query = query,
+                    activeFilter = filter,
+                    weather = weather,
                     onQueryChange = { query = it },
                     onToggleSearch = {
                         searchOpen = !searchOpen
                         if (!searchOpen) query = ""
                     },
+                    onToggleFilter = { filterOpen = true },
+                    onWeather = { weatherOpen = true },
                     onMenu = { menuOpen = true }
-                )
-                FilterRow(
-                    active = filter,
-                    onFilter = { filter = it }
-                )
-                Text(
-                    text = "${visibleStations.size} of ${stations.size} stations",
-                    color = DarkMuted,
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(bottom = 8.dp)
                 )
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -724,6 +752,23 @@ private fun RadioApp(
                     }
                 )
             }
+        }
+    }
+
+    if (filterOpen) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { filterOpen = false },
+            sheetState = sheetState,
+            containerColor = DarkSurface
+        ) {
+            FilterSheet(
+                active = filter,
+                onFilter = {
+                    filter = it
+                    filterOpen = false
+                }
+            )
         }
     }
 
@@ -869,8 +914,12 @@ private fun RadioApp(
 private fun AppBar(
     searching: Boolean,
     query: String,
+    activeFilter: String,
+    weather: WeatherState,
     onQueryChange: (String) -> Unit,
     onToggleSearch: () -> Unit,
+    onToggleFilter: () -> Unit,
+    onWeather: () -> Unit,
     onMenu: () -> Unit
 ) {
     Column {
@@ -887,12 +936,24 @@ private fun AppBar(
         Spacer(Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             HeaderClock()
-            Spacer(Modifier.weight(1f))
+            Spacer(Modifier.width(10.dp))
+            MiniWeatherChip(
+                weather = weather,
+                onClick = onWeather,
+                modifier = Modifier.weight(1f)
+            )
             IconButton(onClick = onToggleSearch) {
                 Icon(
                     imageVector = if (searching) Icons.Filled.Close else Icons.Filled.Search,
                     contentDescription = if (searching) "Close search" else "Search",
                     tint = Teal
+                )
+            }
+            IconButton(onClick = onToggleFilter) {
+                Icon(
+                    imageVector = Icons.Filled.FilterList,
+                    contentDescription = "Filter stations: $activeFilter",
+                    tint = if (activeFilter == "All") Teal else Gold
                 )
             }
             IconButton(onClick = onMenu) {
@@ -934,6 +995,43 @@ private fun HeaderClock() {
         fontSize = 18.sp,
         maxLines = 1
     )
+}
+
+@Composable
+private fun MiniWeatherChip(
+    weather: WeatherState,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val label = when (weather) {
+        WeatherState.Loading -> "Weather updating"
+        is WeatherState.Ready -> "${weather.temperature.roundToInt()}°F / ${weather.description}"
+        is WeatherState.Error -> "Weather unavailable"
+    }
+    Surface(
+        color = DarkField,
+        shape = RoundedCornerShape(50),
+        modifier = modifier
+            .height(38.dp)
+            .clickable(onClick = onClick)
+            .border(1.dp, DarkStroke, RoundedCornerShape(50))
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 12.dp)
+        ) {
+            Icon(Icons.Filled.Cloud, contentDescription = null, tint = Teal, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(
+                label,
+                color = DarkInk,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
 }
 
 @Composable
@@ -1167,17 +1265,24 @@ private fun LoadingApp() {
 }
 
 @Composable
-private fun FilterRow(active: String, onFilter: (String) -> Unit) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        contentPadding = PaddingValues(vertical = 12.dp)
+private fun FilterSheet(active: String, onFilter: (String) -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 28.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        items(listOf("All", "FM", "AM", "Satellite", "Saved")) { filter ->
-            FilterChip(
-                selected = active == filter,
-                onClick = { onFilter(filter) },
-                label = { Text(filter) }
-            )
+        Text("Station filter", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+        Text("Show a station group in the main list.", color = DarkMuted, fontSize = 13.sp)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(listOf("All", "FM", "AM", "Satellite", "Saved")) { filter ->
+                FilterChip(
+                    selected = active == filter,
+                    onClick = { onFilter(filter) },
+                    label = { Text(filter) }
+                )
+            }
         }
     }
 }
@@ -2077,7 +2182,7 @@ private data class WeatherForecastDay(
 private suspend fun loadWeather(context: Context): WeatherState {
     return withContext(Dispatchers.IO) {
         try {
-            val location = lastKnownLocation(context)
+            val location = localWeatherLocation(context)
             val lat = location?.latitude ?: SAN_JUAN_LAT
             val lon = location?.longitude ?: SAN_JUAN_LON
             val place = if (location == null) "San Juan fallback" else "Local weather"
@@ -2178,6 +2283,10 @@ private fun formatDayLabel(value: String): String {
     }.getOrDefault(value)
 }
 
+private suspend fun localWeatherLocation(context: Context): Location? {
+    return lastKnownLocation(context) ?: currentLocation(context)
+}
+
 private fun lastKnownLocation(context: Context): Location? {
     if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
         return null
@@ -2192,6 +2301,56 @@ private fun lastKnownLocation(context: Context): Location? {
             }
         }
         .maxByOrNull { it.time }
+}
+
+@Suppress("DEPRECATION")
+private suspend fun currentLocation(context: Context): Location? {
+    if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+        return null
+    }
+    return withContext(Dispatchers.Main) {
+        withTimeoutOrNull(6_000L) {
+            suspendCancellableCoroutine { continuation ->
+                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+                if (locationManager == null) {
+                    continuation.resume(null)
+                    return@suspendCancellableCoroutine
+                }
+                val provider = listOf(
+                    LocationManager.NETWORK_PROVIDER,
+                    LocationManager.PASSIVE_PROVIDER,
+                    LocationManager.GPS_PROVIDER
+                ).firstOrNull { providerName ->
+                    runCatching { locationManager.isProviderEnabled(providerName) }.getOrDefault(false)
+                }
+                if (provider == null) {
+                    continuation.resume(null)
+                    return@suspendCancellableCoroutine
+                }
+                val listener = object : LocationListener {
+                    override fun onLocationChanged(location: Location) {
+                        if (continuation.isActive) {
+                            continuation.resume(location)
+                        }
+                        locationManager.removeUpdates(this)
+                    }
+
+                    override fun onProviderDisabled(provider: String) = Unit
+                    override fun onProviderEnabled(provider: String) = Unit
+                }
+                continuation.invokeOnCancellation {
+                    locationManager.removeUpdates(listener)
+                }
+                try {
+                    locationManager.requestSingleUpdate(provider, listener, Looper.getMainLooper())
+                } catch (exception: SecurityException) {
+                    if (continuation.isActive) continuation.resume(null)
+                } catch (exception: IllegalArgumentException) {
+                    if (continuation.isActive) continuation.resume(null)
+                }
+            }
+        }
+    }
 }
 
 private fun weatherDescription(code: Int): String {
@@ -2229,6 +2388,11 @@ private fun healthColor(health: StationHealth?): Color {
         StationHealth.Offline -> Coral
         else -> Teal
     }
+}
+
+private fun streamRetryDelayMs(attempt: Int): Long {
+    return (STREAM_RETRY_BASE_DELAY_MS * attempt.coerceAtMost(15))
+        .coerceAtMost(STREAM_RETRY_MAX_DELAY_MS)
 }
 
 private fun weatherDashboardText(weather: WeatherState): String {
