@@ -11,17 +11,24 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.glztech.radiostream"
-    compileSdk 37
+    compileSdk {
+        version = release(37) {
+            minorApiLevel = 0
+        }
+    }
 
     defaultConfig {
         applicationId "com.glztech.radiostream"
         minSdk 26
         targetSdk 37
-        versionCode 1
-        versionName "1.0"
+        // Keep versionCode monotonically increasing: Android uses it (not Git tags)
+        // to decide whether an APK can upgrade the installed application.
+        versionCode 32000
+        versionName "3.2.0"
     }
 
     buildFeatures {
+        buildConfig true
         compose true
     }
 
@@ -58,5 +65,7 @@ dependencies {
     implementation "androidx.media3:media3-exoplayer:1.5.1"
     implementation "androidx.media3:media3-session:1.5.1"
     implementation "io.coil-kt:coil-compose:2.7.0"
+    testImplementation "junit:junit:4.13.2"
+    testImplementation "org.json:json:20240303"
     debugImplementation "androidx.compose.ui:ui-tooling:1.8.3"
 }

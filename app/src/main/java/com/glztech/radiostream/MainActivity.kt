@@ -128,6 +128,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
+import java.net.HttpURLConnection
 import java.net.URL
 import java.time.LocalDate
 import java.time.LocalTime
@@ -191,6 +192,14 @@ private val PlayerSizeChoices = listOf(
     SettingChoice("Balanced", "Player stays meaningful without dominating"),
     SettingChoice("Compact", "More room for stations"),
     SettingChoice("Expanded", "Larger art and live controls")
+)
+
+private val SleepTimerChoices = listOf(
+    SettingChoice("Off", "Playback continues until you stop it"),
+    SettingChoice("15 minutes", "Stop playback after 15 minutes"),
+    SettingChoice("30 minutes", "Stop playback after 30 minutes"),
+    SettingChoice("45 minutes", "Stop playback after 45 minutes"),
+    SettingChoice("60 minutes", "Stop playback after one hour")
 )
 
 private fun applyAppearance(themeName: String, accentName: String) {
@@ -320,9 +329,6 @@ class MainActivity : ComponentActivity() {
 
     private fun requestStartupPermissions() {
         val permissions = buildList {
-            if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                add(Manifest.permission.ACCESS_COARSE_LOCATION)
-            }
             if (Build.VERSION.SDK_INT >= 33 &&
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
             ) {
@@ -337,7 +343,7 @@ class MainActivity : ComponentActivity() {
     private fun showAbout() {
         PlatformAlertDialog.Builder(this)
             .setTitle("About Glz Radio")
-            .setMessage("A native Android radio streamer for Puerto Rico live radio.\n\nUI: Jetpack Compose Material 3\nPlayback: Media3 ExoPlayer")
+            .setMessage("Version ${BuildConfig.VERSION_NAME}\n\nA native Android radio streamer for Puerto Rico live radio.\n\nUI: Jetpack Compose Material 3\nPlayback: Media3 ExoPlayer")
             .setPositiveButton("Done", null)
             .show()
     }
@@ -432,6 +438,10 @@ private fun RadioApp(
     var playStartedAtMs by remember { mutableLongStateOf(0L) }
     var rdsIndex by remember { mutableStateOf(0) }
     var intentionallyStopped by remember { mutableStateOf(false) }
+    var sleepTimerMinutes by remember { mutableStateOf(SleepTimer.remainingMinutes()) }
+    var sleepTimerDuration by remember { mutableStateOf(SleepTimer.durationMinutes) }
+    var updateCheckRequest by remember { mutableStateOf(0) }
+    var updateStatus by remember { mutableStateOf("Automatic checks every 12 hours") }
 
     val configuration = LocalConfiguration.current
     val autoCompact = configuration.screenWidthDp < 390 || configuration.screenHeightDp < 720
@@ -529,6 +539,9 @@ private fun RadioApp(
         playStartedAtMs = 0L
         elapsedMs = 0L
         status = "Stopped"
+        SleepTimer.cancel()
+        sleepTimerMinutes = null
+        sleepTimerDuration = null
     }
 
     fun toggleFavorite(station: Station) {
@@ -644,6 +657,13 @@ private fun RadioApp(
         weather = loadWeather(context)
     }
 
+    LaunchedEffect(Unit) {
+        while (true) {
+            sleepTimerMinutes = SleepTimer.remainingMinutes()
+            delay(1_000)
+        }
+    }
+
     if (current != null && player.mediaItemCount == 0 && !intentionallyStopped) {
         LaunchedEffect(current) { current?.let { setStation(it, false) } }
     }
@@ -739,6 +759,9 @@ private fun RadioApp(
                     compact = compact,
                     stationCount = stations.size,
                     savedCount = favorites.size,
+                    sleepTimerMinutes = sleepTimerMinutes,
+                    sleepTimerDuration = sleepTimerDuration,
+                    updateStatus = updateStatus,
                     onClose = { settingsOpen = false },
                     onTheme = onTheme,
                     onAccent = onAccent,
@@ -749,7 +772,17 @@ private fun RadioApp(
                     onPlayerSize = {
                         playerSize = it
                         saveSetting(context, PLAYER_SIZE_PREF, it)
-                    }
+                    },
+                    onSleepTimer = { minutes ->
+                        if (minutes == null) {
+                            SleepTimer.cancel()
+                        } else {
+                            SleepTimer.schedule(player, minutes)
+                        }
+                        sleepTimerMinutes = SleepTimer.remainingMinutes()
+                        sleepTimerDuration = SleepTimer.durationMinutes
+                    },
+                    onCheckForUpdates = { updateCheckRequest += 1 }
                 )
             }
         }
@@ -908,6 +941,12 @@ private fun RadioApp(
             )
         }
     }
+
+    AppUpdateController(
+        activity = activity,
+        manualCheckRequest = updateCheckRequest,
+        onStatus = { updateStatus = it }
+    )
 }
 
 @Composable
@@ -1043,11 +1082,16 @@ private fun SettingsFlyout(
     compact: Boolean,
     stationCount: Int,
     savedCount: Int,
+    sleepTimerMinutes: Int?,
+    sleepTimerDuration: Int?,
+    updateStatus: String,
     onClose: () -> Unit,
     onTheme: (String) -> Unit,
     onAccent: (String) -> Unit,
     onLayout: (String) -> Unit,
-    onPlayerSize: (String) -> Unit
+    onPlayerSize: (String) -> Unit,
+    onSleepTimer: (Int?) -> Unit,
+    onCheckForUpdates: () -> Unit
 ) {
     Surface(color = DarkBg, modifier = Modifier.fillMaxSize()) {
         Column(
@@ -1118,6 +1162,27 @@ private fun SettingsFlyout(
                         choices = PlayerSizeChoices,
                         selected = playerSize,
                         onSelect = onPlayerSize
+                    )
+                }
+                item {
+                    SettingsChoiceSection(
+                        title = "Sleep timer",
+                        subtitle = if (sleepTimerMinutes == null) {
+                            "Stop playback automatically"
+                        } else {
+                            "About $sleepTimerMinutes minutes remaining"
+                        },
+                        choices = SleepTimerChoices,
+                        selected = sleepTimerDuration?.let { "$it minutes" } ?: "Off",
+                        onSelect = { value ->
+                            onSleepTimer(value.substringBefore(" ").toIntOrNull())
+                        }
+                    )
+                }
+                item {
+                    UpdateSettingsSection(
+                        status = updateStatus,
+                        onCheckForUpdates = onCheckForUpdates
                     )
                 }
                 item {
@@ -1218,6 +1283,23 @@ private fun SettingsInfoSection(stationCount: Int, savedCount: Int) {
 }
 
 @Composable
+private fun UpdateSettingsSection(status: String, onCheckForUpdates: () -> Unit) {
+    WeatherSection("App updates") {
+        Text(status, color = DarkMuted, fontSize = 13.sp)
+        Text(
+            "Release APKs are checked securely through GitHub. Android always asks before installation.",
+            color = DarkInk,
+            fontSize = 13.sp
+        )
+        FilledTonalButton(onClick = onCheckForUpdates, modifier = Modifier.fillMaxWidth()) {
+            Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(8.dp))
+            Text("Check for updates")
+        }
+    }
+}
+
+@Composable
 private fun SettingsInfoRow(label: String, value: String) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
         Text(label, color = DarkMuted, modifier = Modifier.weight(1f))
@@ -1229,7 +1311,7 @@ private fun SettingsInfoRow(label: String, value: String) {
 private fun AboutSection() {
     WeatherSection("About") {
         Text("Glz Radio", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-        Text("Version 3.0", color = Teal, fontWeight = FontWeight.Bold)
+        Text("Version ${BuildConfig.VERSION_NAME}", color = Teal, fontWeight = FontWeight.Bold)
         Text("© 2012 Glz Technical Services | © 2024 Glz Tech", color = DarkMuted)
         Text("mailto: service@glztech.com", color = DarkInk, fontWeight = FontWeight.Bold)
     }
@@ -2192,7 +2274,17 @@ private suspend fun loadWeather(context: Context): WeatherState {
                 "&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code" +
                 "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
                 "&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=5"
-            val body = URL(url).openStream().bufferedReader().use { it.readText() }
+            val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+                connectTimeout = 12_000
+                readTimeout = 12_000
+                setRequestProperty("User-Agent", "GlzRadio/${BuildConfig.VERSION_NAME}")
+            }
+            val body = try {
+                require(connection.responseCode in 200..299) { "Weather request failed" }
+                connection.inputStream.bufferedReader().use { it.readText() }
+            } finally {
+                connection.disconnect()
+            }
             val root = JSONObject(body)
             val current = root.getJSONObject("current")
             WeatherState.Ready(

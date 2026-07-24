@@ -1,3 +1,8 @@
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
+    <base-config cleartextTrafficPermitted="false" />
+    <!-- A small number of legacy radio providers still expose only HTTP streams. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">49.13.212.200</domain>
+        <domain includeSubdomains="false">stream.eleden.com</domain>
+    </domain-config>
 </network-security-config>

@@ -1,0 +1,117 @@
+name: Android release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform
+        run: sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate release secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.GLZ_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.GLZ_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.GLZ_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.GLZ_RELEASE_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_BASE64"
+          test -n "$STORE_PASSWORD"
+          test -n "$KEY_ALIAS"
+          test -n "$KEY_PASSWORD"
+
+      - name: Restore release signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.GLZ_RELEASE_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.GLZ_RELEASE_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.GLZ_RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.GLZ_RELEASE_KEY_PASSWORD }}
+        run: |
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+          {
+            echo "storeFile=release.keystore"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Validate tag and app version
+        id: version
+        shell: bash
+        run: |
+          VERSION_NAME="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' app/build.gradle)"
+          VERSION_CODE="$(sed -n 's/^[[:space:]]*versionCode[[:space:]]*\([0-9]*\).*/\1/p' app/build.gradle)"
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          test "$TAG_VERSION" = "$VERSION_NAME"
+          test -n "$VERSION_CODE"
+          echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+          echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Test, lint, and build signed APK
+        run: ./gradlew --no-daemon testDebugUnitTest lintRelease assembleRelease
+
+      - name: Verify signature and prepare release files
+        id: artifact
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          APK_NAME="glz-radio-${VERSION_NAME}.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$APK_NAME"
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose --print-certs "$APK_NAME"
+          SHA256="$(sha256sum "$APK_NAME" | awk '{print $1}')"
+          jq -n \
+            --argjson versionCode "$VERSION_CODE" \
+            --arg versionName "$VERSION_NAME" \
+            --argjson minimumSupportedVersionCode 32000 \
+            --arg apkUrl "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${APK_NAME}" \
+            --arg sha256 "$SHA256" \
+            --arg releaseNotes "Glz Radio ${VERSION_NAME}. See the GitHub release notes for details." \
+            '{
+              versionCode: $versionCode,
+              versionName: $versionName,
+              minimumSupportedVersionCode: $minimumSupportedVersionCode,
+              apkUrl: $apkUrl,
+              sha256: $sha256,
+              releaseNotes: $releaseNotes
+            }' > update.json
+          echo "apk=$APK_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_NAME: ${{ steps.artifact.outputs.apk }}
+        run: gh release create "$GITHUB_REF_NAME" "$APK_NAME" update.json --verify-tag --generate-notes --title "Glz Radio ${{ steps.version.outputs.name }}"
+
+      - name: Remove signing material
+        if: always()
+        run: |
+          rm -f release.keystore keystore.properties

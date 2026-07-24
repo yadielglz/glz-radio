@@ -1,5 +1,7 @@
 package com.glztech.radiostream;
 
+import java.util.Locale;
+
 final class Station {
     final String name;
     final String logoUrl;
@@ -52,7 +54,7 @@ final class Station {
         if (query == null || query.trim().isEmpty()) {
             return true;
         }
-        String haystack = (name + " " + frequency + " " + callSign + " " + tagline + " " + location).toLowerCase();
-        return haystack.contains(query.trim().toLowerCase());
+        String haystack = (name + " " + frequency + " " + callSign + " " + tagline + " " + location).toLowerCase(Locale.ROOT);
+        return haystack.contains(query.trim().toLowerCase(Locale.ROOT));
     }
 }

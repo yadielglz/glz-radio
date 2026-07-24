@@ -72,7 +72,12 @@ final class StreamRecorder {
                 connection.setConnectTimeout(12000);
                 connection.setReadTimeout(12000);
                 connection.setRequestProperty("Icy-MetaData", "0");
+                connection.setInstanceFollowRedirects(true);
                 connection.connect();
+                int responseCode = connection.getResponseCode();
+                if (responseCode < 200 || responseCode >= 300) {
+                    throw new java.io.IOException("Stream returned HTTP " + responseCode);
+                }
                 listener.onStarted(activeFile);
                 try (InputStream in = connection.getInputStream()) {
                     int read;
@@ -83,6 +88,9 @@ final class StreamRecorder {
                 out.flush();
                 listener.onStopped(activeFile);
             } catch (Exception exception) {
+                if (activeFile != null && activeFile.length() == 0L) {
+                    activeFile.delete();
+                }
                 if (recording) {
                     listener.onFailed(exception);
                 } else {
