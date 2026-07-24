@@ -1,5 +1,6 @@
 package com.glztech.radiostream
 
+import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -49,5 +50,37 @@ class AppUpdaterTest {
         assertTrue(isAllowedDownloadUrl("https://github.com/yadielglz/glz-radio/releases/download/v1/app.apk"))
         assertFalse(isAllowedDownloadUrl("http://github.com/yadielglz/glz-radio/app.apk"))
         assertFalse(isAllowedDownloadUrl("https://example.com/app.apk"))
+    }
+
+    @Test
+    fun findsMetadataInNewestPrerelease() {
+        val metadataUrl = findUpdateMetadataUrl(
+            JSONArray(
+                """
+                [
+                  {
+                    "draft": false,
+                    "prerelease": true,
+                    "assets": [
+                      {
+                        "name": "update.json",
+                        "browser_download_url": "https://github.com/yadielglz/glz-radio/releases/download/v3.3.1/update.json"
+                      }
+                    ]
+                  },
+                  {
+                    "draft": false,
+                    "prerelease": false,
+                    "assets": []
+                  }
+                ]
+                """.trimIndent()
+            )
+        )
+
+        assertEquals(
+            "https://github.com/yadielglz/glz-radio/releases/download/v3.3.1/update.json",
+            metadataUrl
+        )
     }
 }

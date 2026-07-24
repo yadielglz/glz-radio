@@ -8,6 +8,7 @@ import android.provider.Settings
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.net.HttpURLConnection
@@ -34,14 +35,7 @@ internal sealed interface UpdateCheckResult {
 internal class AppUpdater(private val context: Context) {
     suspend fun check(currentVersionCode: Long): UpdateCheckResult = withContext(Dispatchers.IO) {
         runCatching {
-            val release = getJson(LATEST_RELEASE_URL)
-            val metadataUrl = release.getJSONArray("assets")
-                .let { assets ->
-                    (0 until assets.length())
-                        .map { assets.getJSONObject(it) }
-                        .firstOrNull { it.optString("name") == UPDATE_METADATA_NAME }
-                        ?.getString("browser_download_url")
-                }
+            val metadataUrl = findUpdateMetadataUrl(getJsonArray(RELEASES_URL))
                 ?: return@runCatching UpdateCheckResult.UpToDate
 
             val update = parseUpdate(getJson(metadataUrl))
@@ -122,12 +116,19 @@ internal class AppUpdater(private val context: Context) {
     }
 
     private fun getJson(url: String): JSONObject {
+        return JSONObject(getBody(url))
+    }
+
+    private fun getJsonArray(url: String): JSONArray {
+        return JSONArray(getBody(url))
+    }
+
+    private fun getBody(url: String): String {
         require(url.startsWith("https://")) { "HTTPS required" }
         val connection = openConnection(url)
         return try {
             require(connection.responseCode in 200..299) { "Request failed" }
-            val body = connection.inputStream.bufferedReader().use { it.readText() }
-            JSONObject(body)
+            connection.inputStream.bufferedReader().use { it.readText() }
         } finally {
             connection.disconnect()
         }
@@ -144,11 +145,26 @@ internal class AppUpdater(private val context: Context) {
     }
 
     companion object {
-        private const val LATEST_RELEASE_URL =
-            "https://api.github.com/repos/yadielglz/glz-radio/releases/latest"
+        private const val RELEASES_URL =
+            "https://api.github.com/repos/yadielglz/glz-radio/releases?per_page=10"
         private const val UPDATE_METADATA_NAME = "update.json"
         private const val APK_MIME_TYPE = "application/vnd.android.package-archive"
     }
+}
+
+internal fun findUpdateMetadataUrl(releases: JSONArray): String? {
+    for (releaseIndex in 0 until releases.length()) {
+        val release = releases.optJSONObject(releaseIndex) ?: continue
+        if (release.optBoolean("draft")) continue
+        val assets = release.optJSONArray("assets") ?: continue
+        for (assetIndex in 0 until assets.length()) {
+            val asset = assets.optJSONObject(assetIndex) ?: continue
+            if (asset.optString("name") == "update.json") {
+                return asset.optString("browser_download_url").takeIf { it.startsWith("https://") }
+            }
+        }
+    }
+    return null
 }
 
 internal fun parseUpdate(json: JSONObject): AppUpdate {
