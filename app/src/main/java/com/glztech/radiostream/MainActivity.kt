@@ -11,6 +11,7 @@ import android.net.Uri
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.location.Geocoder
 import android.os.Bundle
 import android.os.Build
 import android.os.Looper
@@ -64,6 +65,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -89,6 +91,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -154,6 +157,9 @@ private const val THEME_PREF = "theme_name"
 private const val ACCENT_PREF = "accent_name"
 private const val LAYOUT_PREF = "layout_mode"
 private const val PLAYER_SIZE_PREF = "player_size"
+private const val LOCATION_PROMPTED_PREF = "location_prompted"
+private const val DEFAULT_THEME = "Signal Noir"
+private const val DEFAULT_ACCENT = "Amber"
 private const val SAN_JUAN_LAT = 18.4655
 private const val SAN_JUAN_LON = -66.1057
 private const val STREAM_RETRY_BASE_DELAY_MS = 2_000L
@@ -166,18 +172,18 @@ private data class SettingChoice(
 )
 
 private val ThemeChoices = listOf(
-    SettingChoice("Midnight Radio", "Deep black glass, teal signal highlights", DarkBg),
     SettingChoice("Signal Noir", "High contrast studio dark", Color(0xFF050A0C)),
+    SettingChoice("Midnight Radio", "Deep black glass, teal signal highlights", DarkBg),
     SettingChoice("Coastal Night", "Cool dark surface with softer blue undertones", Color(0xFF061720)),
     SettingChoice("Graphite Studio", "Neutral dark gray for long listening sessions", Color(0xFF111315)),
     SettingChoice("Tropical Dark", "Warm dark base with saturated controls", Color(0xFF11140D))
 )
 
 private val AccentChoices = listOf(
+    SettingChoice("Amber", "Warm dial glow", Color(0xFFF59E0B)),
     SettingChoice("Teal", "Glz classic", Teal),
     SettingChoice("Cyan", "Bright broadcast blue", Color(0xFF22D3EE)),
     SettingChoice("Lime", "Electric tuner green", Color(0xFF84CC16)),
-    SettingChoice("Amber", "Warm dial glow", Color(0xFFF59E0B)),
     SettingChoice("Coral", "Recording-forward red coral", Coral)
 )
 
@@ -192,6 +198,14 @@ private val PlayerSizeChoices = listOf(
     SettingChoice("Balanced", "Player stays meaningful without dominating"),
     SettingChoice("Compact", "More room for stations"),
     SettingChoice("Expanded", "Larger art and live controls")
+)
+
+private val AppShapes = Shapes(
+    extraSmall = RoundedCornerShape(10.dp),
+    small = RoundedCornerShape(14.dp),
+    medium = RoundedCornerShape(18.dp),
+    large = RoundedCornerShape(24.dp),
+    extraLarge = RoundedCornerShape(30.dp)
 )
 
 private val SleepTimerChoices = listOf(
@@ -265,9 +279,12 @@ private fun applyAppearance(themeName: String, accentName: String) {
 class MainActivity : ComponentActivity() {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller by mutableStateOf<MediaController?>(null)
+    private var permissionRefresh by mutableIntStateOf(0)
     private lateinit var recorder: StreamRecorder
     private val startupPermissionsLauncher =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {}
+        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+            permissionRefresh += 1
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -282,8 +299,8 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            var themeName by remember { mutableStateOf(loadSetting(this@MainActivity, THEME_PREF, ThemeChoices.first().name)) }
-            var accentName by remember { mutableStateOf(loadSetting(this@MainActivity, ACCENT_PREF, AccentChoices.first().name)) }
+            var themeName by remember { mutableStateOf(loadSetting(this@MainActivity, THEME_PREF, DEFAULT_THEME)) }
+            var accentName by remember { mutableStateOf(loadSetting(this@MainActivity, ACCENT_PREF, DEFAULT_ACCENT)) }
             GlzRadioTheme(themeName = themeName, accentName = accentName) {
                 val activeController = controller
                 var showSplash by rememberSaveable { mutableStateOf(true) }
@@ -301,6 +318,7 @@ class MainActivity : ComponentActivity() {
                         recorder = recorder,
                         themeName = themeName,
                         accentName = accentName,
+                        permissionRefresh = permissionRefresh,
                         onTheme = {
                             themeName = it
                             saveSetting(this@MainActivity, THEME_PREF, it)
@@ -329,6 +347,14 @@ class MainActivity : ComponentActivity() {
 
     private fun requestStartupPermissions() {
         val permissions = buildList {
+            val prefs = getSharedPreferences(APP_PREFS, Context.MODE_PRIVATE)
+            val locationPrompted = prefs.getBoolean(LOCATION_PROMPTED_PREF, false)
+            if (!locationPrompted &&
+                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+            ) {
+                add(Manifest.permission.ACCESS_COARSE_LOCATION)
+                prefs.edit().putBoolean(LOCATION_PROMPTED_PREF, true).apply()
+            }
             if (Build.VERSION.SDK_INT >= 33 &&
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
             ) {
@@ -383,14 +409,23 @@ private fun GlzRadioTheme(
             outline = DarkStroke
         ),
         typography = MaterialTheme.typography.copy(
+            displayLarge = MaterialTheme.typography.displayLarge.copy(fontFamily = GoogleSans),
+            displayMedium = MaterialTheme.typography.displayMedium.copy(fontFamily = GoogleSans),
             displaySmall = MaterialTheme.typography.displaySmall.copy(fontFamily = GoogleSans),
+            headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontFamily = GoogleSans),
             headlineMedium = MaterialTheme.typography.headlineMedium.copy(fontFamily = GoogleSans),
+            headlineSmall = MaterialTheme.typography.headlineSmall.copy(fontFamily = GoogleSans),
             titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = GoogleSans),
             titleMedium = MaterialTheme.typography.titleMedium.copy(fontFamily = GoogleSans),
+            titleSmall = MaterialTheme.typography.titleSmall.copy(fontFamily = GoogleSans),
             bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = GoogleSans),
             bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontFamily = GoogleSans),
-            labelLarge = MaterialTheme.typography.labelLarge.copy(fontFamily = GoogleSans)
+            bodySmall = MaterialTheme.typography.bodySmall.copy(fontFamily = GoogleSans),
+            labelLarge = MaterialTheme.typography.labelLarge.copy(fontFamily = GoogleSans),
+            labelMedium = MaterialTheme.typography.labelMedium.copy(fontFamily = GoogleSans),
+            labelSmall = MaterialTheme.typography.labelSmall.copy(fontFamily = GoogleSans)
         ),
+        shapes = AppShapes,
         content = content
     )
 }
@@ -402,6 +437,7 @@ private fun RadioApp(
     recorder: StreamRecorder,
     themeName: String,
     accentName: String,
+    permissionRefresh: Int,
     onTheme: (String) -> Unit,
     onAccent: (String) -> Unit,
     onShowMenu: (MenuAction) -> Unit
@@ -652,7 +688,7 @@ private fun RadioApp(
         }
     }
 
-    LaunchedEffect(weatherRefresh) {
+    LaunchedEffect(weatherRefresh, permissionRefresh) {
         weather = WeatherState.Loading
         weather = loadWeather(context)
     }
@@ -1277,7 +1313,7 @@ private fun SettingsInfoSection(stationCount: Int, savedCount: Int) {
         SettingsInfoRow("Stations", stationCount.toString())
         SettingsInfoRow("Saved stations", savedCount.toString())
         SettingsInfoRow("Font", "Google Sans fallback")
-        SettingsInfoRow("Storage", "App recordings only")
+        SettingsInfoRow("Recordings", "Private app storage / export anytime")
         SettingsInfoRow("Playback", "Media3 with Android Auto")
     }
 }
@@ -2267,7 +2303,7 @@ private suspend fun loadWeather(context: Context): WeatherState {
             val location = localWeatherLocation(context)
             val lat = location?.latitude ?: SAN_JUAN_LAT
             val lon = location?.longitude ?: SAN_JUAN_LON
-            val place = if (location == null) "San Juan fallback" else "Local weather"
+            val place = resolveWeatherPlace(context, location)
             val url = "https://api.open-meteo.com/v1/forecast" +
                 "?latitude=$lat&longitude=$lon" +
                 "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m" +
@@ -2302,6 +2338,32 @@ private suspend fun loadWeather(context: Context): WeatherState {
             WeatherState.Error("Tap Refresh to try again")
         }
     }
+}
+
+@Suppress("DEPRECATION")
+private fun resolveWeatherPlace(context: Context, location: Location?): String {
+    if (location == null) return "San Juan, PR"
+    if (!Geocoder.isPresent()) return "Local area"
+
+    return runCatching {
+        val address = Geocoder(context, Locale.getDefault())
+            .getFromLocation(location.latitude, location.longitude, 1)
+            ?.firstOrNull()
+            ?: return@runCatching "Local area"
+        val city = address.locality
+            ?: address.subLocality
+            ?: address.subAdminArea
+        val region = when (address.adminArea) {
+            "Puerto Rico" -> "PR"
+            "Florida" -> "FL"
+            else -> address.adminArea
+        }
+        listOfNotNull(city, region)
+            .filter { it.isNotBlank() }
+            .distinct()
+            .joinToString(", ")
+            .ifBlank { "Local area" }
+    }.getOrDefault("Local area")
 }
 
 private fun parseHourlyOutlook(hourly: JSONObject?): List<WeatherOutlook> {

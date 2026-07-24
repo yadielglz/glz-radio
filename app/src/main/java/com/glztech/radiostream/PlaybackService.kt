@@ -31,10 +31,16 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-        val player = session?.player
-        if (player == null || !player.playWhenReady) {
-            pauseAllPlayersAndStopSelf()
+        // Swiping the task away is an explicit exit. Ordinary backgrounding,
+        // screen-off, and Home navigation continue playback through this service.
+        SleepTimer.cancel()
+        session?.player?.run {
+            stop()
+            clearMediaItems()
         }
+        pauseAllPlayersAndStopSelf()
+        stopSelf()
+        super.onTaskRemoved(rootIntent)
     }
 
     private class LibraryCallback(private val context: Context) : MediaLibrarySession.Callback {

@@ -7,7 +7,16 @@ Media3 for an expressive dark UI, background radio playback, Android Auto media
 browsing, saved stations, stream recording, local weather, a sleep timer, and
 signed self-updates for the friends-and-family prerelease channel.
 
+The default visual preset is Signal Noir with an Amber accent. Playback
+continues when the app is backgrounded or the screen is locked. Swiping the
+task away from Android Recents is treated as an explicit exit and stops
+playback, recording activity, and timers.
+
 Permissions are intentionally narrow: Internet for streams/weather and approximate location for local weather. Recordings live in app-specific storage, so broad storage access is not requested.
+
+On Android 10 and newer, GLZ Radio does not request broad storage permission:
+Android does not require it for recordings created and owned by the app.
+Recordings can be exported or shared from the recordings screen.
 
 Playback is backed by a Media3 `MediaLibraryService` for background playback, notification controls, and Android Auto media browsing. Stations report simple stream health states and retry briefly before marking a stream offline.
 

@@ -109,7 +109,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           APK_NAME: ${{ steps.artifact.outputs.apk }}
-        run: gh release create "$GITHUB_REF_NAME" "$APK_NAME" update.json --verify-tag --generate-notes --title "Glz Radio ${{ steps.version.outputs.name }}"
+        run: gh release create "$GITHUB_REF_NAME" "$APK_NAME" update.json --verify-tag --generate-notes --prerelease --title "Glz Radio ${{ steps.version.outputs.name }}"
 
       - name: Remove signing material
         if: always()
