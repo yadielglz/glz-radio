@@ -79,9 +79,36 @@ class PlaybackService : MediaLibraryService() {
                 ?: RadioPlayback.rootItem()
             return Futures.immediateFuture(LibraryResult.ofItem(item, null))
         }
+
+        override fun onAddMediaItems(
+            mediaSession: MediaSession,
+            controller: MediaSession.ControllerInfo,
+            mediaItems: List<MediaItem>
+        ): ListenableFuture<List<MediaItem>> {
+            return Futures.immediateFuture(
+                resolvePlayableItems(mediaItems, StationStore.load(context))
+            )
+        }
     }
 
     companion object {
         const val ROOT_ID = "glz_radio_root"
     }
+}
+
+internal fun resolvePlayableItems(
+    requestedItems: List<MediaItem>,
+    stations: List<Station>
+): List<MediaItem> {
+    return requestedItems.mapNotNull { requested ->
+        if (requested.localConfiguration != null) {
+            requested
+        } else {
+            findStationByMediaId(requested.mediaId, stations)?.let(RadioPlayback::stationItem)
+        }
+    }
+}
+
+internal fun findStationByMediaId(mediaId: String, stations: List<Station>): Station? {
+    return stations.firstOrNull { it.name == mediaId }
 }

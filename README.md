@@ -12,6 +12,10 @@ continues when the app is backgrounded or the screen is locked. Swiping the
 task away from Android Recents is treated as an explicit exit and stops
 playback, recording activity, and timers.
 
+Google Sans is bundled with the APK and applied to all Compose and platform
+text styles. Signal Light provides a high-contrast daylight alternative to the
+dark studio themes.
+
 Permissions are intentionally narrow: Internet for streams/weather and approximate location for local weather. Recordings live in app-specific storage, so broad storage access is not requested.
 
 On Android 10 and newer, GLZ Radio does not request broad storage permission:

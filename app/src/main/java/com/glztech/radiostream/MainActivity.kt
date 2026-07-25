@@ -70,6 +70,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -90,6 +91,7 @@ import androidx.compose.material.icons.filled.Stop
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -103,10 +105,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -118,6 +123,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import androidx.core.view.WindowCompat
 import coil.compose.AsyncImage
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
@@ -150,7 +156,10 @@ private var DarkStroke = Color(0xFF234348)
 private var Teal = Color(0xFF14B8A6)
 private var Coral = Color(0xFFDC5247)
 private var Gold = Color(0xFFB47C26)
-private val GoogleSans = FontFamily.SansSerif
+private val GoogleSans = FontFamily(
+    Font(R.font.google_sans_regular, FontWeight.Normal),
+    Font(R.font.google_sans_bold, FontWeight.Bold)
+)
 private const val APP_PREFS = "radio_streamer"
 private const val FAVORITES_PREF = "favorites"
 private const val THEME_PREF = "theme_name"
@@ -173,6 +182,7 @@ private data class SettingChoice(
 
 private val ThemeChoices = listOf(
     SettingChoice("Signal Noir", "High contrast studio dark", Color(0xFF050A0C)),
+    SettingChoice("Signal Light", "Clean daylight studio with warm amber controls", Color(0xFFF7F4ED)),
     SettingChoice("Midnight Radio", "Deep black glass, teal signal highlights", DarkBg),
     SettingChoice("Coastal Night", "Cool dark surface with softer blue undertones", Color(0xFF061720)),
     SettingChoice("Graphite Studio", "Neutral dark gray for long listening sessions", Color(0xFF111315)),
@@ -227,6 +237,15 @@ private fun applyAppearance(themeName: String, accentName: String) {
             DarkField = Color(0xFF070D10)
             DarkStroke = Color(0xFF283338)
         }
+        "Signal Light" -> {
+            DarkInk = Color(0xFF172124)
+            DarkMuted = Color(0xFF5E6A6E)
+            DarkBg = Color(0xFFF7F4ED)
+            DarkSurface = Color(0xFFFFFDF8)
+            DarkCard = Color(0xFFFFFFFF)
+            DarkField = Color(0xFFF0ECE3)
+            DarkStroke = Color(0xFFD8D2C7)
+        }
         "Coastal Night" -> {
             DarkInk = Color(0xFFE6F7FF)
             DarkMuted = Color(0xFF8CAFC1)
@@ -265,12 +284,13 @@ private fun applyAppearance(themeName: String, accentName: String) {
         }
     }
 
+    val lightTheme = themeName == "Signal Light"
     Teal = when (accentName) {
-        "Cyan" -> Color(0xFF22D3EE)
-        "Lime" -> Color(0xFF84CC16)
-        "Amber" -> Color(0xFFF59E0B)
-        "Coral" -> Color(0xFFFB7185)
-        else -> Color(0xFF14B8A6)
+        "Cyan" -> if (lightTheme) Color(0xFF087A91) else Color(0xFF22D3EE)
+        "Lime" -> if (lightTheme) Color(0xFF557A0B) else Color(0xFF84CC16)
+        "Amber" -> if (lightTheme) Color(0xFF9A5B00) else Color(0xFFF59E0B)
+        "Coral" -> if (lightTheme) Color(0xFFB4234A) else Color(0xFFFB7185)
+        else -> if (lightTheme) Color(0xFF087F73) else Color(0xFF14B8A6)
     }
     Coral = if (accentName == "Coral") Color(0xFFDC5247) else Color(0xFFDC5247)
     Gold = if (accentName == "Amber") Color(0xFFF59E0B) else Color(0xFFB47C26)
@@ -394,10 +414,23 @@ private fun GlzRadioTheme(
     content: @Composable () -> Unit
 ) {
     applyAppearance(themeName, accentName)
-    MaterialTheme(
-        colorScheme = darkColorScheme(
+    val lightTheme = themeName == "Signal Light"
+    val view = LocalView.current
+    SideEffect {
+        val window = (view.context as? Activity)?.window ?: return@SideEffect
+        window.statusBarColor = DarkBg.toArgb()
+        window.navigationBarColor = DarkBg.toArgb()
+        WindowCompat.getInsetsController(window, view).run {
+            isAppearanceLightStatusBars = lightTheme
+            isAppearanceLightNavigationBars = lightTheme
+        }
+    }
+    val colors = if (lightTheme) {
+        lightColorScheme(
             primary = Teal,
-            onPrimary = Color(0xFF031312),
+            onPrimary = Color.White,
+            primaryContainer = Color(0xFFFFE2B5),
+            onPrimaryContainer = Color(0xFF3B2500),
             secondary = Teal,
             tertiary = Coral,
             background = DarkBg,
@@ -407,23 +440,42 @@ private fun GlzRadioTheme(
             onSurface = DarkInk,
             onSurfaceVariant = DarkMuted,
             outline = DarkStroke
-        ),
+        )
+    } else {
+        darkColorScheme(
+            primary = Teal,
+            onPrimary = Color(0xFF031312),
+            primaryContainer = Color(0xFF493000),
+            onPrimaryContainer = Color(0xFFFFDFA2),
+            secondary = Teal,
+            tertiary = Coral,
+            background = DarkBg,
+            surface = DarkSurface,
+            surfaceVariant = DarkCard,
+            onBackground = DarkInk,
+            onSurface = DarkInk,
+            onSurfaceVariant = DarkMuted,
+            outline = DarkStroke
+        )
+    }
+    MaterialTheme(
+        colorScheme = colors,
         typography = MaterialTheme.typography.copy(
-            displayLarge = MaterialTheme.typography.displayLarge.copy(fontFamily = GoogleSans),
-            displayMedium = MaterialTheme.typography.displayMedium.copy(fontFamily = GoogleSans),
-            displaySmall = MaterialTheme.typography.displaySmall.copy(fontFamily = GoogleSans),
-            headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontFamily = GoogleSans),
-            headlineMedium = MaterialTheme.typography.headlineMedium.copy(fontFamily = GoogleSans),
-            headlineSmall = MaterialTheme.typography.headlineSmall.copy(fontFamily = GoogleSans),
-            titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = GoogleSans),
-            titleMedium = MaterialTheme.typography.titleMedium.copy(fontFamily = GoogleSans),
-            titleSmall = MaterialTheme.typography.titleSmall.copy(fontFamily = GoogleSans),
+            displayLarge = MaterialTheme.typography.displayLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            displayMedium = MaterialTheme.typography.displayMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            displaySmall = MaterialTheme.typography.displaySmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            headlineMedium = MaterialTheme.typography.headlineMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            headlineSmall = MaterialTheme.typography.headlineSmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            titleMedium = MaterialTheme.typography.titleMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            titleSmall = MaterialTheme.typography.titleSmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
             bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = GoogleSans),
             bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontFamily = GoogleSans),
             bodySmall = MaterialTheme.typography.bodySmall.copy(fontFamily = GoogleSans),
-            labelLarge = MaterialTheme.typography.labelLarge.copy(fontFamily = GoogleSans),
-            labelMedium = MaterialTheme.typography.labelMedium.copy(fontFamily = GoogleSans),
-            labelSmall = MaterialTheme.typography.labelSmall.copy(fontFamily = GoogleSans)
+            labelLarge = MaterialTheme.typography.labelLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            labelMedium = MaterialTheme.typography.labelMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
+            labelSmall = MaterialTheme.typography.labelSmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold)
         ),
         shapes = AppShapes,
         content = content
@@ -1312,7 +1364,7 @@ private fun SettingsInfoSection(stationCount: Int, savedCount: Int) {
     WeatherSection("System") {
         SettingsInfoRow("Stations", stationCount.toString())
         SettingsInfoRow("Saved stations", savedCount.toString())
-        SettingsInfoRow("Font", "Google Sans fallback")
+        SettingsInfoRow("Font", "Google Sans / bundled")
         SettingsInfoRow("Recordings", "Private app storage / export anytime")
         SettingsInfoRow("Playback", "Media3 with Android Auto")
     }
@@ -1658,6 +1710,10 @@ private fun StationCard(
     ElevatedCard(
         onClick = onClick,
         colors = CardDefaults.elevatedCardColors(containerColor = DarkCard),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = if (active) 6.dp else 2.dp,
+            pressedElevation = 1.dp
+        ),
         modifier = Modifier
             .fillMaxWidth()
             .border(
