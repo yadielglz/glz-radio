@@ -2,6 +2,10 @@
 
 Native Android radio streaming app for the curated Puerto Rico station list.
 
+An installable browser version is available in [`web/`](web/README.md). It is
+configured for deployment from GitHub to Vercel with `radio.glztech.com` as the
+custom domain.
+
 Glz Radio is a full native Android application. It uses Jetpack Compose and
 Media3 for an expressive dark UI, background radio playback, Android Auto media
 browsing, saved stations, stream recording, local weather, a sleep timer, and

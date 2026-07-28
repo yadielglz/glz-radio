@@ -1,0 +1,17 @@
+{
+  "name": "GLZ Radio",
+  "short_name": "GLZ Radio",
+  "description": "Puerto Rico radio, live.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#071113",
+  "theme_color": "#071113",
+  "icons": [
+    {
+      "src": "/assets/app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

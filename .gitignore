@@ -7,3 +7,5 @@ keystore.properties
 *.keystore
 *.iml
 .idea/
+web/node_modules/
+web/dist/
