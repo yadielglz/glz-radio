@@ -27,13 +27,11 @@ const stations = [
 }));
 
 const state = {
-  selected: stations[0],
+  selected: null,
   playing: false,
   filter: "All",
   query: "",
-  favorites: new Set(JSON.parse(localStorage.getItem("glz-favorites") || "[]")),
-  timer: null,
-  timerEnds: 0
+  favorites: new Set(JSON.parse(localStorage.getItem("glz-favorites") || "[]"))
 };
 
 const audio = new Audio();
@@ -46,6 +44,14 @@ document.querySelector("#app").innerHTML = `
       <div class="brand"><img src="/assets/app-icon.png" alt=""><div><strong>GLZ RADIO</strong><span>LIVE SIGNAL</span></div></div>
       <div class="status-pill"><span class="status-dot"></span><span id="network-label">Connected</span></div>
     </header>
+    <section class="weather-strip" aria-label="Local weather">
+      <div class="weather-summary">
+        <span class="weather-label">San Juan weather</span>
+        <strong class="temperature" id="temperature">--°</strong>
+        <span class="weather-copy" id="weather-copy">Updating local conditions…</span>
+      </div>
+      <button class="text-btn compact" id="weather" type="button">Use my location</button>
+    </section>
     <section class="hero" aria-label="GLZ Radio">
       <img class="hero-image" src="/assets/header-banner.png" alt="GLZ Radio — Tu música. Tu estación. Siempre contigo.">
     </section>
@@ -61,45 +67,34 @@ document.querySelector("#app").innerHTML = `
         <div class="station-list" id="station-list"></div>
       </section>
       <aside class="side">
-        <section class="panel now-playing">
+        <section class="panel now-playing" id="desktop-player" hidden>
           <div class="on-air"><span class="live">LIVE</span><span class="clock" id="clock"></span></div>
           <div class="cover-wrap"><img class="cover" id="cover" alt=""></div>
           <h2 class="now-title" id="now-title"></h2>
           <div class="now-meta" id="now-meta"></div>
           <div class="rds" id="rds">RDS / Ready for station</div>
           <div class="controls">
-            <button class="secondary-btn" id="favorite-current" type="button" aria-label="Favorite station">♡</button>
-            <button class="primary-btn" id="play" type="button" aria-label="Play">▶</button>
-            <button class="secondary-btn" id="share" type="button" aria-label="Share station">Share</button>
+            <button class="text-btn" id="play" type="button">Pause</button>
+            <button class="text-btn danger-btn" id="stop" type="button">Stop</button>
+            <button class="text-btn" id="favorite-current" type="button">Favorite</button>
+            <button class="text-btn" id="share" type="button">Share</button>
           </div>
           <p class="player-status" id="player-status">Ready to play</p>
         </section>
-        <section class="panel utility">
-          <div class="eyebrow">Local dashboard</div>
-          <h2>Weather</h2>
-          <div class="weather-main">
-            <div><div class="temperature" id="temperature">--°</div><div class="weather-copy" id="weather-copy">San Juan, PR</div></div>
-            <button class="secondary-btn" id="weather" type="button">Use my location</button>
-          </div>
-        </section>
-        <section class="panel utility">
-          <div class="eyebrow">Listening tools</div>
-          <h2>Sleep timer</h2>
-          <div class="utility-row">
-            <select class="select" id="timer-select" aria-label="Sleep timer duration">
-              <option value="15">15 minutes</option><option value="30">30 minutes</option>
-              <option value="45">45 minutes</option><option value="60">60 minutes</option>
-            </select>
-            <button class="secondary-btn" id="timer-button" type="button">Start</button>
-          </div>
-          <p class="player-status" id="timer-status">Timer is off</p>
+        <section class="panel player-prompt" id="player-prompt">
+          <div class="eyebrow">Ready when you are</div>
+          <h2>Choose a station</h2>
+          <p>Tap any station and GLZ Radio will start playing it automatically.</p>
         </section>
       </aside>
     </div>
   </main>
-  <div class="mobile-player">
+  <div class="mobile-player" id="mobile-player" hidden>
     <img id="mobile-cover" alt=""><div><div class="mobile-title" id="mobile-title"></div><div class="mobile-meta" id="mobile-meta">Ready</div></div>
-    <button class="primary-btn" id="mobile-play" type="button" aria-label="Play">▶</button>
+    <div class="mobile-controls">
+      <button class="text-btn compact" id="mobile-play" type="button">Pause</button>
+      <button class="text-btn compact danger-btn" id="mobile-stop" type="button">Stop</button>
+    </div>
   </div>
   <div class="toast" id="toast" role="status"></div>
 `;
@@ -129,11 +124,11 @@ function visibleStations() {
 function renderStations() {
   const items = visibleStations();
   $("#station-list").innerHTML = items.length ? items.map((station) => `
-    <article class="station ${state.selected.name === station.name ? "selected" : ""}" data-station="${escapeHtml(station.name)}">
+    <article class="station ${state.selected?.name === station.name ? "selected" : ""}" data-station="${escapeHtml(station.name)}" tabindex="0" role="button" aria-label="Play ${escapeHtml(station.name)}">
       <img class="station-logo" src="${station.logo}" alt="" loading="lazy">
       <div><div class="station-name">${escapeHtml(station.name)}</div><div class="station-meta">${escapeHtml(station.frequency)}${station.callSign ? ` / ${escapeHtml(station.callSign)}` : ""} · ${escapeHtml(station.location)}</div></div>
       <span class="station-band">${escapeHtml(station.band)}</span>
-      <button class="icon-btn favorite" data-favorite="${escapeHtml(station.name)}" type="button" aria-label="Toggle favorite">${state.favorites.has(station.name) ? "♥" : "♡"}</button>
+      <button class="station-action favorite" data-favorite="${escapeHtml(station.name)}" type="button">${state.favorites.has(station.name) ? "Saved" : "Favorite"}</button>
     </article>
   `).join("") : `<div class="empty">No stations match this view.</div>`;
 
@@ -142,6 +137,14 @@ function renderStations() {
 
 function renderPlayer() {
   const station = state.selected;
+  const hasStation = Boolean(station);
+  $("#desktop-player").hidden = !hasStation;
+  $("#mobile-player").hidden = !hasStation;
+  $("#player-prompt").hidden = hasStation;
+  if (!station) {
+    document.title = "GLZ Radio";
+    return;
+  }
   $("#cover").src = station.logo;
   $("#mobile-cover").src = station.logo;
   $("#cover").onerror = $("#mobile-cover").onerror = (event) => { event.currentTarget.src = fallbackLogo; };
@@ -149,8 +152,8 @@ function renderPlayer() {
   $("#now-meta").textContent = `${station.frequency}${station.callSign ? ` / ${station.callSign}` : ""} · ${station.tagline}`;
   $("#mobile-title").textContent = station.name;
   $("#mobile-meta").textContent = state.playing ? "Live now" : station.frequency;
-  $("#favorite-current").textContent = state.favorites.has(station.name) ? "♥" : "♡";
-  $("#play").textContent = $("#mobile-play").textContent = state.playing ? "Ⅱ" : "▶";
+  $("#favorite-current").textContent = state.favorites.has(station.name) ? "Saved" : "Favorite";
+  $("#play").textContent = $("#mobile-play").textContent = state.playing ? "Pause" : "Play";
   $("#rds").textContent = `${state.playing ? "LIVE" : "RDS"} / ${station.name} / ${station.location}`;
   document.title = `${state.playing ? "▶ " : ""}${station.name} · GLZ Radio`;
 }
@@ -158,8 +161,7 @@ function renderPlayer() {
 function selectStation(name) {
   const next = stations.find((station) => station.name === name);
   if (!next) return;
-  const wasPlaying = state.playing;
-  if (state.selected.name !== next.name) {
+  if (state.selected?.name !== next.name) {
     audio.pause();
     audio.removeAttribute("src");
     state.playing = false;
@@ -168,7 +170,7 @@ function selectStation(name) {
   renderStations();
   renderPlayer();
   updateMediaSession();
-  if (wasPlaying) play();
+  play();
 }
 
 async function play() {
@@ -190,8 +192,18 @@ async function play() {
 }
 
 function togglePlayback() {
+  if (!state.selected) return;
   if (state.playing) audio.pause();
   else play();
+}
+
+function stopPlayback() {
+  audio.pause();
+  audio.removeAttribute("src");
+  audio.load();
+  state.playing = false;
+  renderPlayer();
+  setStatus("Stopped");
 }
 
 function setStatus(message) {
@@ -204,11 +216,11 @@ function toggleFavorite(name) {
   else state.favorites.add(name);
   localStorage.setItem("glz-favorites", JSON.stringify([...state.favorites]));
   renderStations();
-  renderPlayer();
+  if (state.selected) renderPlayer();
 }
 
 function updateMediaSession() {
-  if (!("mediaSession" in navigator)) return;
+  if (!("mediaSession" in navigator) || !state.selected) return;
   const station = state.selected;
   navigator.mediaSession.metadata = new MediaMetadata({
     title: station.name,
@@ -281,39 +293,6 @@ async function loadWeather(useLocation = false) {
   }
 }
 
-function toggleTimer() {
-  if (state.timer) {
-    clearInterval(state.timer);
-    state.timer = null;
-    state.timerEnds = 0;
-    $("#timer-button").textContent = "Start";
-    $("#timer-status").textContent = "Timer is off";
-    return;
-  }
-  const minutes = Number($("#timer-select").value);
-  state.timerEnds = Date.now() + minutes * 60000;
-  $("#timer-button").textContent = "Cancel";
-  updateTimer();
-  state.timer = setInterval(updateTimer, 1000);
-}
-
-function updateTimer() {
-  const remaining = Math.max(0, state.timerEnds - Date.now());
-  if (!remaining) {
-    clearInterval(state.timer);
-    state.timer = null;
-    audio.pause();
-    $("#timer-button").textContent = "Start";
-    $("#timer-status").textContent = "Timer finished";
-    toast("Sleep timer finished");
-    return;
-  }
-  const totalSeconds = Math.ceil(remaining / 1000);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = String(totalSeconds % 60).padStart(2, "0");
-  $("#timer-status").textContent = `Stops in ${minutes}:${seconds}`;
-}
-
 $("#search").addEventListener("input", (event) => { state.query = event.target.value; renderStations(); });
 $("#filters").addEventListener("click", (event) => {
   const button = event.target.closest("[data-filter]");
@@ -332,12 +311,20 @@ $("#station-list").addEventListener("click", (event) => {
   const station = event.target.closest("[data-station]");
   if (station) selectStation(station.dataset.station);
 });
+$("#station-list").addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const station = event.target.closest("[data-station]");
+  if (!station || event.target.closest("button")) return;
+  event.preventDefault();
+  selectStation(station.dataset.station);
+});
 $("#play").addEventListener("click", togglePlayback);
 $("#mobile-play").addEventListener("click", togglePlayback);
+$("#stop").addEventListener("click", stopPlayback);
+$("#mobile-stop").addEventListener("click", stopPlayback);
 $("#favorite-current").addEventListener("click", () => toggleFavorite(state.selected.name));
 $("#share").addEventListener("click", shareStation);
 $("#weather").addEventListener("click", () => loadWeather(true));
-$("#timer-button").addEventListener("click", toggleTimer);
 
 audio.addEventListener("playing", () => {
   state.playing = true;
@@ -361,7 +348,7 @@ audio.addEventListener("error", () => {
 if ("mediaSession" in navigator) {
   navigator.mediaSession.setActionHandler("play", play);
   navigator.mediaSession.setActionHandler("pause", () => audio.pause());
-  navigator.mediaSession.setActionHandler("stop", () => { audio.pause(); audio.currentTime = 0; });
+  navigator.mediaSession.setActionHandler("stop", stopPlayback);
 }
 
 window.addEventListener("online", () => { $("#network-label").textContent = "Connected"; });
