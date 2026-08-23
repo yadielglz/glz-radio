@@ -63,18 +63,6 @@ object RadioPlayback {
             )
             setWakeMode(C.WAKE_MODE_NETWORK)
             addListener(object : Player.Listener {
-                override fun onPlaybackStateChanged(playbackState: Int) {
-                    if (playbackState == Player.STATE_BUFFERING) {
-                        wasBuffering = true
-                    } else if (playbackState == Player.STATE_READY && wasBuffering) {
-                        wasBuffering = false
-                        // Reconnected after buffer stall: jump to live edge to prevent audio delay / garble
-                        if (isCurrentMediaItemLive) {
-                            seekToDefaultPosition()
-                        }
-                    }
-                }
-
                 override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                     val rawTitle = mediaMetadata.title?.toString()
                         ?: mediaMetadata.displayTitle?.toString()

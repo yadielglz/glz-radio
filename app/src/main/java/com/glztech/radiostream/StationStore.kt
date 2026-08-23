@@ -20,7 +20,13 @@ internal object StationStore {
         val prefs = context.getSharedPreferences(APP_PREFS, Context.MODE_PRIVATE)
         val catalogRaw = prefs.getString(STATIONS_PREF, null)
         val catalogStations = if (catalogRaw != null) {
-            parseJsonArray(catalogRaw).ifEmpty { StationCatalog.all().toList() }
+            val parsed = parseJsonArray(catalogRaw)
+            if (parsed.isEmpty()) {
+                prefs.edit().remove(STATIONS_PREF).apply()
+                StationCatalog.all().toList()
+            } else {
+                parsed
+            }
         } else {
             StationCatalog.all().toList()
         }
@@ -120,18 +126,18 @@ internal object StationStore {
             buildList {
                 for (index in 0 until array.length()) {
                     val item = array.getJSONObject(index)
-                    val name = item.optString("name").trim()
-                    val streamUrl = item.optString("streamUrl").trim()
+                    val name = cleanString(item, "name")
+                    val streamUrl = cleanString(item, "streamUrl")
                     if (name.isNotBlank() && streamUrl.isNotBlank()) {
                         add(
                             Station(
                                 name,
-                                item.optString("logoUrl").trim(),
+                                cleanString(item, "logoUrl"),
                                 streamUrl,
-                                item.optString("frequency").trim().ifBlank { "Live" },
-                                item.optString("callSign").trim().ifBlank { null },
-                                item.optString("tagline").trim(),
-                                item.optString("location").trim()
+                                cleanString(item, "frequency").ifBlank { "Live" },
+                                cleanString(item, "callSign").ifBlank { null },
+                                cleanString(item, "tagline"),
+                                cleanString(item, "location")
                             )
                         )
                     }
@@ -140,14 +146,22 @@ internal object StationStore {
         }.getOrDefault(emptyList())
     }
 
+    private fun cleanString(item: JSONObject, key: String): String {
+        if (item.isNull(key)) return ""
+        val str = item.optString(key, "").trim()
+        return if (str.equals("null", ignoreCase = true)) "" else str
+    }
+
     private fun fetchUrl(urlStr: String): String? {
         return try {
             val conn = URL(urlStr).openConnection() as HttpURLConnection
             conn.connectTimeout = 8000
             conn.readTimeout = 8000
             conn.requestMethod = "GET"
+            conn.setRequestProperty("Accept", "application/json")
             if (conn.responseCode == 200) {
-                conn.inputStream.bufferedReader().use { it.readText() }
+                val text = conn.inputStream.bufferedReader().use { it.readText() }.trim()
+                if (text.startsWith("[")) text else null
             } else null
         } catch (e: Exception) {
             null
