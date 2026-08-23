@@ -1,0 +1,182 @@
+[
+  {
+    "name": "WKAQ 580",
+    "logoUrl": "https://i.iheart.com/v3/re/assets/images/77d5680e-688b-4488-8c56-9b4963cb0813.png",
+    "streamUrl": "https://tunein.cdnstream1.com/4851_128.mp3",
+    "frequency": "AM 580",
+    "callSign": "WKAQ AM",
+    "tagline": "News and talk",
+    "location": "San Juan, PR"
+  },
+  {
+    "name": "NOTIUNO 630",
+    "logoUrl": "https://www.unoradio.com/logos/logos/notiuno/notiuno630.png",
+    "streamUrl": "https://server20.servistreaming.com:9022/stream",
+    "frequency": "AM 630",
+    "callSign": "WUNO AM",
+    "tagline": "NotiUno 630",
+    "location": "San Juan, PR"
+  },
+  {
+    "name": "Radio Once",
+    "logoUrl": "https://radioIsla.tv/wp-content/uploads/2019/06/Logo-Radio-Isla.png",
+    "streamUrl": "http://49.13.212.200:14167/stream?type=http&nocache=21",
+    "frequency": "AM 1120",
+    "callSign": "WMSW AM",
+    "tagline": "Radio Once",
+    "location": "Hatillo, PR"
+  },
+  {
+    "name": "Radio Isla",
+    "logoUrl": "https://radioIsla.tv/wp-content/uploads/2019/06/Logo-Radio-Isla.png",
+    "streamUrl": "https://server7.servistreaming.com/proxy/radioisla?mp=%2Fstream%3Ftype%3D.mp3&_=1",
+    "frequency": "AM 1320",
+    "callSign": "WSKN AM",
+    "tagline": "Radio Isla",
+    "location": "San Juan, PR"
+  },
+  {
+    "name": "Radio Tiempo",
+    "logoUrl": "https://radiotiempo.net/wp-content/uploads/2022/08/tiempo-172x128.png",
+    "streamUrl": "https://server7.servistreaming.com/proxy/tiempo?mp=%2Fstream%3Ftype%3D.mp3&_=1",
+    "frequency": "AM 1430",
+    "callSign": "WNLE AM",
+    "tagline": "Radio Tiempo",
+    "location": "Caguas, PR"
+  },
+  {
+    "name": "Radio Cumbre",
+    "logoUrl": "https://i.ibb.co/5g2402Cc/wkum-png.png",
+    "streamUrl": "https://sp.unoredcdn.net/8158/stream/1/",
+    "frequency": "AM 1470",
+    "callSign": "WKUM AM",
+    "tagline": "Radio Cumbre",
+    "location": "Orocovis, PR"
+  },
+  {
+    "name": "Radio Oro",
+    "logoUrl": "https://cdn-profiles.tunein.com/s21791/images/logod.png?t=637238626060000000",
+    "streamUrl": "https://streams.proftsc.com/listen/woro/woro.mp3",
+    "frequency": "FM 92.5",
+    "callSign": "WORO FM",
+    "tagline": "Radio Oro",
+    "location": "Corozal, PR"
+  },
+  {
+    "name": "Z 93",
+    "logoUrl": "https://i.ibb.co/23BMsKBY/wznt-png.png",
+    "streamUrl": "https://liveaudio.lamusica.com/PR_WZNT_icy",
+    "frequency": "FM 93.7",
+    "callSign": "WZNT FM",
+    "tagline": "La Emisora Nacional",
+    "location": "San Juan"
+  },
+  {
+    "name": "La Nueva 94",
+    "logoUrl": "https://i.ibb.co/sv1RBc08/wodalogo.png",
+    "streamUrl": "https://liveaudio.lamusica.com/PR_WODA_icy",
+    "frequency": "FM 94.7",
+    "callSign": "WODA FM",
+    "tagline": "Los #1 En Joda",
+    "location": "San Juan"
+  },
+  {
+    "name": "Fidelity",
+    "logoUrl": "https://fidelitypr.com/wp-content/uploads/2022/01/cropped-Redisen%CC%83o-Logo-Fidelity-3-15-2048x677.png",
+    "streamUrl": "https://server7.servistreaming.com/proxy/fidelity?mp=%2Fstream%3Ftype%3D.mp3&_=1",
+    "frequency": "FM 95.7",
+    "callSign": "WFID FM",
+    "tagline": "Tu Vida En Musica",
+    "location": "Rio Piedras"
+  },
+  {
+    "name": "Estereotempo",
+    "logoUrl": "https://i.ibb.co/F4GM0W81/wrxr.png",
+    "streamUrl": "https://liveaudio.lamusica.com/PR_WRXD_icy",
+    "frequency": "FM 96.5",
+    "callSign": "WRXD FM",
+    "tagline": "Estereotempo",
+    "location": "San Juan"
+  },
+  {
+    "name": "Magic 97.3",
+    "logoUrl": "https://i.ibb.co/Z6WqXPzV/woye.png",
+    "streamUrl": "https://stream.eleden.com:8210/magic.aac",
+    "frequency": "FM 97.3",
+    "callSign": "WOYE FM",
+    "tagline": "Magic 97.3",
+    "location": "Rio Grande"
+  },
+  {
+    "name": "SalSoul",
+    "logoUrl": "https://salsoul.com/wp-content/uploads/2020/12/cropped-salsoul-2.png",
+    "streamUrl": "https://server20.servistreaming.com:9023/stream?type=.mp3&_=1",
+    "frequency": "FM 99.1",
+    "callSign": "WPRM FM",
+    "tagline": "SalSoul",
+    "location": "San Juan"
+  },
+  {
+    "name": "La X",
+    "logoUrl": "https://i.ibb.co/zWDcRnBw/laxpng.png",
+    "streamUrl": "http://stream.eleden.com:8235/lax.ogg",
+    "frequency": "FM 100.7",
+    "callSign": "WXYX FM",
+    "tagline": "La X",
+    "location": "Bayamon"
+  },
+  {
+    "name": "Hot102",
+    "logoUrl": "https://hot102pr.com/wp-content/uploads/2023/10/Artboard-4.png",
+    "streamUrl": "https://server7.servistreaming.com/proxy/hot?mp=%2Fstream%3Ftype%3D.mp3&_=1",
+    "frequency": "FM 102.5",
+    "callSign": "WTOK FM",
+    "tagline": "HOT 102",
+    "location": "San Juan"
+  },
+  {
+    "name": "KQ105",
+    "logoUrl": "https://upload.wikimedia.org/wikipedia/en/8/80/KQ_105_WKAQ-FM_2014_logo.png",
+    "streamUrl": "https://televicentro.streamguys1.com/wkaqfm-icy?key=e018260d508e5b04e91a4d9a30f7ceea9b71bd86e2bfdb6fcc3bbd4928525c00",
+    "frequency": "FM 104.7",
+    "callSign": "WKAQ FM",
+    "tagline": "La Primera",
+    "location": "San Juan"
+  },
+  {
+    "name": "La Mega 106.9",
+    "logoUrl": "https://i.ibb.co/Xrp2nhpQ/WMEG-PNG.png",
+    "streamUrl": "https://liveaudio.lamusica.com/PR_WMEG_icy",
+    "frequency": "FM 106.9",
+    "callSign": "WMEG FM",
+    "tagline": "La Mega 106.9",
+    "location": "San Juan"
+  },
+  {
+    "name": "Latino 99",
+    "logoUrl": "https://mm.aiircdn.com/371/5928f28889f51.png",
+    "streamUrl": "https://lmmradiocast.com/latino99fm",
+    "frequency": "Satellite",
+    "callSign": null,
+    "tagline": "Pura Salsa!",
+    "location": "Kissimmee, Florida"
+  },
+  {
+    "name": "Salseo",
+    "logoUrl": "https://static.wixstatic.com/media/8dfec0_3e265a2f0fb5417c90c55be4e4e7d3cf~mv2.png/v1/fill/w_276,h_120,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/LOGOSALSEORADIO_clipped_rev_2_v2%20(1).png",
+    "streamUrl": "https://listen.radioking.com/radio/399811/stream/452110",
+    "frequency": "Satellite",
+    "callSign": null,
+    "tagline": "Salseo Radio",
+    "location": "Quebradillas, Puerto Rico"
+  },
+  {
+    "name": "La Vieja Z",
+    "logoUrl": "https://i.ibb.co/d4VZVjj2/LVZ8-removebg-preview.png",
+    "streamUrl": "https://s2.free-shoutcast.com/stream/18006",
+    "frequency": "Satellite",
+    "callSign": null,
+    "tagline": "Salsa!",
+    "location": "Central Florida"
+  }
+]

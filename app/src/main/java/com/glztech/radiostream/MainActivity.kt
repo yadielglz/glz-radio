@@ -310,6 +310,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         recorder = StreamRecorder(this)
         requestStartupPermissions()
+        StationStore.syncRemoteCatalog(this)
         val token = SessionToken(this, ComponentName(this, PlaybackService::class.java))
         controllerFuture = MediaController.Builder(this, token).buildAsync().also { future ->
             future.addListener(
@@ -507,6 +508,11 @@ private fun RadioApp(
     var recordingsOpen by rememberSaveable { mutableStateOf(false) }
     var weatherOpen by rememberSaveable { mutableStateOf(false) }
     var editorOpen by rememberSaveable { mutableStateOf(false) }
+    var historyOpen by rememberSaveable { mutableStateOf(false) }
+    var scheduleDVROpen by rememberSaveable { mutableStateOf(false) }
+    var liveTrackTitle by remember { mutableStateOf<String?>(null) }
+    var trackHistory by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
+    var activeScheduledInfo by remember { mutableStateOf(RecordingScheduler.activeScheduledInfo) }
     var searchOpen by rememberSaveable { mutableStateOf(false) }
     var filterOpen by rememberSaveable { mutableStateOf(false) }
     var weatherRefresh by remember { mutableStateOf(0) }
@@ -752,6 +758,30 @@ private fun RadioApp(
         }
     }
 
+    DisposableEffect(Unit) {
+        RadioPlayback.setTrackListener { title ->
+            liveTrackTitle = title
+            if (!title.isNullOrBlank()) {
+                val timeStr = java.text.SimpleDateFormat("hh:mm a", Locale.US).format(java.util.Date())
+                val stationName = current?.name ?: "Radio"
+                trackHistory = (listOf("$timeStr ($stationName)" to title) + trackHistory).take(30)
+            }
+        }
+        onDispose {
+            RadioPlayback.setTrackListener(null)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        StationStore.syncRemoteCatalog(context) { success ->
+            if (success) {
+                activity.runOnUiThread {
+                    stations = StationStore.load(context)
+                }
+            }
+        }
+    }
+
     if (current != null && player.mediaItemCount == 0 && !intentionallyStopped) {
         LaunchedEffect(current) { current?.let { setStation(it, false) } }
     }
@@ -764,6 +794,7 @@ private fun RadioApp(
                     station = current,
                     isPlaying = isPlaying,
                     elapsed = elapsedMs,
+                    liveTrackTitle = liveTrackTitle,
                     onExpand = { expanded = true },
                     onPlayPause = { togglePlayback() },
                     onStop = { stopPlayback() }
@@ -818,6 +849,7 @@ private fun RadioApp(
                     status = status,
                     weather = weather,
                     rds = rdsText(current, status, rdsIndex, isPlaying),
+                    liveTrackTitle = liveTrackTitle,
                     recording = recording,
                     saved = current?.let { favorites.contains(it.name) } == true,
                     compact = compact,
@@ -825,6 +857,7 @@ private fun RadioApp(
                     onPlayPause = { togglePlayback() },
                     onStop = { stopPlayback() },
                     onRecord = { toggleRecording() },
+                    onScheduleDVR = { scheduleDVROpen = true },
                     onFavorite = { current?.let { toggleFavorite(it) } }
                 )
             }
@@ -908,6 +941,14 @@ private fun RadioApp(
                 onRecordings = {
                     menuOpen = false
                     recordingsOpen = true
+                },
+                onTrackHistory = {
+                    menuOpen = false
+                    historyOpen = true
+                },
+                onScheduleDVR = {
+                    menuOpen = false
+                    scheduleDVROpen = true
                 },
                 onWeather = {
                     menuOpen = false
@@ -1026,6 +1067,79 @@ private fun RadioApp(
                 onShare = { file, format ->
                     shareRecording(context, file, format)
                 }
+            )
+        }
+    }
+
+    if (historyOpen) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { historyOpen = false },
+            sheetState = sheetState,
+            containerColor = DarkSurface
+        ) {
+            TrackHistorySheet(
+                history = trackHistory,
+                onClear = { trackHistory = emptyList() },
+                onClose = { historyOpen = false }
+            )
+        }
+    }
+
+    if (scheduleDVROpen) {
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+        ModalBottomSheet(
+            onDismissRequest = { scheduleDVROpen = false },
+            sheetState = sheetState,
+            containerColor = DarkSurface
+        ) {
+            ScheduleDVRSheet(
+                station = current,
+                activeInfo = activeScheduledInfo,
+                onSchedule = { delayMin, durationMin ->
+                    val stationToRecord = current ?: return@ScheduleDVRSheet
+                    RecordingScheduler.scheduleRecording(
+                        context = context,
+                        station = stationToRecord,
+                        delayMinutes = delayMin,
+                        durationMinutes = durationMin,
+                        streamRecorder = recorder,
+                        listener = object : StreamRecorder.Listener {
+                            override fun onStarted(file: File) {
+                                activity.runOnUiThread {
+                                    recording = true
+                                    status = "DVR Recording ${stationToRecord.name}"
+                                    activeScheduledInfo = RecordingScheduler.activeScheduledInfo
+                                }
+                            }
+                            override fun onStopped(file: File) {
+                                activity.runOnUiThread {
+                                    recording = false
+                                    status = if (player.isPlaying) "Live / ${stationToRecord.name}" else "Ready"
+                                    activeScheduledInfo = null
+                                    Toast.makeText(context, "DVR Recording saved!", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                            override fun onFailed(exception: Exception) {
+                                activity.runOnUiThread {
+                                    recording = false
+                                    status = "DVR Recording failed"
+                                    activeScheduledInfo = null
+                                }
+                            }
+                        }
+                    )
+                    activeScheduledInfo = RecordingScheduler.activeScheduledInfo
+                    scheduleDVROpen = false
+                    Toast.makeText(context, "DVR Recording scheduled!", Toast.LENGTH_SHORT).show()
+                },
+                onCancel = {
+                    RecordingScheduler.cancel()
+                    activeScheduledInfo = null
+                    scheduleDVROpen = false
+                    Toast.makeText(context, "Scheduled DVR cancelled", Toast.LENGTH_SHORT).show()
+                },
+                onClose = { scheduleDVROpen = false }
             )
         }
     }
@@ -1749,6 +1863,7 @@ private fun MiniPlayerBar(
     station: Station?,
     isPlaying: Boolean,
     elapsed: Long,
+    liveTrackTitle: String?,
     onExpand: () -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit
@@ -1774,7 +1889,14 @@ private fun MiniPlayerBar(
             Column(Modifier.weight(1f)) {
                 Text(station?.name ?: "Choose a station", color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(station?.meta() ?: "Ready", color = DarkMuted, fontSize = 12.sp, maxLines = 1, modifier = Modifier.weight(1f))
+                    Text(
+                        if (!liveTrackTitle.isNullOrBlank()) "🎵 $liveTrackTitle" else (station?.meta() ?: "Ready"),
+                        color = if (!liveTrackTitle.isNullOrBlank()) Teal else DarkMuted,
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
                     Text(formatElapsed(elapsed), color = Teal, fontWeight = FontWeight.Bold, fontSize = 12.sp)
                 }
             }
@@ -1800,6 +1922,7 @@ private fun FullPlayer(
     status: String,
     weather: WeatherState,
     rds: String,
+    liveTrackTitle: String?,
     recording: Boolean,
     saved: Boolean,
     compact: Boolean,
@@ -1807,6 +1930,7 @@ private fun FullPlayer(
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
     onRecord: () -> Unit,
+    onScheduleDVR: () -> Unit,
     onFavorite: () -> Unit
 ) {
     Box(
@@ -1846,6 +1970,10 @@ private fun FullPlayer(
             Spacer(Modifier.height(if (compact) 16.dp else 22.dp))
             Surface(color = DarkCard, shape = RoundedCornerShape(22.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (!liveTrackTitle.isNullOrBlank()) {
+                        Text("🎵 $liveTrackTitle", color = Teal, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, fontSize = 15.sp)
+                        Spacer(Modifier.height(6.dp))
+                    }
                     Text(rds, color = DarkInk, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
                     Spacer(Modifier.height(8.dp))
                     Text(weatherDashboardText(weather), color = DarkMuted, textAlign = TextAlign.Center, fontSize = 13.sp)
@@ -1865,14 +1993,23 @@ private fun FullPlayer(
                 }
             }
             Spacer(Modifier.height(14.dp))
-            FilledTonalButton(
-                onClick = onRecord,
-                colors = ButtonDefaults.filledTonalButtonColors(containerColor = if (recording) Gold else Coral, contentColor = Color.White),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
-            ) {
-                Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(8.dp))
-                Text(if (recording) "Stop recording" else "Record stream")
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                FilledTonalButton(
+                    onClick = onRecord,
+                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = if (recording) Gold else Coral, contentColor = Color.White),
+                    modifier = Modifier.weight(1f).height(48.dp)
+                ) {
+                    Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (recording) "Stop" else "Record")
+                }
+                FilledTonalButton(
+                    onClick = onScheduleDVR,
+                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = DarkCard, contentColor = DarkInk),
+                    modifier = Modifier.weight(1f).height(48.dp)
+                ) {
+                    Text("Schedule DVR")
+                }
             }
         }
     }
@@ -1917,6 +2054,8 @@ private fun StationLogo(url: String?, sizeDp: Int) {
 private fun MenuSheet(
     onSettings: () -> Unit,
     onRecordings: () -> Unit,
+    onTrackHistory: () -> Unit,
+    onScheduleDVR: () -> Unit,
     onWeather: () -> Unit,
     onStationEditor: () -> Unit,
     onStop: () -> Unit,
@@ -1930,6 +2069,12 @@ private fun MenuSheet(
             Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(8.dp))
             Text("Recordings")
+        }
+        FilledTonalButton(onClick = onTrackHistory, modifier = Modifier.fillMaxWidth()) {
+            Text("🎵 Live Track History")
+        }
+        FilledTonalButton(onClick = onScheduleDVR, modifier = Modifier.fillMaxWidth()) {
+            Text("⏱️ Schedule DVR Recording")
         }
         FilledTonalButton(onClick = onWeather, modifier = Modifier.fillMaxWidth()) {
             Icon(Icons.Filled.Cloud, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -2642,4 +2787,124 @@ private fun saveSetting(context: Context, key: String, value: String) {
         .edit()
         .putString(key, value)
         .apply()
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TrackHistorySheet(
+    history: List<Pair<String, String>>,
+    onClear: () -> Unit,
+    onClose: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Live Track History", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp, modifier = Modifier.weight(1f))
+            if (history.isNotEmpty()) {
+                TextButton(onClick = onClear) {
+                    Text("Clear", color = Coral)
+                }
+            }
+        }
+        if (history.isEmpty()) {
+            Text("No song tracks detected yet. Tune into stations like Z 93 or Magic 97.3 to capture live ICY/SHOUTcast track names.", color = DarkMuted, fontSize = 14.sp)
+        } else {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 350.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(history) { (timeAndStation, songTitle) ->
+                    Surface(
+                        color = DarkCard,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(songTitle, color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(timeAndStation, color = Teal, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ScheduleDVRSheet(
+    station: Station?,
+    activeInfo: ScheduledTaskInfo?,
+    onSchedule: (delayMin: Int, durationMin: Int) -> Unit,
+    onCancel: () -> Unit,
+    onClose: () -> Unit
+) {
+    var selectedDelay by remember { mutableIntStateOf(0) }
+    var selectedDuration by remember { mutableIntStateOf(30) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Text("Schedule Stream DVR", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+        Text("Record ${station?.name ?: "selected station"} automatically to local storage.", color = DarkMuted, fontSize = 14.sp)
+
+        if (activeInfo != null) {
+            Surface(color = DarkCard, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("Active DVR Schedule", color = Gold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("Station: ${activeInfo.stationName}", color = DarkInk)
+                    Text("Duration: ${activeInfo.durationMinutes} min", color = DarkMuted, fontSize = 13.sp)
+                    Spacer(Modifier.height(8.dp))
+                    FilledTonalButton(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.filledTonalButtonColors(containerColor = Coral, contentColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Cancel Scheduled DVR")
+                    }
+                }
+            }
+        } else {
+            Text("Start Recording In:", color = DarkInk, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(0 to "Now", 5 to "5 min", 15 to "15 min", 30 to "30 min").forEach { (min, label) ->
+                    FilterChip(
+                        selected = selectedDelay == min,
+                        onClick = { selectedDelay = min },
+                        label = { Text(label) }
+                    )
+                }
+            }
+
+            Text("Recording Duration:", color = DarkInk, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(15 to "15m", 30 to "30m", 60 to "60m", 120 to "2 hrs").forEach { (min, label) ->
+                    FilterChip(
+                        selected = selectedDuration == min,
+                        onClick = { selectedDuration = min },
+                        label = { Text(label) }
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+            FilledTonalButton(
+                onClick = { onSchedule(selectedDelay, selectedDuration) },
+                colors = ButtonDefaults.filledTonalButtonColors(containerColor = Teal, contentColor = DarkBg),
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Text("Confirm DVR Schedule", fontWeight = FontWeight.Bold)
+            }
+        }
+    }
 }
