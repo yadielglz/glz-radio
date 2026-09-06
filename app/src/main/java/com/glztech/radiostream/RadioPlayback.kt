@@ -20,7 +20,6 @@ object RadioPlayback {
     var currentTrackTitle: String? = null
         private set
     private var trackListener: ((String?) -> Unit)? = null
-    private var wasBuffering = false
 
     fun setTrackListener(listener: ((String?) -> Unit)?) {
         trackListener = listener
@@ -33,7 +32,7 @@ object RadioPlayback {
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(30_000)
-            .setUserAgent("GlzRadio/1.0")
+            .setUserAgent("GlzRadio/26.906.01")
             .setDefaultRequestProperties(
                 mapOf(
                     "Connection" to "keep-alive",
@@ -41,42 +40,50 @@ object RadioPlayback {
                 )
             )
         val dataSourceFactory = DefaultDataSource.Factory(appContext, httpDataSourceFactory)
+
+        // Optimized LoadControl specifically tuned for live audio streaming to minimize background RAM usage
         val loadControl = DefaultLoadControl.Builder()
             .setBufferDurationsMs(
-                15_000,
-                60_000,
-                2_500,
-                5_000
+                10_000, // minBufferMs (10s)
+                25_000, // maxBufferMs (25s, down from 60s for lower memory footprint)
+                1_500,  // bufferForPlaybackMs (1.5s snappy startup)
+                3_000   // bufferForPlaybackAfterRebufferMs (3s)
             )
+            .setPrioritizeTimeOverSizeThresholds(true)
             .build()
+
         return player ?: ExoPlayer.Builder(appContext)
             .setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setLoadControl(loadControl)
             .build()
             .apply {
-            setAudioAttributes(
-                AudioAttributes.Builder()
-                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                    .setUsage(C.USAGE_MEDIA)
-                    .build(),
-                true
-            )
-            setWakeMode(C.WAKE_MODE_NETWORK)
-            addListener(object : Player.Listener {
-                override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-                    val rawTitle = mediaMetadata.title?.toString()
-                        ?: mediaMetadata.displayTitle?.toString()
-                    if (!rawTitle.isNullOrBlank() && rawTitle != currentTrackTitle) {
-                        currentTrackTitle = rawTitle
-                        trackListener?.invoke(rawTitle)
+                setAudioAttributes(
+                    AudioAttributes.Builder()
+                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                        .setUsage(C.USAGE_MEDIA)
+                        .build(),
+                    true
+                )
+                setWakeMode(C.WAKE_MODE_NETWORK)
+                addListener(object : Player.Listener {
+                    override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                        val rawTitle = mediaMetadata.title?.toString()
+                            ?: mediaMetadata.displayTitle?.toString()
+                        if (!rawTitle.isNullOrBlank() && rawTitle != currentTrackTitle) {
+                            currentTrackTitle = rawTitle
+                            trackListener?.invoke(rawTitle)
+                        }
                     }
-                }
-            })
-            player = this
-        }
+                })
+                player = this
+            }
     }
 
     internal fun stationItem(station: Station): MediaItem {
+        val artworkUri = station.logoUrl?.takeIf(String::isNotBlank)?.let {
+            runCatching { Uri.parse(it) }.getOrNull()
+        }
+
         return MediaItem.Builder()
             .setMediaId(station.name)
             .setUri(station.streamUrl)
@@ -85,7 +92,11 @@ object RadioPlayback {
                     .setTitle(station.name)
                     .setArtist(station.location)
                     .setAlbumTitle(station.meta())
-                    .setArtworkUri(Uri.parse(station.logoUrl))
+                    .apply {
+                        if (artworkUri != null) {
+                            setArtworkUri(artworkUri)
+                        }
+                    }
                     .setIsPlayable(true)
                     .setIsBrowsable(false)
                     .build()
@@ -106,10 +117,16 @@ object RadioPlayback {
             .build()
     }
 
+    internal fun trimMemory() {
+        // Can drop transient metadata title caching if memory pressure occurs
+        if (player?.isPlaying != true) {
+            currentTrackTitle = null
+        }
+    }
+
     internal fun release() {
         player?.release()
         player = null
         currentTrackTitle = null
     }
 }
-

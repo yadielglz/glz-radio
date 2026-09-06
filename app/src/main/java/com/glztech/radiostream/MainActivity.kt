@@ -3,6 +3,7 @@ package com.glztech.radiostream
 import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog as PlatformAlertDialog
+import android.content.ComponentCallbacks2
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -362,6 +363,16 @@ class MainActivity : ComponentActivity() {
         controllerFuture = null
     }
 
+    override fun onTrimMemory(level: Int) {
+        super.onTrimMemory(level)
+        if (level >= ComponentCallbacks2.TRIM_MEMORY_UI_HIDDEN) {
+            runCatching {
+                coil.Coil.imageLoader(this).memoryCache?.clear()
+            }
+            RadioPlayback.trimMemory()
+        }
+    }
+
     private fun handleMenuAction(action: MenuAction) {
         if (action == MenuAction.About) showAbout()
     }
@@ -501,7 +512,7 @@ private fun RadioApp(
     var stations by remember { mutableStateOf(StationStore.load(context)) }
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf("All") }
-    var current by remember { mutableStateOf(stations.firstOrNull()) }
+    var current by remember { mutableStateOf(StationStore.getLastStation(context) ?: stations.firstOrNull()) }
     var expanded by rememberSaveable { mutableStateOf(false) }
     var menuOpen by rememberSaveable { mutableStateOf(false) }
     var settingsOpen by rememberSaveable { mutableStateOf(false) }
@@ -590,6 +601,7 @@ private fun RadioApp(
             recording = false
         }
         current = station
+        StationStore.setLastStation(context, station)
         accumulatedMs = 0L
         playStartedAtMs = 0L
         elapsedMs = 0L
