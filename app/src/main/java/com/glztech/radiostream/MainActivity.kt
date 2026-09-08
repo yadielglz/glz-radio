@@ -17,6 +17,7 @@ import android.os.Bundle
 import android.os.Build
 import android.os.Looper
 import android.os.SystemClock
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
@@ -399,9 +400,11 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun showAbout() {
+        val sessionId = RadioPlayback.audioSessionId
+        val sessionStr = if (sessionId > 0) "$sessionId" else "Pending playback"
         PlatformAlertDialog.Builder(this)
             .setTitle("About Glz Radio")
-            .setMessage("Version ${BuildConfig.VERSION_NAME}\n\nA native Android radio streamer for Puerto Rico live radio.\n\nUI: Jetpack Compose Material 3\nPlayback: Media3 ExoPlayer")
+            .setMessage("Version ${BuildConfig.VERSION_NAME}\n\nA native Android radio streamer for Puerto Rico live radio.\n\nUI: Jetpack Compose Material 3\nPlayback: Media3 ExoPlayer\nAudio Session ID: $sessionStr")
             .setPositiveButton("Done", null)
             .show()
     }
@@ -602,6 +605,7 @@ private fun RadioApp(
         }
         current = station
         StationStore.setLastStation(context, station)
+        Log.i("MainActivity", "Selected station ${station.name}, audioSessionId=${RadioPlayback.audioSessionId}")
         accumulatedMs = 0L
         playStartedAtMs = 0L
         elapsedMs = 0L

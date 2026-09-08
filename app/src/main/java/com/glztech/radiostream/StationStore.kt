@@ -12,6 +12,7 @@ internal object StationStore {
     private const val STATIONS_PREF = "stations_json"
     private const val CUSTOM_STATIONS_PREF = "custom_stations_json"
     private const val LAST_STATION_PREF = "last_station_name"
+    private const val LAST_AUTO_STATION_PREF = "last_auto_station_name"
     private const val REMOTE_CATALOG_URL = "https://glzhub.glztech.com/api/v1/radio/stations"
     private const val FALLBACK_CATALOG_URL = "https://radio.glztech.com/stations.json"
     private const val GITHUB_CATALOG_URL = "https://raw.githubusercontent.com/yadielglz/glz-radio/main/web/public/stations.json"
@@ -80,6 +81,27 @@ internal object StationStore {
             .apply()
     }
 
+    fun getLastAutoStation(context: Context): Station? {
+        val allStations = load(context)
+        if (allStations.isEmpty()) return null
+        val lastAutoName = context.getSharedPreferences(APP_PREFS, Context.MODE_PRIVATE)
+            .getString(LAST_AUTO_STATION_PREF, null)
+            ?: return getLastStation(context)
+
+        return allStations.firstOrNull {
+            it.name.equals(lastAutoName, ignoreCase = true) ||
+                it.callSign.equals(lastAutoName, ignoreCase = true) ||
+                it.streamUrl == lastAutoName
+        } ?: getLastStation(context)
+    }
+
+    fun setLastAutoStation(context: Context, station: Station) {
+        context.getSharedPreferences(APP_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString(LAST_AUTO_STATION_PREF, station.name)
+            .apply()
+    }
+
     fun addCustomStation(context: Context, station: Station) {
         val currentCustom = getCustomStations(context).toMutableList()
         currentCustom.removeAll { it.name.equals(station.name, ignoreCase = true) || it.streamUrl == station.streamUrl }
@@ -131,6 +153,7 @@ internal object StationStore {
             .remove(STATIONS_PREF)
             .remove(CUSTOM_STATIONS_PREF)
             .remove(LAST_STATION_PREF)
+            .remove(LAST_AUTO_STATION_PREF)
             .apply()
         return StationCatalog.all().toList()
     }
@@ -277,7 +300,7 @@ internal object StationStore {
             conn.readTimeout = 8000
             conn.requestMethod = "GET"
             conn.setRequestProperty("Accept", "application/json")
-            conn.setRequestProperty("User-Agent", "GlzRadio/26.906.01")
+            conn.setRequestProperty("User-Agent", "GlzRadio/26.908.100")
             if (conn.responseCode == 200) {
                 val text = conn.inputStream.bufferedReader().use { it.readText() }.trim()
                 if (text.startsWith("[") || text.startsWith("{")) text else null

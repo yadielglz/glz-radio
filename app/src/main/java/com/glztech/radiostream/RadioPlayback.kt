@@ -1,7 +1,10 @@
 package com.glztech.radiostream
 
 import android.content.Context
+import android.content.Intent
+import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -12,11 +15,19 @@ import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 
 @androidx.annotation.OptIn(UnstableApi::class)
 object RadioPlayback {
+    private const val TAG = "RadioPlayback"
     private var player: ExoPlayer? = null
+    private var activeContext: Context? = null
+    private var activeAudioSessionId: Int = C.AUDIO_SESSION_ID_UNSET
+
+    val audioSessionId: Int
+        get() = player?.audioSessionId?.takeIf { it != C.AUDIO_SESSION_ID_UNSET } ?: activeAudioSessionId
+
     var currentTrackTitle: String? = null
         private set
     private var trackListener: ((String?) -> Unit)? = null
@@ -26,13 +37,43 @@ object RadioPlayback {
         listener?.invoke(currentTrackTitle)
     }
 
+    fun broadcastAudioSession(context: Context, sessionId: Int) {
+        if (sessionId == C.AUDIO_SESSION_ID_UNSET || sessionId <= 0) return
+        if (activeAudioSessionId != C.AUDIO_SESSION_ID_UNSET && activeAudioSessionId != sessionId) {
+            closeAudioSession(context, activeAudioSessionId)
+        }
+        activeAudioSessionId = sessionId
+        Log.i(TAG, "Exposing audio session ID: $sessionId for package ${context.packageName} (Poweramp Equalizer detection)")
+        Log.i("AudioEffect", "AudioSessionId: $sessionId, Package: ${context.packageName}")
+        val intent = Intent(AudioEffect.ACTION_OPEN_AUDIO_EFFECT_CONTROL_SESSION).apply {
+            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+            putExtra(AudioEffect.EXTRA_CONTENT_TYPE, AudioEffect.CONTENT_TYPE_MUSIC)
+        }
+        context.sendBroadcast(intent)
+    }
+
+    fun closeAudioSession(context: Context, sessionId: Int) {
+        if (sessionId == C.AUDIO_SESSION_ID_UNSET || sessionId <= 0) return
+        Log.i(TAG, "Closing audio session ID: $sessionId for package ${context.packageName}")
+        val intent = Intent(AudioEffect.ACTION_CLOSE_AUDIO_EFFECT_CONTROL_SESSION).apply {
+            putExtra(AudioEffect.EXTRA_AUDIO_SESSION, sessionId)
+            putExtra(AudioEffect.EXTRA_PACKAGE_NAME, context.packageName)
+        }
+        context.sendBroadcast(intent)
+        if (activeAudioSessionId == sessionId) {
+            activeAudioSessionId = C.AUDIO_SESSION_ID_UNSET
+        }
+    }
+
     internal fun player(context: Context): ExoPlayer {
         val appContext = context.applicationContext
+        activeContext = appContext
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(30_000)
-            .setUserAgent("GlzRadio/26.906.01")
+            .setUserAgent("GlzRadio/26.908.100")
             .setDefaultRequestProperties(
                 mapOf(
                     "Connection" to "keep-alive",
@@ -65,6 +106,17 @@ object RadioPlayback {
                     true
                 )
                 setWakeMode(C.WAKE_MODE_NETWORK)
+                addAnalyticsListener(object : AnalyticsListener {
+                    override fun onAudioSessionIdChanged(
+                        eventTime: AnalyticsListener.EventTime,
+                        audioSessionId: Int
+                    ) {
+                        Log.i(TAG, "AnalyticsListener.onAudioSessionIdChanged: $audioSessionId for package ${appContext.packageName}")
+                        if (audioSessionId != C.AUDIO_SESSION_ID_UNSET && audioSessionId > 0) {
+                            broadcastAudioSession(appContext, audioSessionId)
+                        }
+                    }
+                })
                 addListener(object : Player.Listener {
                     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                         val rawTitle = mediaMetadata.title?.toString()
@@ -74,8 +126,37 @@ object RadioPlayback {
                             trackListener?.invoke(rawTitle)
                         }
                     }
+
+                    override fun onIsPlayingChanged(isPlaying: Boolean) {
+                        val sessionId = audioSessionId
+                        Log.i(TAG, "onIsPlayingChanged: isPlaying=$isPlaying, audioSessionId=$sessionId")
+                        if (isPlaying && sessionId != C.AUDIO_SESSION_ID_UNSET && sessionId > 0) {
+                            broadcastAudioSession(appContext, sessionId)
+                        }
+                    }
+
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        val sessionId = audioSessionId
+                        val stateName = when (playbackState) {
+                            Player.STATE_IDLE -> "IDLE"
+                            Player.STATE_BUFFERING -> "BUFFERING"
+                            Player.STATE_READY -> "READY"
+                            Player.STATE_ENDED -> "ENDED"
+                            else -> "STATE_$playbackState"
+                        }
+                        Log.i(TAG, "onPlaybackStateChanged: state=$stateName, audioSessionId=$sessionId")
+                        if (playbackState == Player.STATE_READY && sessionId != C.AUDIO_SESSION_ID_UNSET && sessionId > 0) {
+                            broadcastAudioSession(appContext, sessionId)
+                        }
+                    }
                 })
                 player = this
+
+                val initialSessionId = audioSessionId
+                Log.i(TAG, "ExoPlayer initialized, audioSessionId=$initialSessionId")
+                if (initialSessionId != C.AUDIO_SESSION_ID_UNSET && initialSessionId > 0) {
+                    broadcastAudioSession(appContext, initialSessionId)
+                }
             }
     }
 
@@ -124,9 +205,16 @@ object RadioPlayback {
         }
     }
 
-    internal fun release() {
+    internal fun release(context: Context? = null) {
+        val ctx = context ?: activeContext
+        if (ctx != null && activeAudioSessionId != C.AUDIO_SESSION_ID_UNSET && activeAudioSessionId > 0) {
+            closeAudioSession(ctx, activeAudioSessionId)
+        }
         player?.release()
         player = null
         currentTrackTitle = null
+        activeAudioSessionId = C.AUDIO_SESSION_ID_UNSET
+        activeContext = null
     }
 }
+
