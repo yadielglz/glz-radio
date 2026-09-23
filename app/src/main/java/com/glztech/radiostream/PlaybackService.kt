@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
@@ -77,10 +78,8 @@ class PlaybackService : MediaLibraryService() {
             }
         }
         val filter = IntentFilter(ACTION_CAR_CONNECTION_UPDATED)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(carConnectionReceiver, filter, Context.RECEIVER_EXPORTED)
-        } else {
-            registerReceiver(carConnectionReceiver, filter)
+        carConnectionReceiver?.let { receiver ->
+            ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_EXPORTED)
         }
     }
 
