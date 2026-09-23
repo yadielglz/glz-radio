@@ -16,7 +16,9 @@ import android.location.Geocoder
 import android.os.Bundle
 import android.os.Build
 import android.os.Looper
+import android.os.PowerManager
 import android.os.SystemClock
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
@@ -169,6 +171,7 @@ private const val ACCENT_PREF = "accent_name"
 private const val LAYOUT_PREF = "layout_mode"
 private const val PLAYER_SIZE_PREF = "player_size"
 private const val LOCATION_PROMPTED_PREF = "location_prompted"
+private const val BATTERY_PROMPTED_PREF = "battery_prompted"
 private const val DEFAULT_THEME = "Signal Noir"
 private const val DEFAULT_ACCENT = "Amber"
 private const val SAN_JUAN_LAT = 18.4655
@@ -397,15 +400,54 @@ class MainActivity : ComponentActivity() {
         if (permissions.isNotEmpty()) {
             startupPermissionsLauncher.launch(permissions.toTypedArray())
         }
+        requestUnrestrictedBatteryIfNeeded()
+    }
+
+    private fun requestUnrestrictedBatteryIfNeeded() {
+        val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager ?: return
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            val prefs = getSharedPreferences(APP_PREFS, Context.MODE_PRIVATE)
+            val batteryPrompted = prefs.getBoolean(BATTERY_PROMPTED_PREF, false)
+            if (!batteryPrompted) {
+                prefs.edit().putBoolean(BATTERY_PROMPTED_PREF, true).apply()
+                try {
+                    val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+                        data = Uri.parse("package:$packageName")
+                    }
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    try {
+                        val fallback = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                        startActivity(fallback)
+                    } catch (_: Exception) {}
+                }
+            }
+        }
     }
 
     private fun showAbout() {
         val sessionId = RadioPlayback.audioSessionId
         val sessionStr = if (sessionId > 0) "$sessionId" else "Pending playback"
+        val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
+        val isBatteryUnrestricted = powerManager?.isIgnoringBatteryOptimizations(packageName) == true
+        val batteryStr = if (isBatteryUnrestricted) "Unrestricted (Optimal for Android Auto)" else "Optimized (May sleep on AA)"
         PlatformAlertDialog.Builder(this)
             .setTitle("About Glz Radio")
-            .setMessage("Version ${BuildConfig.VERSION_NAME}\n\nA native Android radio streamer for Puerto Rico live radio.\n\nUI: Jetpack Compose Material 3\nPlayback: Media3 ExoPlayer\nAudio Session ID: $sessionStr")
+            .setMessage("Version ${BuildConfig.VERSION_NAME}\n\nA native Android radio streamer for Puerto Rico live radio.\n\nUI: Jetpack Compose Material 3\nPlayback: Media3 ExoPlayer\nAudio Session ID: $sessionStr\nBattery Usage: $batteryStr")
             .setPositiveButton("Done", null)
+            .setNeutralButton("Battery Settings") { _, _ ->
+                try {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    startActivity(intent)
+                } catch (_: Exception) {
+                    try {
+                        val appDetail = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                            data = Uri.parse("package:$packageName")
+                        }
+                        startActivity(appDetail)
+                    } catch (_: Exception) {}
+                }
+            }
             .show()
     }
 }
