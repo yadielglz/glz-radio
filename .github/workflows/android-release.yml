@@ -27,11 +27,11 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android platform
-        run: sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
+      - name: Accept Android SDK licenses and install components
+        run: |
+          export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/cmdline-tools/16.0/bin:$PATH"
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-35" "build-tools;36.0.0" || true
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -109,7 +109,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           APK_NAME: ${{ steps.artifact.outputs.apk }}
-        run: gh release create "$GITHUB_REF_NAME" "$APK_NAME" update.json --verify-tag --generate-notes --prerelease --title "Glz Radio ${{ steps.version.outputs.name }}"
+        run: gh release create "$GITHUB_REF_NAME" "$APK_NAME" update.json --verify-tag --generate-notes --title "Glz Radio ${{ steps.version.outputs.name }}"
 
       - name: Remove signing material
         if: always()
