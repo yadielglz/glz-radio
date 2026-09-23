@@ -349,6 +349,7 @@ internal fun isAutoPackage(packageName: String): Boolean {
         pkg.contains("android.car")
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 internal fun isAutoController(session: MediaSession, controller: MediaSession.ControllerInfo): Boolean {
     if (session.isAutoCompanionController(controller) || session.isAutomotiveController(controller)) {
         return true
@@ -374,6 +375,7 @@ internal fun findStationByMediaId(mediaId: String?, stations: List<Station>): St
     return null
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 internal fun resolvePlayableItems(
     requestedItems: List<MediaItem>,
     stations: List<Station>,
@@ -397,6 +399,7 @@ internal fun resolvePlayableItems(
     }
 }
 
+@androidx.annotation.OptIn(UnstableApi::class)
 internal fun resolvePlayableItems(
     requestedItems: List<MediaItem>,
     stations: List<Station>,
