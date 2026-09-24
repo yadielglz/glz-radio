@@ -1,13 +1,7 @@
 package com.glztech.radiostream
 
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.os.Build
-import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
@@ -21,8 +15,6 @@ import java.util.Locale
 @androidx.annotation.OptIn(UnstableApi::class)
 class PlaybackService : MediaLibraryService() {
     private var session: MediaLibrarySession? = null
-    private var carConnectionReceiver: BroadcastReceiver? = null
-    private var carConnected = false
 
     override fun onCreate() {
         super.onCreate()
@@ -41,47 +33,6 @@ class PlaybackService : MediaLibraryService() {
             builder.setSessionActivity(pendingIntent)
         }
         session = builder.build()
-        Log.i(TAG, "Media library session ready for Android Auto browsing")
-        registerCarConnectionReceiver()
-    }
-
-    private fun registerCarConnectionReceiver() {
-        carConnectionReceiver = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent?) {
-                if (intent?.action == ACTION_CAR_CONNECTION_UPDATED) {
-                    val connectionType = intent.getIntExtra(EXTRA_CAR_CONNECTION_STATE, CONNECTION_TYPE_NOT_CONNECTED)
-                    carConnected = connectionType != CONNECTION_TYPE_NOT_CONNECTED
-                    Log.i(TAG, "Car connection broadcast received: state=$connectionType")
-                    val player = session?.player ?: RadioPlayback.player(context)
-                    if (connectionType == CONNECTION_TYPE_NOT_CONNECTED) {
-                        Log.i(TAG, "Car disconnected: pausing playback")
-                        val currentMediaId = player.currentMediaItem?.mediaId
-                        val stations = StationStore.load(context)
-                        findStationByMediaId(currentMediaId, stations)?.let { station ->
-                            StationStore.setLastAutoStation(context, station)
-                        }
-                        if (player.isPlaying) {
-                            player.pause()
-                        }
-                    }
-                }
-            }
-        }
-        val filter = IntentFilter(ACTION_CAR_CONNECTION_UPDATED)
-        carConnectionReceiver?.let { receiver ->
-            ContextCompat.registerReceiver(this, receiver, filter, ContextCompat.RECEIVER_EXPORTED)
-        }
-    }
-
-    private fun unregisterCarConnectionReceiver() {
-        carConnectionReceiver?.let {
-            try {
-                unregisterReceiver(it)
-            } catch (e: Exception) {
-                Log.w(TAG, "Failed to unregister car connection receiver", e)
-            }
-            carConnectionReceiver = null
-        }
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
@@ -89,7 +40,6 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
-        unregisterCarConnectionReceiver()
         session?.release()
         session = null
         RadioPlayback.release(this)
@@ -97,17 +47,14 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-        // Android Auto may browse or play without the phone activity being present.
-        // Never tear down an active media session just because its UI task was removed.
-        val activePlayer = session?.player
-        if (carConnected || activePlayer?.isPlaying == true || activePlayer?.playWhenReady == true) {
-            Log.i(TAG, "Retaining active media session after phone task removal")
-            return
-        }
-        Log.i(TAG, "Stopping inactive media session after phone task removal")
+        // Swiping the task away is an explicit exit. Ordinary backgrounding,
+        // screen-off, and Home navigation continue playback through this service.
         SleepTimer.cancel()
-        activePlayer?.stop()
-        activePlayer?.clearMediaItems()
+        session?.player?.run {
+            stop()
+            clearMediaItems()
+        }
+        pauseAllPlayersAndStopSelf()
         stopSelf()
         super.onTaskRemoved(rootIntent)
     }
@@ -120,36 +67,11 @@ class PlaybackService : MediaLibraryService() {
     }
 
     private class LibraryCallback(private val context: Context) : MediaLibrarySession.Callback {
-        override fun onConnect(
-            session: MediaSession,
-            controller: MediaSession.ControllerInfo
-        ): MediaSession.ConnectionResult {
-            val isAuto = isAutoController(session, controller)
-            Log.i(TAG, "onConnect: pkg=${controller.packageName}, isAuto=$isAuto")
-
-            val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon().build()
-            val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon().build()
-
-            return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
-                .setAvailableSessionCommands(sessionCommands)
-                .setAvailablePlayerCommands(playerCommands)
-                .build()
-        }
-
-        override fun onDisconnected(
-            session: MediaSession,
-            controller: MediaSession.ControllerInfo
-        ) {
-            Log.i(TAG, "onDisconnected: pkg=${controller.packageName}")
-            super.onDisconnected(session, controller)
-        }
-
         override fun onGetLibraryRoot(
             session: MediaLibrarySession,
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            Log.i(TAG, "onGetLibraryRoot: pkg=${browser.packageName}")
             return Futures.immediateFuture(LibraryResult.ofItem(RadioPlayback.rootItem(), params))
         }
 
@@ -162,19 +84,11 @@ class PlaybackService : MediaLibraryService() {
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
             val items = if (parentId == ROOT_ID) {
-                runCatching { StationStore.load(context) }
-                    .onFailure { Log.e(TAG, "Station library load failed", it) }
-                    .getOrDefault(emptyList())
-                    .ifEmpty { StationCatalog.all().toList() }
-                    .map { RadioPlayback.stationItem(it) }
+                StationStore.load(context).map { RadioPlayback.stationItem(it) }
             } else {
                 emptyList()
             }
-            val start = page.toLong() * pageSize.toLong()
-            val pagedItems = if (start >= items.size) emptyList() else
-                items.drop(start.toInt()).take(pageSize)
-            Log.i(TAG, "onGetChildren: pkg=${browser.packageName}, parent=$parentId, page=$page, returned=${pagedItems.size}")
-            return Futures.immediateFuture(LibraryResult.ofItemList(pagedItems, params))
+            return Futures.immediateFuture(LibraryResult.ofItemList(items, params))
         }
 
         override fun onGetItem(
@@ -300,13 +214,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     companion object {
-        const val TAG = "PlaybackService"
         const val ROOT_ID = "glz_radio_root"
-        const val ACTION_CAR_CONNECTION_UPDATED = "androidx.car.app.connection.action.CAR_CONNECTION_UPDATED"
-        const val EXTRA_CAR_CONNECTION_STATE = "androidx.car.app.connection.extra.CAR_CONNECTION_STATE"
-        const val CONNECTION_TYPE_NOT_CONNECTED = 0
-        const val CONNECTION_TYPE_NATIVE = 1
-        const val CONNECTION_TYPE_PROJECTION = 2
     }
 }
 
@@ -368,7 +276,6 @@ internal fun resolvePlayableItems(
     }
 }
 
-@androidx.annotation.OptIn(UnstableApi::class)
 internal fun resolvePlayableItems(
     requestedItems: List<MediaItem>,
     stations: List<Station>,
@@ -379,5 +286,4 @@ internal fun resolvePlayableItems(
         ?: StationCatalog.all().first())
     return resolvePlayableItems(requestedItems, stations, fallback)
 }
-
 
