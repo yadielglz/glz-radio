@@ -40,7 +40,6 @@
                 <action android:name="android.media.browse.MediaBrowserService" />
                 <action android:name="androidx.media3.session.MediaLibraryService" />
                 <action android:name="androidx.media3.session.MediaSessionService" />
-                <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </service>
         <provider
