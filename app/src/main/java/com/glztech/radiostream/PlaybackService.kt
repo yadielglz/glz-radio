@@ -22,6 +22,7 @@ import java.util.Locale
 class PlaybackService : MediaLibraryService() {
     private var session: MediaLibrarySession? = null
     private var carConnectionReceiver: BroadcastReceiver? = null
+    private var carConnected = false
 
     override fun onCreate() {
         super.onCreate()
@@ -40,6 +41,7 @@ class PlaybackService : MediaLibraryService() {
             builder.setSessionActivity(pendingIntent)
         }
         session = builder.build()
+        Log.i(TAG, "Media library session ready for Android Auto browsing")
         registerCarConnectionReceiver()
     }
 
@@ -48,6 +50,7 @@ class PlaybackService : MediaLibraryService() {
             override fun onReceive(context: Context, intent: Intent?) {
                 if (intent?.action == ACTION_CAR_CONNECTION_UPDATED) {
                     val connectionType = intent.getIntExtra(EXTRA_CAR_CONNECTION_STATE, CONNECTION_TYPE_NOT_CONNECTED)
+                    carConnected = connectionType != CONNECTION_TYPE_NOT_CONNECTED
                     Log.i(TAG, "Car connection broadcast received: state=$connectionType")
                     val player = session?.player ?: RadioPlayback.player(context)
                     if (connectionType == CONNECTION_TYPE_NOT_CONNECTED) {
@@ -94,13 +97,17 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-        // Swiping the task away is an explicit exit. Ordinary backgrounding,
-        // screen-off, and Home navigation continue playback through this service.
-        SleepTimer.cancel()
-        session?.player?.run {
-            stop()
-            clearMediaItems()
+        // Android Auto may browse or play without the phone activity being present.
+        // Never tear down an active media session just because its UI task was removed.
+        val activePlayer = session?.player
+        if (carConnected || activePlayer?.isPlaying == true || activePlayer?.playWhenReady == true) {
+            Log.i(TAG, "Retaining active media session after phone task removal")
+            return
         }
+        Log.i(TAG, "Stopping inactive media session after phone task removal")
+        SleepTimer.cancel()
+        activePlayer?.stop()
+        activePlayer?.clearMediaItems()
         stopSelf()
         super.onTaskRemoved(rootIntent)
     }
@@ -142,6 +149,7 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
+            Log.i(TAG, "onGetLibraryRoot: pkg=${browser.packageName}")
             return Futures.immediateFuture(LibraryResult.ofItem(RadioPlayback.rootItem(), params))
         }
 
@@ -154,11 +162,19 @@ class PlaybackService : MediaLibraryService() {
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
             val items = if (parentId == ROOT_ID) {
-                StationStore.load(context).map { RadioPlayback.stationItem(it) }
+                runCatching { StationStore.load(context) }
+                    .onFailure { Log.e(TAG, "Station library load failed", it) }
+                    .getOrDefault(emptyList())
+                    .ifEmpty { StationCatalog.all().toList() }
+                    .map { RadioPlayback.stationItem(it) }
             } else {
                 emptyList()
             }
-            return Futures.immediateFuture(LibraryResult.ofItemList(items, params))
+            val start = page.toLong() * pageSize.toLong()
+            val pagedItems = if (start >= items.size) emptyList() else
+                items.drop(start.toInt()).take(pageSize)
+            Log.i(TAG, "onGetChildren: pkg=${browser.packageName}, parent=$parentId, page=$page, returned=${pagedItems.size}")
+            return Futures.immediateFuture(LibraryResult.ofItemList(pagedItems, params))
         }
 
         override fun onGetItem(
