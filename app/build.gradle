@@ -23,8 +23,8 @@ android {
         targetSdk 37
         // Keep versionCode monotonically increasing: Android uses it (not Git tags)
         // to decide whether an APK can upgrade the installed application.
-        versionCode 299232401
-        versionName "26.923.2400"
+        versionCode 299240100
+        versionName "26.924.0100"
     }
 
     buildFeatures {
