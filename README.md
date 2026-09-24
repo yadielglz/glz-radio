@@ -1,5 +1,7 @@
 # Glz Radio
 
+**Current Android release:** `26.924.0100`
+
 Native Android radio streaming app for the curated Puerto Rico station list.
 
 An installable browser version is available in [`web/`](web/README.md). It is
