@@ -4,6 +4,11 @@ on:
   push:
     tags:
       - "v*"
+    branches:
+      - main
+    paths:
+      - "app/build.gradle"
+      - ".github/workflows/android-release.yml"
 
 permissions:
   contents: write
@@ -69,11 +74,14 @@ jobs:
         run: |
           VERSION_NAME="$(sed -n 's/^[[:space:]]*versionName[[:space:]]*"\([^"]*\)".*/\1/p' app/build.gradle)"
           VERSION_CODE="$(sed -n 's/^[[:space:]]*versionCode[[:space:]]*\([0-9]*\).*/\1/p' app/build.gradle)"
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
-          test "$TAG_VERSION" = "$VERSION_NAME"
+          if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
+            TAG_VERSION="${GITHUB_REF_NAME#v}"
+            test "$TAG_VERSION" = "$VERSION_NAME"
+          fi
           test -n "$VERSION_CODE"
           echo "name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
           echo "code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Test, lint, and build signed APK
         run: ./gradlew --no-daemon testDebugUnitTest lintRelease assembleRelease
@@ -83,6 +91,7 @@ jobs:
         env:
           VERSION_NAME: ${{ steps.version.outputs.name }}
           VERSION_CODE: ${{ steps.version.outputs.code }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
         run: |
           APK_NAME="glz-radio-${VERSION_NAME}.apk"
           cp app/build/outputs/apk/release/app-release.apk "$APK_NAME"
@@ -92,7 +101,7 @@ jobs:
             --argjson versionCode "$VERSION_CODE" \
             --arg versionName "$VERSION_NAME" \
             --argjson minimumSupportedVersionCode 32000 \
-            --arg apkUrl "https://github.com/${GITHUB_REPOSITORY}/releases/download/${GITHUB_REF_NAME}/${APK_NAME}" \
+            --arg apkUrl "https://github.com/${GITHUB_REPOSITORY}/releases/download/${RELEASE_TAG}/${APK_NAME}" \
             --arg sha256 "$SHA256" \
             --arg releaseNotes "Glz Radio ${VERSION_NAME}. See the GitHub release notes for details." \
             '{
@@ -109,7 +118,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           APK_NAME: ${{ steps.artifact.outputs.apk }}
-        run: gh release create "$GITHUB_REF_NAME" "$APK_NAME" update.json --verify-tag --generate-notes --title "Glz Radio ${{ steps.version.outputs.name }}"
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; refusing to overwrite it"
+            exit 1
+          fi
+          gh release create "$RELEASE_TAG" "$APK_NAME" update.json --target "$GITHUB_SHA" --generate-notes --title "Glz Radio ${{ steps.version.outputs.name }}"
 
       - name: Remove signing material
         if: always()
