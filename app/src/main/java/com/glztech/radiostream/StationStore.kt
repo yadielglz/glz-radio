@@ -300,7 +300,7 @@ internal object StationStore {
             conn.readTimeout = 8000
             conn.requestMethod = "GET"
             conn.setRequestProperty("Accept", "application/json")
-            conn.setRequestProperty("User-Agent", "GlzRadio/29.923.2100")
+            conn.setRequestProperty("User-Agent", "GlzRadio/26.923.2300")
             if (conn.responseCode == 200) {
                 val text = conn.inputStream.bufferedReader().use { it.readText() }.trim()
                 if (text.startsWith("[") || text.startsWith("{")) text else null
