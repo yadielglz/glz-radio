@@ -73,7 +73,7 @@ object RadioPlayback {
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(30_000)
-            .setUserAgent("GlzRadio/26.923.2300")
+            .setUserAgent("GlzRadio/26.923.2400")
             .setDefaultRequestProperties(
                 mapOf(
                     "Connection" to "keep-alive",
@@ -187,15 +187,6 @@ object RadioPlayback {
     }
 
     internal fun rootItem(): MediaItem {
-        val rootExtras = android.os.Bundle().apply {
-            putBoolean("android.service.media.extra.RECENT", true)
-            putBoolean("android.service.media.extra.OFFLINE", false)
-            putBoolean("android.media.browse.SEARCH_SUPPORTED", true)
-            putInt("androidx.media.MediaBrowserCompat.Extras.KEY_ROOT_CHILDREN_BROWSABLE_VALUE", 1)
-            putInt("androidx.media.MediaBrowserCompat.Extras.KEY_ROOT_CHILDREN_PLAYABLE_VALUE", 1)
-            putInt("androidx.media.utils.MEDIA_BROWSER_SERVICE_EXTRAS_KEY_APPLICATION_PREFERENCES_USING_CAR_APP_LIBRARY_APPS", 1)
-        }
-
         return MediaItem.Builder()
             .setMediaId(PlaybackService.ROOT_ID)
             .setMediaMetadata(
@@ -203,8 +194,6 @@ object RadioPlayback {
                     .setTitle("Glz Radio")
                     .setIsPlayable(false)
                     .setIsBrowsable(true)
-                    .setMediaType(MediaMetadata.MEDIA_TYPE_FOLDER_MIXED)
-                    .setExtras(rootExtras)
                     .build()
             )
             .build()
