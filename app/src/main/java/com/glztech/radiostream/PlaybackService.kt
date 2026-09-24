@@ -2,6 +2,7 @@ package com.glztech.radiostream
 
 import android.app.PendingIntent
 import android.content.Context
+import android.util.Log
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.session.LibraryResult
@@ -33,9 +34,11 @@ class PlaybackService : MediaLibraryService() {
             builder.setSessionActivity(pendingIntent)
         }
         session = builder.build()
+        Log.i("GlzAuto", "MediaLibrarySession created")
     }
 
     override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaLibrarySession? {
+        Log.i("GlzAuto", "onGetSession: ${controllerInfo.packageName}, ready=${session != null}")
         return session
     }
 
@@ -47,8 +50,8 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onTaskRemoved(rootIntent: android.content.Intent?) {
-        // Swiping the task away is an explicit exit. Ordinary backgrounding,
-        // screen-off, and Home navigation continue playback through this service.
+        // Android Auto may remain connected after the phone task is removed.
+        if (session?.player?.playWhenReady == true || session?.player?.isPlaying == true) return
         SleepTimer.cancel()
         session?.player?.run {
             stop()
@@ -72,7 +75,8 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            return Futures.immediateFuture(LibraryResult.ofItem(RadioPlayback.rootItem(), params))
+            Log.i("GlzAuto", "root requested by ${browser.packageName}")
+            return Futures.immediateFuture(LibraryResult.ofItem(AutoLibrary.root(), params))
         }
 
         override fun onGetChildren(
@@ -83,11 +87,11 @@ class PlaybackService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-            val items = if (parentId == ROOT_ID) {
-                StationStore.load(context).map { RadioPlayback.stationItem(it) }
-            } else {
-                emptyList()
-            }
+            val items = runCatching { AutoLibrary.children(context, parentId) }
+                .onFailure { Log.e("GlzAuto", "browse failed: $parentId", it) }
+                .getOrDefault(emptyList())
+            Log.i("GlzAuto", "children: parent=$parentId count=${items.size} client=${browser.packageName}")
+            // Android Auto hosts can request the complete category without pagination.
             return Futures.immediateFuture(LibraryResult.ofItemList(items, params))
         }
 
@@ -96,10 +100,10 @@ class PlaybackService : MediaLibraryService() {
             browser: MediaSession.ControllerInfo,
             mediaId: String
         ): ListenableFuture<LibraryResult<MediaItem>> {
-            if (mediaId == ROOT_ID) {
-                return Futures.immediateFuture(LibraryResult.ofItem(RadioPlayback.rootItem(), null))
+            AutoLibrary.item(context, mediaId)?.let {
+                return Futures.immediateFuture(LibraryResult.ofItem(it, null))
             }
-            val stations = StationStore.load(context)
+            val stations = AutoLibrary.stations(context)
             val isAuto = isAutoController(session, browser)
             val fallbackStation = (if (isAuto) StationStore.getLastAutoStation(context) else null)
                 ?: StationStore.getLastStation(context)
@@ -171,7 +175,7 @@ class PlaybackService : MediaLibraryService() {
             val isAuto = isAutoController(mediaSession, controller)
             val lastStation = (if (isAuto) StationStore.getLastAutoStation(context) else null)
                 ?: StationStore.getLastStation(context)
-                ?: StationStore.load(context).firstOrNull()
+                ?: AutoLibrary.stations(context).firstOrNull()
                 ?: StationCatalog.all().first()
 
             if (isAuto) {
@@ -193,7 +197,7 @@ class PlaybackService : MediaLibraryService() {
             query: String,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<Void>> {
-            val matchCount = StationStore.load(context).count { it.matches(query) }
+            val matchCount = AutoLibrary.stations(context).count { it.matches(query) }
             session.notifySearchResultChanged(browser, query, matchCount, params)
             return Futures.immediateFuture(LibraryResult.ofVoid())
         }
@@ -206,7 +210,7 @@ class PlaybackService : MediaLibraryService() {
             pageSize: Int,
             params: LibraryParams?
         ): ListenableFuture<LibraryResult<ImmutableList<MediaItem>>> {
-            val matches = StationStore.load(context)
+            val matches = AutoLibrary.stations(context)
                 .filter { it.matches(query) }
                 .map { RadioPlayback.stationItem(it) }
             return Futures.immediateFuture(LibraryResult.ofItemList(matches, params))
