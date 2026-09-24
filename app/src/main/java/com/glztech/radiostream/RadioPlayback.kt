@@ -73,7 +73,7 @@ object RadioPlayback {
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
             .setReadTimeoutMs(30_000)
-            .setUserAgent("GlzRadio/26.923.2400")
+            .setUserAgent("GlzRadio/26.924.0100")
             .setDefaultRequestProperties(
                 mapOf(
                     "Connection" to "keep-alive",
