@@ -51,27 +51,14 @@ class PlaybackService : MediaLibraryService() {
                     Log.i(TAG, "Car connection broadcast received: state=$connectionType")
                     val player = session?.player ?: RadioPlayback.player(context)
                     if (connectionType == CONNECTION_TYPE_NOT_CONNECTED) {
-                        // Disconnected from Android Auto / Automotive -> Stop playing and buffering
-                        Log.i(TAG, "Car disconnected: stopping playback and buffering")
+                        Log.i(TAG, "Car disconnected: pausing playback")
                         val currentMediaId = player.currentMediaItem?.mediaId
                         val stations = StationStore.load(context)
                         findStationByMediaId(currentMediaId, stations)?.let { station ->
                             StationStore.setLastAutoStation(context, station)
                         }
-                        player.stop()
-                        player.clearMediaItems()
-                    } else if (connectionType == CONNECTION_TYPE_PROJECTION || connectionType == CONNECTION_TYPE_NATIVE) {
-                        // Connected to Android Auto / Automotive -> Restart last played station
-                        Log.i(TAG, "Car connected: restarting last played station")
-                        val lastStation = StationStore.getLastAutoStation(context)
-                            ?: StationStore.getLastStation(context)
-                            ?: StationStore.load(context).firstOrNull()
-                            ?: StationCatalog.all().first()
-
-                        if (!player.isPlaying) {
-                            player.setMediaItem(RadioPlayback.stationItem(lastStation))
-                            player.prepare()
-                            player.play()
+                        if (player.isPlaying) {
+                            player.pause()
                         }
                     }
                 }
@@ -114,7 +101,6 @@ class PlaybackService : MediaLibraryService() {
             stop()
             clearMediaItems()
         }
-        pauseAllPlayersAndStopSelf()
         stopSelf()
         super.onTaskRemoved(rootIntent)
     }
@@ -127,30 +113,12 @@ class PlaybackService : MediaLibraryService() {
     }
 
     private class LibraryCallback(private val context: Context) : MediaLibrarySession.Callback {
-        private val activeAutoControllers = mutableSetOf<MediaSession.ControllerInfo>()
-
         override fun onConnect(
             session: MediaSession,
             controller: MediaSession.ControllerInfo
         ): MediaSession.ConnectionResult {
             val isAuto = isAutoController(session, controller)
             Log.i(TAG, "onConnect: pkg=${controller.packageName}, isAuto=$isAuto")
-
-            if (isAuto) {
-                activeAutoControllers.add(controller)
-                val lastStation = StationStore.getLastAutoStation(context)
-                    ?: StationStore.getLastStation(context)
-                    ?: StationStore.load(context).firstOrNull()
-                    ?: StationCatalog.all().first()
-
-                val player = session.player
-                if (!player.isPlaying) {
-                    val item = RadioPlayback.stationItem(lastStation)
-                    player.setMediaItem(item)
-                    player.prepare()
-                    player.play()
-                }
-            }
 
             val sessionCommands = MediaSession.ConnectionResult.DEFAULT_SESSION_COMMANDS.buildUpon().build()
             val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon().build()
@@ -165,22 +133,7 @@ class PlaybackService : MediaLibraryService() {
             session: MediaSession,
             controller: MediaSession.ControllerInfo
         ) {
-            val wasAuto = isAutoController(session, controller) || activeAutoControllers.contains(controller)
-            activeAutoControllers.remove(controller)
-            Log.i(TAG, "onDisconnected: pkg=${controller.packageName}, wasAuto=$wasAuto, remainingAuto=${activeAutoControllers.size}")
-
-            if (wasAuto && activeAutoControllers.isEmpty()) {
-                val stations = StationStore.load(context)
-                val currentMediaId = session.player.currentMediaItem?.mediaId
-                val currentStation = findStationByMediaId(currentMediaId, stations)
-                if (currentStation != null) {
-                    StationStore.setLastAutoStation(context, currentStation)
-                }
-
-                Log.i(TAG, "Android Auto disconnected: stopping player and buffering")
-                session.player.stop()
-                session.player.clearMediaItems()
-            }
+            Log.i(TAG, "onDisconnected: pkg=${controller.packageName}")
             super.onDisconnected(session, controller)
         }
 
