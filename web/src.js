@@ -47,6 +47,7 @@ const state = {
   selected: null,
   playing: false,
   filter: "All",
+  city: "All Cities",
   query: "",
   favorites: new Set(JSON.parse(localStorage.getItem("glz-favorites") || "[]")),
   sheetExpanded: false,
@@ -73,7 +74,7 @@ document.querySelector("#app").innerHTML = `
 
     <section class="weather-strip" aria-label="Local weather">
       <div class="weather-summary">
-        <span class="weather-label">San Juan weather</span>
+        <span class="weather-label" id="weather-label">San Juan weather</span>
         <strong class="temperature" id="temperature">--°</strong>
         <span class="weather-copy" id="weather-copy">Updating local conditions…</span>
       </div>
@@ -97,6 +98,7 @@ document.querySelector("#app").innerHTML = `
             <button id="search-clear" class="search-clear" type="button" aria-label="Clear search" hidden>${icons.clear}</button>
           </div>
           <div class="filters" id="filters"></div>
+          <div class="city-filters" id="city-filters" aria-label="Filter stations by city"></div>
         </div>
 
         <div class="station-list" id="station-list"></div>
@@ -226,12 +228,24 @@ function renderFilters() {
   }).join("");
 }
 
+function stationCity(station) {
+  return station.location.replace(/,\s*(PR|FL)$/i, "");
+}
+
+function renderCityFilters() {
+  const cities = ["All Cities", ...new Set(stations.map(stationCity))];
+  $("#city-filters").innerHTML = cities.map((city) =>
+    `<button class="city-chip ${state.city === city ? "active" : ""}" data-city="${escapeHtml(city)}" type="button">${escapeHtml(city)}</button>`
+  ).join("");
+}
+
 function visibleStations() {
   const query = state.query.trim().toLowerCase();
   return stations.filter((station) => {
     const inFilter = state.filter === "All" || (state.filter === "Favorites" ? state.favorites.has(station.name) : station.band === state.filter);
+    const inCity = state.city === "All Cities" || stationCity(station) === state.city;
     const haystack = `${station.name} ${station.frequency} ${station.callSign} ${station.tagline} ${station.location}`.toLowerCase();
-    return inFilter && haystack.includes(query);
+    return inFilter && inCity && haystack.includes(query);
   });
 }
 
@@ -513,6 +527,7 @@ async function loadWeather(useLocation = false) {
   let latitude = 18.4655;
   let longitude = -66.1057;
   let place = "San Juan, PR";
+  let label = "San Juan weather";
 
   try {
     if (useLocation) {
@@ -522,6 +537,17 @@ async function loadWeather(useLocation = false) {
       latitude = position.coords.latitude;
       longitude = position.coords.longitude;
       place = "Your location";
+      try {
+        const reverse = await fetch(`https://geocoding-api.open-meteo.com/v1/reverse?latitude=${latitude}&longitude=${longitude}&count=1&language=en&format=json`);
+        if (reverse.ok) {
+          const geo = await reverse.json();
+          const result = geo.results?.[0];
+          if (result) {
+            place = [result.name, result.admin1].filter(Boolean).join(", ");
+            label = `${result.name} weather`;
+          }
+        }
+      } catch { /* weather still works if reverse geocoding is unavailable */ }
     }
 
     const url = new URL("https://api.open-meteo.com/v1/forecast");
@@ -536,6 +562,7 @@ async function loadWeather(useLocation = false) {
     if (!response.ok) throw new Error("Weather unavailable");
     const data = await response.json();
     $("#temperature").textContent = `${Math.round(data.current.temperature_2m)}°`;
+    $("#weather-label").textContent = label;
     $("#weather-copy").textContent = `${place} · ${weatherDescription(data.current.weather_code)} · Feels ${Math.round(data.current.apparent_temperature)}°`;
   } catch {
     $("#weather-copy").textContent = useLocation ? "Location unavailable · San Juan shown" : "Weather unavailable";
@@ -564,6 +591,15 @@ $("#filters").addEventListener("click", (event) => {
   if (!button) return;
   state.filter = button.dataset.filter;
   renderFilters();
+  renderStations();
+});
+
+// City filter
+$("#city-filters").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-city]");
+  if (!button) return;
+  state.city = button.dataset.city;
+  renderCityFilters();
   renderStations();
 });
 
@@ -713,6 +749,7 @@ setInterval(updateClock, 1000);
 updateClock();
 
 renderFilters();
+renderCityFilters();
 renderStations();
 renderPlayer();
 updateMediaSession();
