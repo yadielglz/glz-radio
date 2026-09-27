@@ -1340,3 +1340,49 @@ h1 { margin-bottom: 8px; font-size: clamp(1.6rem, 3vw, 2.5rem); }
   .station { position: relative; }
   .empty { min-width: 100%; padding: 24px 12px; }
 }
+
+
+/* Mobile overflow containment */
+@media (max-width: 560px) {
+  html, body, #app, .app, .dashboard, .panel, .library, .toolbar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+  body { overflow-x: clip; }
+  .app {
+    padding-left: max(10px, env(safe-area-inset-left));
+    padding-right: max(10px, env(safe-area-inset-right));
+  }
+  .weather-strip {
+    width: 100%;
+    min-width: 0;
+  }
+  .weather-summary {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .weather-label { flex: 0 1 auto; }
+  .weather-copy { min-width: 0; }
+  .weather-strip .text-btn {
+    flex: 0 0 auto;
+    max-width: 92px;
+    white-space: normal;
+    line-height: 1.1;
+  }
+  .hero { width: 100%; }
+  .hero-image { width: 100%; max-width: 100%; }
+  .search-wrap, .search { min-width: 0; max-width: 100%; }
+  .filters, .city-filters, .station-list {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overscroll-behavior-inline: contain;
+  }
+  .station-list { contain: inline-size; }
+  .station {
+    min-width: 0;
+    max-width: 148px;
+  }
+}
