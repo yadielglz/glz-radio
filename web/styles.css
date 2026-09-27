@@ -1223,3 +1223,120 @@ h1 { margin-bottom: 8px; font-size: clamp(1.6rem, 3vw, 2.5rem); }
     animation: none !important;
   }
 }
+
+
+/* Compact station browser */
+.city-filters {
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.city-filters::-webkit-scrollbar { display: none; }
+.city-chip {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid var(--stroke);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-size: .78rem;
+  white-space: nowrap;
+}
+.city-chip.active {
+  color: var(--text);
+  border-color: var(--teal);
+  background: color-mix(in srgb, var(--teal) 12%, transparent);
+}
+
+@media (max-width: 560px) {
+  .app {
+    padding-top: max(10px, env(safe-area-inset-top));
+  }
+  .topbar { margin-bottom: 10px; }
+  .weather-strip {
+    margin-bottom: 10px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .weather-summary { gap: 8px; }
+  .weather-label { max-width: 92px; line-height: 1.15; }
+  .hero, .hero-image {
+    min-height: 112px;
+    max-height: 132px;
+  }
+  .dashboard { margin-top: 10px; }
+  .library { padding: 12px 10px; }
+  .eyebrow { font-size: .68rem; }
+  h1 { font-size: 1.55rem; margin-bottom: 4px; }
+  .lede {
+    font-size: .8rem;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+  .toolbar {
+    gap: 7px;
+    margin-bottom: 10px;
+  }
+  .search {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    border-radius: 12px;
+  }
+  .filters { gap: 6px; padding-bottom: 1px; }
+  .chip {
+    padding: 6px 11px;
+    font-size: .78rem;
+  }
+  .station-list {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding: 1px 2px 5px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .station-list::-webkit-scrollbar { display: none; }
+  .station {
+    flex: 0 0 148px;
+    scroll-snap-align: start;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 6px;
+    padding: 9px;
+    border-radius: 15px;
+  }
+  .station-logo-wrap {
+    grid-column: 1 / -1;
+    width: 46px;
+    height: 46px;
+  }
+  .station-info {
+    grid-column: 1 / -1;
+  }
+  .station-name {
+    font-size: .88rem;
+    margin-bottom: 2px;
+  }
+  .station-meta {
+    font-size: .69rem;
+    line-height: 1.25;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .station-fav-btn {
+    position: absolute;
+    align-self: start;
+    justify-self: end;
+    width: 38px;
+    height: 38px;
+  }
+  .station { position: relative; }
+  .empty { min-width: 100%; padding: 24px 12px; }
+}
