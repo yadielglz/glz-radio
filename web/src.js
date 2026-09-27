@@ -74,11 +74,10 @@ document.querySelector("#app").innerHTML = `
 
     <section class="weather-strip" aria-label="Local weather">
       <div class="weather-summary">
-        <span class="weather-label" id="weather-label">San Juan weather</span>
         <strong class="temperature" id="temperature">--°</strong>
         <span class="weather-copy" id="weather-copy">Updating local conditions…</span>
       </div>
-      <button class="text-btn compact" id="weather" type="button">Use my location</button>
+      <button class="text-btn compact" id="weather" type="button">Use location</button>
     </section>
 
     <section class="hero" aria-label="GLZ Radio">
@@ -98,7 +97,7 @@ document.querySelector("#app").innerHTML = `
             <button id="search-clear" class="search-clear" type="button" aria-label="Clear search" hidden>${icons.clear}</button>
           </div>
           <div class="filters" id="filters"></div>
-          <div class="city-filters" id="city-filters" aria-label="Filter stations by city"></div>
+          <div class="city-filter-wrap"><label for="city-filters">City</label><select class="city-select" id="city-filters" aria-label="Filter stations by city"></select></div>
         </div>
 
         <div class="station-list" id="station-list"></div>
@@ -235,8 +234,9 @@ function stationCity(station) {
 function renderCityFilters() {
   const cities = ["All Cities", ...new Set(stations.map(stationCity))];
   $("#city-filters").innerHTML = cities.map((city) =>
-    `<button class="city-chip ${state.city === city ? "active" : ""}" data-city="${escapeHtml(city)}" type="button">${escapeHtml(city)}</button>`
+    `<option value="${escapeHtml(city)}">${escapeHtml(city)}</option>`
   ).join("");
+  $("#city-filters").value = state.city;
 }
 
 function visibleStations() {
@@ -527,7 +527,6 @@ async function loadWeather(useLocation = false) {
   let latitude = 18.4655;
   let longitude = -66.1057;
   let place = "San Juan, PR";
-  let label = "San Juan weather";
 
   try {
     if (useLocation) {
@@ -544,7 +543,6 @@ async function loadWeather(useLocation = false) {
           const result = geo.results?.[0];
           if (result) {
             place = [result.name, result.admin1].filter(Boolean).join(", ");
-            label = `${result.name} weather`;
           }
         }
       } catch { /* weather still works if reverse geocoding is unavailable */ }
@@ -562,7 +560,6 @@ async function loadWeather(useLocation = false) {
     if (!response.ok) throw new Error("Weather unavailable");
     const data = await response.json();
     $("#temperature").textContent = `${Math.round(data.current.temperature_2m)}°`;
-    $("#weather-label").textContent = label;
     $("#weather-copy").textContent = `${place} · ${weatherDescription(data.current.weather_code)} · Feels ${Math.round(data.current.apparent_temperature)}°`;
   } catch {
     $("#weather-copy").textContent = useLocation ? "Location unavailable · San Juan shown" : "Weather unavailable";
@@ -595,11 +592,8 @@ $("#filters").addEventListener("click", (event) => {
 });
 
 // City filter
-$("#city-filters").addEventListener("click", (event) => {
-  const button = event.target.closest("[data-city]");
-  if (!button) return;
-  state.city = button.dataset.city;
-  renderCityFilters();
+$("#city-filters").addEventListener("change", (event) => {
+  state.city = event.target.value;
   renderStations();
 });
 
