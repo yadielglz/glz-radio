@@ -1,6 +1,6 @@
 {
-  "name": "GLZ Radio",
-  "short_name": "GLZ Radio",
+  "name": "Glz Radio",
+  "short_name": "Glz Radio",
   "description": "Puerto Rico radio, live.",
   "start_url": "/",
   "display": "standalone",

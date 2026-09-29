@@ -69,6 +69,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -123,6 +124,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.media3.common.MediaItem
+import androidx.media3.common.C
 import androidx.media3.common.Player
 import androidx.media3.common.PlaybackException
 import androidx.media3.session.MediaController
@@ -591,6 +593,9 @@ private fun RadioApp(
     var sleepTimerMinutes by remember { mutableStateOf(SleepTimer.remainingMinutes()) }
     var sleepTimerDuration by remember { mutableStateOf(SleepTimer.durationMinutes) }
     var updateCheckRequest by remember { mutableStateOf(0) }
+    var seekPosition by remember { mutableLongStateOf(0L) }
+    var seekDuration by remember { mutableLongStateOf(0L) }
+    var canSeek by remember { mutableStateOf(false) }
     var updateStatus by remember { mutableStateOf("Automatic checks every 12 hours") }
 
     val configuration = LocalConfiguration.current
@@ -797,6 +802,16 @@ private fun RadioApp(
         }
     }
 
+    LaunchedEffect(player) {
+        while (true) {
+            val duration = player.duration
+            canSeek = player.isCurrentMediaItemSeekable && duration != C.TIME_UNSET && duration > 0
+            seekDuration = if (canSeek) duration else 0L
+            seekPosition = if (canSeek) player.currentPosition.coerceIn(0L, duration) else 0L
+            delay(500)
+        }
+    }
+
     LaunchedEffect(current, isPlaying, status) {
         while (true) {
             delay(4200)
@@ -911,6 +926,10 @@ private fun RadioApp(
                     recording = recording,
                     saved = current?.let { favorites.contains(it.name) } == true,
                     compact = compact,
+                    canSeek = canSeek,
+                    seekPosition = seekPosition,
+                    seekDuration = seekDuration,
+                    onSeek = { if (canSeek) player.seekTo(it.coerceIn(0L, seekDuration)) },
                     onDismiss = { expanded = false },
                     onPlayPause = { togglePlayback() },
                     onStop = { stopPlayback() },
@@ -1984,6 +2003,10 @@ private fun FullPlayer(
     recording: Boolean,
     saved: Boolean,
     compact: Boolean,
+    canSeek: Boolean,
+    seekPosition: Long,
+    seekDuration: Long,
+    onSeek: (Long) -> Unit,
     onDismiss: () -> Unit,
     onPlayPause: () -> Unit,
     onStop: () -> Unit,
@@ -2036,6 +2059,25 @@ private fun FullPlayer(
                     Spacer(Modifier.height(8.dp))
                     Text(weatherDashboardText(weather), color = DarkMuted, textAlign = TextAlign.Center, fontSize = 13.sp)
                 }
+            }
+            if (canSeek) {
+                Slider(
+                    value = seekPosition.toFloat().coerceIn(0f, seekDuration.toFloat()),
+                    onValueChange = { onSeek(it.toLong()) },
+                    valueRange = 0f..seekDuration.toFloat(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = { onSeek(seekPosition - 30_000L) }) { Text("−30s") }
+                    TextButton(onClick = { onSeek(seekPosition + 15_000L) }) { Text("+15s") }
+                    TextButton(onClick = { onSeek(seekDuration) }, enabled = seekDuration - seekPosition >= 2_000L) { Text("● LIVE") }
+                }
+                Text(
+                    if (seekDuration - seekPosition < 2_000L) "At live" else "${(seekDuration - seekPosition) / 1000}s behind live",
+                    color = DarkMuted, fontSize = 12.sp
+                )
+            } else {
+                Text("Live rewind unavailable for this station", color = DarkMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
             }
             Text(status, color = DarkMuted, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 14.dp))
             Spacer(Modifier.height(12.dp))

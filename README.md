@@ -24,13 +24,13 @@ dark studio themes.
 
 Permissions are intentionally narrow: Internet for streams/weather and approximate location for local weather. Recordings live in app-specific storage, so broad storage access is not requested.
 
-On Android 10 and newer, GLZ Radio does not request broad storage permission:
+On Android 10 and newer, Glz Radio does not request broad storage permission:
 Android does not require it for recordings created and owned by the app.
 Recordings can be exported or shared from the recordings screen.
 
 Playback is backed by a Media3 `MediaLibraryService` for background playback, notification controls, and Android Auto media browsing. Stations report simple stream health states and retry briefly before marking a stream offline.
 
-The app opens with a 3-second image-only GLZ Radio splash screen.
+The app opens with a 3-second image-only Glz Radio splash screen.
 
 ## Build
 

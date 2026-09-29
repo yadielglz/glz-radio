@@ -1,6 +1,6 @@
-# GLZ Radio Web
+# Glz Radio Web
 
-Installable browser version of GLZ Radio, designed for static deployment on
+Installable browser version of Glz Radio, designed for static deployment on
 Vercel. Station audio is requested directly from each broadcaster; Vercel does
 not relay the audio.
 

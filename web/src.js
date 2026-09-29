@@ -66,8 +66,8 @@ document.querySelector("#app").innerHTML = `
   <main class="app">
     <header class="topbar">
       <div class="brand">
-        <img src="/assets/app-icon.png" alt="GLZ Radio logo">
-        <div><strong>GLZ RADIO</strong><span>LIVE SIGNAL</span></div>
+        <img src="/assets/app-icon.png" alt="Glz Radio logo">
+        <div><strong>Glz Radio</strong><span>LIVE SIGNAL</span></div>
       </div>
       <div class="status-pill"><span class="status-dot"></span><span id="network-label">Connected</span></div>
     </header>
@@ -80,8 +80,8 @@ document.querySelector("#app").innerHTML = `
       <button class="text-btn compact" id="weather" type="button">Use location</button>
     </section>
 
-    <section class="hero" aria-label="GLZ Radio">
-      <img class="hero-image" src="/assets/header-banner.png" alt="GLZ Radio — Tu música. Tu estación. Siempre contigo.">
+    <section class="hero" aria-label="Glz Radio">
+      <img class="hero-image" src="/assets/header-banner.png" alt="Glz Radio — Tu música. Tu estación. Siempre contigo.">
     </section>
 
     <div class="dashboard">
@@ -122,7 +122,7 @@ document.querySelector("#app").innerHTML = `
         <section class="panel player-prompt" id="player-prompt">
           <div class="eyebrow">Ready when you are</div>
           <h2>Choose a station</h2>
-          <p>Tap any station and GLZ Radio will start playing it automatically.</p>
+          <p>Tap any station and Glz Radio will start playing it automatically.</p>
         </section>
       </aside>
     </div>
@@ -294,7 +294,7 @@ function renderPlayer() {
   $("#player-prompt").hidden = hasStation;
 
   if (!station) {
-    document.title = "GLZ Radio";
+    document.title = "Glz Radio";
     return;
   }
 
@@ -329,7 +329,7 @@ function renderPlayer() {
   $("#sheet-fav-label").textContent = isFav ? "Saved" : "Favorite";
   $("#sheet-fav").className = `sheet-action-btn ${isFav ? "active" : ""}`;
 
-  document.title = `${state.playing ? "▶ " : ""}${station.name} · GLZ Radio`;
+  document.title = `${state.playing ? "▶ " : ""}${station.name} · Glz Radio`;
 }
 
 function selectStation(name) {
@@ -433,7 +433,7 @@ function updateMediaSession() {
   navigator.mediaSession.metadata = new MediaMetadata({
     title: station.name,
     artist: `${station.frequency} · ${station.tagline}`,
-    album: "GLZ Radio",
+    album: "Glz Radio",
     artwork: [{ src: station.logo, sizes: "512x512", type: "image/png" }]
   });
 }
@@ -442,7 +442,7 @@ async function shareStation() {
   if (!state.selected) return;
   const data = {
     title: state.selected.name,
-    text: `Listen to ${state.selected.name} (${state.selected.frequency}) live on GLZ Radio:`,
+    text: `Listen to ${state.selected.name} (${state.selected.frequency}) live on Glz Radio:`,
     url: window.location.origin
   };
   try {
