@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 30993)
-Total output lines: 3020
-
 package com.glztech.radiostream
 
 import android.Manifest
@@ -940,6 +937,7 @@ private fun RadioApp(
                     canSeek = canSeek,
                     seekPosition = seekPosition,
                     seekDuration = seekDuration,
+                    rewindStatus = current?.let(RadioPlayback::rewindStatus) ?: "Rewind not checked",
                     onSeek = { if (canSeek) player.seekTo(it.coerceIn(0L, seekDuration)) },
                     onDismiss = { expanded = false },
                     onPlayPause = { togglePlayback() },
@@ -1471,7 +1469,111 @@ private fun SettingsFlyout(
                 }
                 item {
                     UpdateSettingsSection(
-                        status =…993 tokens truncated…
+                        status = updateStatus,
+                        onCheckForUpdates = onCheckForUpdates
+                    )
+                }
+                item {
+                    SettingsInfoSection(
+                        stationCount = stationCount,
+                        savedCount = savedCount
+                    )
+                }
+                item {
+                    AboutSection()
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsSummaryCard(
+    themeName: String,
+    accentName: String,
+    layoutMode: String,
+    playerSize: String,
+    compact: Boolean
+) {
+    Surface(color = DarkCard, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text("Glz Radio", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 26.sp)
+            Text("Theme $themeName / Accent $accentName", color = DarkMuted)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                SettingsPill("Layout", layoutMode, Modifier.weight(1f))
+                SettingsPill("Sizing", if (compact) "Compact" else "Comfortable", Modifier.weight(1f))
+                SettingsPill("Player", playerSize, Modifier.weight(1f))
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsPill(label: String, value: String, modifier: Modifier = Modifier) {
+    Surface(color = DarkField, shape = RoundedCornerShape(18.dp), modifier = modifier) {
+        Column(Modifier.padding(horizontal = 10.dp, vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(label, color = DarkMuted, fontSize = 11.sp, maxLines = 1)
+            Text(value, color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+    }
+}
+
+@Composable
+private fun SettingsChoiceSection(
+    title: String,
+    subtitle: String,
+    choices: List<SettingChoice>,
+    selected: String,
+    onSelect: (String) -> Unit
+) {
+    WeatherSection(title) {
+        Text(subtitle, color = DarkMuted, fontSize = 13.sp)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(choices, key = { it.name }) { choice ->
+                FilterChip(
+                    selected = selected == choice.name,
+                    onClick = { onSelect(choice.name) },
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            choice.color?.let { color ->
+                                Box(
+                                    modifier = Modifier
+                                        .size(12.dp)
+                                        .clip(CircleShape)
+                                        .background(color)
+                                )
+                                Spacer(Modifier.width(8.dp))
+                            }
+                            Text(choice.name)
+                        }
+                    }
+                )
+            }
+        }
+        Text(
+            choices.firstOrNull { it.name == selected }?.description.orEmpty(),
+            color = DarkInk,
+            fontWeight = FontWeight.Bold,
+            fontSize = 13.sp
+        )
+    }
+}
+
+@Composable
+private fun SettingsInfoSection(stationCount: Int, savedCount: Int) {
+    WeatherSection("System") {
+        SettingsInfoRow("Stations", stationCount.toString())
+        SettingsInfoRow("Saved stations", savedCount.toString())
+        SettingsInfoRow("Font", "Google Sans / bundled")
+        SettingsInfoRow("Recordings", "Private app storage / export anytime")
+        SettingsInfoRow("Playback", "Media3 with Android Auto")
+    }
+}
+
+@Composable
+private fun UpdateSettingsSection(status: String, onCheckForUpdates: () -> Unit) {
+    WeatherSection("App updates") {
+        Text(status, color = DarkMuted, fontSize = 13.sp)
         Text(
             "Release APKs are checked securely through GitHub. Android always asks before installation.",
             color = DarkInk,
@@ -1915,6 +2017,7 @@ private fun FullPlayer(
     canSeek: Boolean,
     seekPosition: Long,
     seekDuration: Long,
+    rewindStatus: String,
     onSeek: (Long) -> Unit,
     onDismiss: () -> Unit,
     onPlayPause: () -> Unit,
@@ -1986,7 +2089,10 @@ private fun FullPlayer(
                     color = DarkMuted, fontSize = 12.sp
                 )
             } else {
-                Text("Live rewind unavailable for this station", color = DarkMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
+                Text(
+                    if (rewindStatus == "No rewind") "Live rewind unavailable for this station" else "Preparing rewind buffer…",
+                    color = DarkMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp)
+                )
             }
             Text(status, color = DarkMuted, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 14.dp))
             Spacer(Modifier.height(12.dp))
