@@ -30,11 +30,11 @@ object RadioPlayback {
     private val unavailable = mutableSetOf<String>()
     private val available = mutableSetOf<String>()
 
-    fun markRewindAvailable(station: Station) {
+    internal fun markRewindAvailable(station: Station) {
         available.add(station.streamUrl)
     }
 
-    fun rewindStatus(station: Station): String = when {
+    internal fun rewindStatus(station: Station): String = when {
         unavailable.contains(station.streamUrl) -> "No rewind"
         available.contains(station.streamUrl) -> "Rewind available"
         player?.currentMediaItem?.mediaId == station.name && player?.isCurrentMediaItemSeekable == true -> "Rewind available"
