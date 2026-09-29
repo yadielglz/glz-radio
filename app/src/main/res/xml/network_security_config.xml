@@ -1,5 +1,10 @@
 <network-security-config>
     <base-config cleartextTrafficPermitted="false" />
+    <!-- The rolling audio buffer is served only on the device loopback interface. -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">127.0.0.1</domain>
+        <domain includeSubdomains="false">localhost</domain>
+    </domain-config>
     <!-- A small number of legacy radio providers still expose only HTTP streams. -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="false">49.13.212.200</domain>
