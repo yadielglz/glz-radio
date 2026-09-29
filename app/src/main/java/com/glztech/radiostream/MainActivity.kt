@@ -1,5 +1,5 @@
-Warning: truncated output (original token count: 30959)
-Total output lines: 3019
+Warning: truncated output (original token count: 30993)
+Total output lines: 3020
 
 package com.glztech.radiostream
 
@@ -817,6 +817,7 @@ private fun RadioApp(
             canSeek = player.isCurrentMediaItemSeekable && duration != C.TIME_UNSET && duration > 0
             seekDuration = if (canSeek) duration else 0L
             seekPosition = if (canSeek) player.currentPosition.coerceIn(0L, duration) else 0L
+            if (canSeek) current?.let(RadioPlayback::markRewindAvailable)
             delay(500)
         }
     }
@@ -1470,9 +1471,7 @@ private fun SettingsFlyout(
                 }
                 item {
                     UpdateSettingsSection(
-                        status = updateStatus,
-                        onCheckForUpdates = onCheckForUpdat…959 tokens truncated…") {
-        Text(status, color = DarkMuted, fontSize = 13.sp)
+                        status =…993 tokens truncated…
         Text(
             "Release APKs are checked securely through GitHub. Android always asks before installation.",
             color = DarkInk,
@@ -1930,7 +1929,7 @@ private fun FullPlayer(
             .background(DarkBg)
             .padding(horizontal = if (compact) 16.dp else 22.dp, vertical = 18.dp)
     ) {
-        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = onDismiss) {
                     Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
