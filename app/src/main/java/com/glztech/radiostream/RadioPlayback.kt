@@ -9,6 +9,8 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.MimeTypes
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
@@ -24,6 +26,21 @@ object RadioPlayback {
     private var player: ExoPlayer? = null
     private var activeContext: Context? = null
     private var activeAudioSessionId: Int = C.AUDIO_SESSION_ID_UNSET
+    private var timeshift: TimeshiftServer? = null
+    private val unavailable = mutableSetOf<String>()
+    private val available = mutableSetOf<String>()
+
+    internal fun markRewindAvailable(station: Station) {
+        available.add(station.streamUrl)
+    }
+
+    internal fun rewindStatus(station: Station): String = when {
+        unavailable.contains(station.streamUrl) -> "No rewind"
+        available.contains(station.streamUrl) -> "Rewind available"
+        player?.currentMediaItem?.mediaId == station.name && player?.isCurrentMediaItemSeekable == true -> "Rewind available"
+        player?.currentMediaItem?.mediaId == station.name -> "Rewind checking"
+        else -> "Rewind not checked"
+    }
 
     val audioSessionId: Int
         get() = player?.audioSessionId?.takeIf { it != C.AUDIO_SESSION_ID_UNSET } ?: activeAudioSessionId
@@ -69,6 +86,11 @@ object RadioPlayback {
     internal fun player(context: Context): ExoPlayer {
         val appContext = context.applicationContext
         activeContext = appContext
+        if (timeshift == null) {
+            timeshift = runCatching { TimeshiftServer() }
+                .onFailure { Log.w(TAG, "Local timeshift unavailable; direct radio remains available", it) }
+                .getOrNull()
+        }
         val httpDataSourceFactory = DefaultHttpDataSource.Factory()
             .setAllowCrossProtocolRedirects(true)
             .setConnectTimeoutMs(15_000)
@@ -118,6 +140,23 @@ object RadioPlayback {
                     }
                 })
                 addListener(object : Player.Listener {
+                    override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
+                        if (mediaItem == null) timeshift?.stop()
+                    }
+
+                    override fun onPlayerError(error: PlaybackException) {
+                        val item = currentMediaItem ?: return
+                        val station = StationStore.load(appContext)
+                            .firstOrNull { it.name == item.mediaId } ?: return
+                        if (item.localConfiguration?.uri?.host != "127.0.0.1") return
+                        unavailable.add(station.streamUrl)
+                        Log.w(TAG, "Timeshift failed for ${station.name}; restoring direct stream", error)
+                        val shouldPlay = playWhenReady
+                        setMediaItem(stationItem(station))
+                        prepare()
+                        playWhenReady = shouldPlay
+                    }
+
                     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                         val rawTitle = mediaMetadata.title?.toString()
                             ?: mediaMetadata.displayTitle?.toString()
@@ -165,9 +204,13 @@ object RadioPlayback {
             runCatching { Uri.parse(it) }.getOrNull()
         }
 
+        val buffered = if (!unavailable.contains(station.streamUrl)) {
+            timeshift?.register(station.name.hashCode().toUInt().toString(), station.streamUrl)
+        } else null
         return MediaItem.Builder()
             .setMediaId(station.name)
-            .setUri(station.streamUrl)
+            .setUri(buffered ?: station.streamUrl)
+            .apply { if (buffered != null) setMimeType(MimeTypes.APPLICATION_M3U8) }
             .setMediaMetadata(
                 MediaMetadata.Builder()
                     .setTitle(station.name)
@@ -213,9 +256,10 @@ object RadioPlayback {
         }
         player?.release()
         player = null
+        timeshift?.close()
+        timeshift = null
         currentTrackTitle = null
         activeAudioSessionId = C.AUDIO_SESSION_ID_UNSET
         activeContext = null
     }
 }
-

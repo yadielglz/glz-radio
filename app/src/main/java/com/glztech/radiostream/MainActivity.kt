@@ -768,6 +768,12 @@ private fun RadioApp(
 
             override fun onPlayerError(error: PlaybackException) {
                 val station = current ?: return
+                // RadioPlayback switches failed local buffers back to the original station URL.
+                if (RadioPlayback.rewindStatus(station) == "No rewind" &&
+                    player.currentMediaItem?.localConfiguration?.uri?.host != "127.0.0.1") {
+                    status = "Live / ${station.name} / rewind unavailable"
+                    return
+                }
                 if (intentionallyStopped) return
                 stationHealth = stationHealth + (station.name to StationHealth.Retrying)
                 reconnectEnabled = true
@@ -808,6 +814,7 @@ private fun RadioApp(
             canSeek = player.isCurrentMediaItemSeekable && duration != C.TIME_UNSET && duration > 0
             seekDuration = if (canSeek) duration else 0L
             seekPosition = if (canSeek) player.currentPosition.coerceIn(0L, duration) else 0L
+            if (canSeek) current?.let(RadioPlayback::markRewindAvailable)
             delay(500)
         }
     }
@@ -906,6 +913,7 @@ private fun RadioApp(
                             active = current?.name == station.name,
                             saved = favorites.contains(station.name),
                             health = stationHealth[station.name],
+                            rewindStatus = RadioPlayback.rewindStatus(station),
                             compact = compact,
                             onClick = { setStation(station, true) },
                             onFavorite = { toggleFavorite(station) }
@@ -929,6 +937,7 @@ private fun RadioApp(
                     canSeek = canSeek,
                     seekPosition = seekPosition,
                     seekDuration = seekDuration,
+                    rewindStatus = current?.let(RadioPlayback::rewindStatus) ?: "Rewind not checked",
                     onSeek = { if (canSeek) player.seekTo(it.coerceIn(0L, seekDuration)) },
                     onDismiss = { expanded = false },
                     onPlayPause = { togglePlayback() },
@@ -1894,6 +1903,7 @@ private fun StationCard(
     active: Boolean,
     saved: Boolean,
     health: StationHealth?,
+    rewindStatus: String,
     compact: Boolean,
     onClick: () -> Unit,
     onFavorite: () -> Unit
@@ -1922,6 +1932,7 @@ private fun StationCard(
             Column(Modifier.weight(1f)) {
                 Text(station.name, color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("${station.meta()}${healthLabel(health)}", color = healthColor(health), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(rewindStatus, color = if (rewindStatus == "Rewind available") Teal else DarkMuted, fontSize = 12.sp)
                 Text("${station.location} / ${station.tagline}", color = DarkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
             }
             IconButton(onClick = onFavorite) {
@@ -2006,6 +2017,7 @@ private fun FullPlayer(
     canSeek: Boolean,
     seekPosition: Long,
     seekDuration: Long,
+    rewindStatus: String,
     onSeek: (Long) -> Unit,
     onDismiss: () -> Unit,
     onPlayPause: () -> Unit,
@@ -2020,7 +2032,7 @@ private fun FullPlayer(
             .background(DarkBg)
             .padding(horizontal = if (compact) 16.dp else 22.dp, vertical = 18.dp)
     ) {
-        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = onDismiss) {
                     Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -2077,7 +2089,10 @@ private fun FullPlayer(
                     color = DarkMuted, fontSize = 12.sp
                 )
             } else {
-                Text("Live rewind unavailable for this station", color = DarkMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp))
+                Text(
+                    if (rewindStatus == "No rewind") "Live rewind unavailable for this station" else "Preparing rewind buffer…",
+                    color = DarkMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp)
+                )
             }
             Text(status, color = DarkMuted, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 14.dp))
             Spacer(Modifier.height(12.dp))
