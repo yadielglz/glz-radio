@@ -28,11 +28,18 @@ object RadioPlayback {
     private var activeAudioSessionId: Int = C.AUDIO_SESSION_ID_UNSET
     private var timeshift: TimeshiftServer? = null
     private val unavailable = mutableSetOf<String>()
+    private val available = mutableSetOf<String>()
+
+    fun markRewindAvailable(station: Station) {
+        available.add(station.streamUrl)
+    }
 
     fun rewindStatus(station: Station): String = when {
         unavailable.contains(station.streamUrl) -> "No rewind"
+        available.contains(station.streamUrl) -> "Rewind available"
         player?.currentMediaItem?.mediaId == station.name && player?.isCurrentMediaItemSeekable == true -> "Rewind available"
-        else -> "Rewind checking"
+        player?.currentMediaItem?.mediaId == station.name -> "Rewind checking"
+        else -> "Rewind not checked"
     }
 
     val audioSessionId: Int
