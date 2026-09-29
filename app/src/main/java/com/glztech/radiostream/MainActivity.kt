@@ -1,3 +1,6 @@
+Warning: truncated output (original token count: 30959)
+Total output lines: 3019
+
 package com.glztech.radiostream
 
 import android.Manifest
@@ -768,6 +771,12 @@ private fun RadioApp(
 
             override fun onPlayerError(error: PlaybackException) {
                 val station = current ?: return
+                // RadioPlayback switches failed local buffers back to the original station URL.
+                if (RadioPlayback.rewindStatus(station) == "No rewind" &&
+                    player.currentMediaItem?.localConfiguration?.uri?.host != "127.0.0.1") {
+                    status = "Live / ${station.name} / rewind unavailable"
+                    return
+                }
                 if (intentionallyStopped) return
                 stationHealth = stationHealth + (station.name to StationHealth.Retrying)
                 reconnectEnabled = true
@@ -906,6 +915,7 @@ private fun RadioApp(
                             active = current?.name == station.name,
                             saved = favorites.contains(station.name),
                             health = stationHealth[station.name],
+                            rewindStatus = RadioPlayback.rewindStatus(station),
                             compact = compact,
                             onClick = { setStation(station, true) },
                             onFavorite = { toggleFavorite(station) }
@@ -1461,109 +1471,7 @@ private fun SettingsFlyout(
                 item {
                     UpdateSettingsSection(
                         status = updateStatus,
-                        onCheckForUpdates = onCheckForUpdates
-                    )
-                }
-                item {
-                    SettingsInfoSection(
-                        stationCount = stationCount,
-                        savedCount = savedCount
-                    )
-                }
-                item {
-                    AboutSection()
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsSummaryCard(
-    themeName: String,
-    accentName: String,
-    layoutMode: String,
-    playerSize: String,
-    compact: Boolean
-) {
-    Surface(color = DarkCard, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Glz Radio", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 26.sp)
-            Text("Theme $themeName / Accent $accentName", color = DarkMuted)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                SettingsPill("Layout", layoutMode, Modifier.weight(1f))
-                SettingsPill("Sizing", if (compact) "Compact" else "Comfortable", Modifier.weight(1f))
-                SettingsPill("Player", playerSize, Modifier.weight(1f))
-            }
-        }
-    }
-}
-
-@Composable
-private fun SettingsPill(label: String, value: String, modifier: Modifier = Modifier) {
-    Surface(color = DarkField, shape = RoundedCornerShape(18.dp), modifier = modifier) {
-        Column(Modifier.padding(horizontal = 10.dp, vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(label, color = DarkMuted, fontSize = 11.sp, maxLines = 1)
-            Text(value, color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-    }
-}
-
-@Composable
-private fun SettingsChoiceSection(
-    title: String,
-    subtitle: String,
-    choices: List<SettingChoice>,
-    selected: String,
-    onSelect: (String) -> Unit
-) {
-    WeatherSection(title) {
-        Text(subtitle, color = DarkMuted, fontSize = 13.sp)
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(choices, key = { it.name }) { choice ->
-                FilterChip(
-                    selected = selected == choice.name,
-                    onClick = { onSelect(choice.name) },
-                    label = {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            choice.color?.let { color ->
-                                Box(
-                                    modifier = Modifier
-                                        .size(12.dp)
-                                        .clip(CircleShape)
-                                        .background(color)
-                                )
-                                Spacer(Modifier.width(8.dp))
-                            }
-                            Text(choice.name)
-                        }
-                    }
-                )
-            }
-        }
-        Text(
-            choices.firstOrNull { it.name == selected }?.description.orEmpty(),
-            color = DarkInk,
-            fontWeight = FontWeight.Bold,
-            fontSize = 13.sp
-        )
-    }
-}
-
-@Composable
-private fun SettingsInfoSection(stationCount: Int, savedCount: Int) {
-    WeatherSection("System") {
-        SettingsInfoRow("Stations", stationCount.toString())
-        SettingsInfoRow("Saved stations", savedCount.toString())
-        SettingsInfoRow("Font", "Google Sans / bundled")
-        SettingsInfoRow("Recordings", "Private app storage / export anytime")
-        SettingsInfoRow("Playback", "Media3 with Android Auto")
-    }
-}
-
-@Composable
-private fun UpdateSettingsSection(status: String, onCheckForUpdates: () -> Unit) {
-    WeatherSection("App updates") {
+                        onCheckForUpdates = onCheckForUpdat…959 tokens truncated…") {
         Text(status, color = DarkMuted, fontSize = 13.sp)
         Text(
             "Release APKs are checked securely through GitHub. Android always asks before installation.",
@@ -1894,6 +1802,7 @@ private fun StationCard(
     active: Boolean,
     saved: Boolean,
     health: StationHealth?,
+    rewindStatus: String,
     compact: Boolean,
     onClick: () -> Unit,
     onFavorite: () -> Unit
@@ -1922,6 +1831,7 @@ private fun StationCard(
             Column(Modifier.weight(1f)) {
                 Text(station.name, color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text("${station.meta()}${healthLabel(health)}", color = healthColor(health), fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                Text(rewindStatus, color = if (rewindStatus == "Rewind available") Teal else DarkMuted, fontSize = 12.sp)
                 Text("${station.location} / ${station.tagline}", color = DarkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
             }
             IconButton(onClick = onFavorite) {
