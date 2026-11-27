@@ -9,34 +9,29 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
-import android.location.Geocoder
-import android.os.Bundle
 import android.os.Build
-import android.os.Looper
+import android.os.Bundle
 import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.BackHandler
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.FileProvider
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,29 +50,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Shapes
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Delete
@@ -85,18 +62,46 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.FiberManualRecord
-import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.LocationCity
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.NetworkCheck
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Radio
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -108,64 +113,37 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.media3.common.MediaItem
+import androidx.core.content.FileProvider
 import androidx.media3.common.C
-import androidx.media3.common.Player
+import androidx.media3.common.MediaItem
 import androidx.media3.common.PlaybackException
+import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
-import androidx.core.view.WindowCompat
 import coil.compose.AsyncImage
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.suspendCancellableCoroutine
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeoutOrNull
-import org.json.JSONArray
-import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
-import java.net.HttpURLConnection
-import java.net.URL
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
-import kotlin.coroutines.resume
-import kotlin.math.roundToInt
 
-private var DarkInk = Color(0xFFECFDF5)
-private var DarkMuted = Color(0xFF94A3B8)
-private var DarkBg = Color(0xFF071113)
-private var DarkSurface = Color(0xFF0E1E21)
-private var DarkCard = Color(0xFF12262A)
-private var DarkField = Color(0xFF0B191C)
-private var DarkStroke = Color(0xFF234348)
-private var Teal = Color(0xFF14B8A6)
-private var Coral = Color(0xFFDC5247)
-private var Gold = Color(0xFFB47C26)
-private val GoogleSans = FontFamily(
-    Font(R.font.google_sans_regular, FontWeight.Normal),
-    Font(R.font.google_sans_bold, FontWeight.Bold)
-)
 private const val APP_PREFS = "radio_streamer"
 private const val FAVORITES_PREF = "favorites"
 private const val THEME_PREF = "theme_name"
@@ -176,137 +154,20 @@ private const val LOCATION_PROMPTED_PREF = "location_prompted"
 private const val BATTERY_PROMPTED_PREF = "battery_prompted"
 private const val DEFAULT_THEME = "Signal Noir"
 private const val DEFAULT_ACCENT = "Amber"
-private const val SAN_JUAN_LAT = 18.4655
-private const val SAN_JUAN_LON = -66.1057
 private const val STREAM_RETRY_BASE_DELAY_MS = 2_000L
 private const val STREAM_RETRY_MAX_DELAY_MS = 30_000L
 
-private data class SettingChoice(
-    val name: String,
-    val description: String,
-    val color: Color? = null
+private data class AlarmLaunchRequest(
+    val stationName: String,
+    val fadeIn: Boolean,
+    val token: Long = SystemClock.elapsedRealtime()
 )
-
-private val ThemeChoices = listOf(
-    SettingChoice("Signal Noir", "High contrast studio dark", Color(0xFF050A0C)),
-    SettingChoice("Signal Light", "Clean daylight studio with warm amber controls", Color(0xFFF7F4ED)),
-    SettingChoice("Midnight Radio", "Deep black glass, teal signal highlights", DarkBg),
-    SettingChoice("Coastal Night", "Cool dark surface with softer blue undertones", Color(0xFF061720)),
-    SettingChoice("Graphite Studio", "Neutral dark gray for long listening sessions", Color(0xFF111315)),
-    SettingChoice("Tropical Dark", "Warm dark base with saturated controls", Color(0xFF11140D))
-)
-
-private val AccentChoices = listOf(
-    SettingChoice("Amber", "Warm dial glow", Color(0xFFF59E0B)),
-    SettingChoice("Teal", "Glz classic", Teal),
-    SettingChoice("Cyan", "Bright broadcast blue", Color(0xFF22D3EE)),
-    SettingChoice("Lime", "Electric tuner green", Color(0xFF84CC16)),
-    SettingChoice("Coral", "Recording-forward red coral", Coral)
-)
-
-private val LayoutChoices = listOf(
-    SettingChoice("Auto", "Resize from the current screen size"),
-    SettingChoice("Compact", "Tighter cards and controls"),
-    SettingChoice("Comfortable", "Roomier spacing for phones and tablets"),
-    SettingChoice("Large", "Bigger touch targets and calmer density")
-)
-
-private val PlayerSizeChoices = listOf(
-    SettingChoice("Balanced", "Player stays meaningful without dominating"),
-    SettingChoice("Compact", "More room for stations"),
-    SettingChoice("Expanded", "Larger art and live controls")
-)
-
-private val AppShapes = Shapes(
-    extraSmall = RoundedCornerShape(10.dp),
-    small = RoundedCornerShape(14.dp),
-    medium = RoundedCornerShape(18.dp),
-    large = RoundedCornerShape(24.dp),
-    extraLarge = RoundedCornerShape(30.dp)
-)
-
-private val SleepTimerChoices = listOf(
-    SettingChoice("Off", "Playback continues until you stop it"),
-    SettingChoice("15 minutes", "Stop playback after 15 minutes"),
-    SettingChoice("30 minutes", "Stop playback after 30 minutes"),
-    SettingChoice("45 minutes", "Stop playback after 45 minutes"),
-    SettingChoice("60 minutes", "Stop playback after one hour")
-)
-
-private fun applyAppearance(themeName: String, accentName: String) {
-    when (themeName) {
-        "Signal Noir" -> {
-            DarkInk = Color(0xFFF8FAFC)
-            DarkMuted = Color(0xFF9CA3AF)
-            DarkBg = Color(0xFF050A0C)
-            DarkSurface = Color(0xFF0B1114)
-            DarkCard = Color(0xFF11181C)
-            DarkField = Color(0xFF070D10)
-            DarkStroke = Color(0xFF283338)
-        }
-        "Signal Light" -> {
-            DarkInk = Color(0xFF172124)
-            DarkMuted = Color(0xFF5E6A6E)
-            DarkBg = Color(0xFFF7F4ED)
-            DarkSurface = Color(0xFFFFFDF8)
-            DarkCard = Color(0xFFFFFFFF)
-            DarkField = Color(0xFFF0ECE3)
-            DarkStroke = Color(0xFFD8D2C7)
-        }
-        "Coastal Night" -> {
-            DarkInk = Color(0xFFE6F7FF)
-            DarkMuted = Color(0xFF8CAFC1)
-            DarkBg = Color(0xFF061720)
-            DarkSurface = Color(0xFF0B2430)
-            DarkCard = Color(0xFF11313E)
-            DarkField = Color(0xFF071D27)
-            DarkStroke = Color(0xFF285163)
-        }
-        "Graphite Studio" -> {
-            DarkInk = Color(0xFFF1F5F9)
-            DarkMuted = Color(0xFFA1A1AA)
-            DarkBg = Color(0xFF111315)
-            DarkSurface = Color(0xFF1A1D20)
-            DarkCard = Color(0xFF23272B)
-            DarkField = Color(0xFF151719)
-            DarkStroke = Color(0xFF3F454B)
-        }
-        "Tropical Dark" -> {
-            DarkInk = Color(0xFFF7FEE7)
-            DarkMuted = Color(0xFFB7BE92)
-            DarkBg = Color(0xFF11140D)
-            DarkSurface = Color(0xFF1A2012)
-            DarkCard = Color(0xFF222B18)
-            DarkField = Color(0xFF151A10)
-            DarkStroke = Color(0xFF3E4B2B)
-        }
-        else -> {
-            DarkInk = Color(0xFFECFDF5)
-            DarkMuted = Color(0xFF94A3B8)
-            DarkBg = Color(0xFF071113)
-            DarkSurface = Color(0xFF0E1E21)
-            DarkCard = Color(0xFF12262A)
-            DarkField = Color(0xFF0B191C)
-            DarkStroke = Color(0xFF234348)
-        }
-    }
-
-    val lightTheme = themeName == "Signal Light"
-    Teal = when (accentName) {
-        "Cyan" -> if (lightTheme) Color(0xFF087A91) else Color(0xFF22D3EE)
-        "Lime" -> if (lightTheme) Color(0xFF557A0B) else Color(0xFF84CC16)
-        "Amber" -> if (lightTheme) Color(0xFF9A5B00) else Color(0xFFF59E0B)
-        "Coral" -> if (lightTheme) Color(0xFFB4234A) else Color(0xFFFB7185)
-        else -> if (lightTheme) Color(0xFF087F73) else Color(0xFF14B8A6)
-    }
-    Coral = if (accentName == "Coral") Color(0xFFDC5247) else Color(0xFFDC5247)
-    Gold = if (accentName == "Amber") Color(0xFFF59E0B) else Color(0xFFB47C26)
-}
 
 class MainActivity : ComponentActivity() {
     private var controllerFuture: ListenableFuture<MediaController>? = null
     private var controller by mutableStateOf<MediaController?>(null)
     private var permissionRefresh by mutableIntStateOf(0)
+    private var pendingAlarm by mutableStateOf<AlarmLaunchRequest?>(null)
     private lateinit var recorder: StreamRecorder
     private val startupPermissionsLauncher =
         registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
@@ -316,6 +177,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recorder = StreamRecorder(this)
+        handleAlarmIntent(intent)
         requestStartupPermissions()
         StationStore.syncRemoteCatalog(this)
         val token = SessionToken(this, ComponentName(this, PlaybackService::class.java))
@@ -331,14 +193,7 @@ class MainActivity : ComponentActivity() {
             var accentName by remember { mutableStateOf(loadSetting(this@MainActivity, ACCENT_PREF, DEFAULT_ACCENT)) }
             GlzRadioTheme(themeName = themeName, accentName = accentName) {
                 val activeController = controller
-                var showSplash by rememberSaveable { mutableStateOf(true) }
-                LaunchedEffect(Unit) {
-                    delay(3000)
-                    showSplash = false
-                }
-                if (showSplash) {
-                    SplashScreen()
-                } else if (activeController == null) {
+                if (activeController == null) {
                     LoadingApp()
                 } else {
                     RadioApp(
@@ -347,6 +202,8 @@ class MainActivity : ComponentActivity() {
                         themeName = themeName,
                         accentName = accentName,
                         permissionRefresh = permissionRefresh,
+                        pendingAlarm = pendingAlarm,
+                        onAlarmHandled = { pendingAlarm = null },
                         onTheme = {
                             themeName = it
                             saveSetting(this@MainActivity, THEME_PREF, it)
@@ -360,6 +217,19 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleAlarmIntent(intent)
+    }
+
+    private fun handleAlarmIntent(intent: Intent?) {
+        val stationName = intent?.getStringExtra(RadioAlarm.EXTRA_ALARM_STATION) ?: return
+        val fadeIn = intent.getBooleanExtra(RadioAlarm.EXTRA_ALARM_FADE, true)
+        pendingAlarm = AlarmLaunchRequest(stationName = stationName, fadeIn = fadeIn)
+        intent.removeExtra(RadioAlarm.EXTRA_ALARM_STATION)
     }
 
     override fun onDestroy() {
@@ -417,11 +287,11 @@ class MainActivity : ComponentActivity() {
                         data = Uri.parse("package:$packageName")
                     }
                     startActivity(intent)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     try {
-                        val fallback = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                        startActivity(fallback)
-                    } catch (_: Exception) {}
+                        startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                    } catch (_: Exception) {
+                    }
                 }
             }
         }
@@ -433,21 +303,30 @@ class MainActivity : ComponentActivity() {
         val powerManager = getSystemService(Context.POWER_SERVICE) as? PowerManager
         val isBatteryUnrestricted = powerManager?.isIgnoringBatteryOptimizations(packageName) == true
         val batteryStr = if (isBatteryUnrestricted) "Unrestricted (Optimal for Android Auto)" else "Optimized (May sleep on AA)"
+        val catalogSource = StationStore.catalogSourceLabel(this)
         PlatformAlertDialog.Builder(this)
             .setTitle("About Glz Radio")
-            .setMessage("Version ${BuildConfig.VERSION_NAME}\n\nA native Android radio streamer for Puerto Rico live radio.\n\nUI: Jetpack Compose Material 3\nPlayback: Media3 ExoPlayer\nAudio Session ID: $sessionStr\nBattery Usage: $batteryStr")
+            .setMessage(
+                "Version ${BuildConfig.VERSION_NAME}\n\n" +
+                    "Native Android radio streamer for Puerto Rico live radio.\n\n" +
+                    "Catalog: $catalogSource\n" +
+                    "UI: Jetpack Compose Material 3\n" +
+                    "Playback: Media3 ExoPlayer + ICY Timeshift\n" +
+                    "Audio Session ID: $sessionStr\n" +
+                    "Battery Usage: $batteryStr"
+            )
             .setPositiveButton("Done", null)
             .setNeutralButton("Battery Settings") { _, _ ->
                 try {
-                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                    startActivity(intent)
+                    startActivity(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
                 } catch (_: Exception) {
                     try {
                         val appDetail = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                             data = Uri.parse("package:$packageName")
                         }
                         startActivity(appDetail)
-                    } catch (_: Exception) {}
+                    } catch (_: Exception) {
+                    }
                 }
             }
             .show()
@@ -466,81 +345,6 @@ private enum class StationHealth {
     Offline
 }
 
-@Composable
-private fun GlzRadioTheme(
-    themeName: String,
-    accentName: String,
-    content: @Composable () -> Unit
-) {
-    applyAppearance(themeName, accentName)
-    val lightTheme = themeName == "Signal Light"
-    val view = LocalView.current
-    SideEffect {
-        val window = (view.context as? Activity)?.window ?: return@SideEffect
-        window.statusBarColor = DarkBg.toArgb()
-        window.navigationBarColor = DarkBg.toArgb()
-        WindowCompat.getInsetsController(window, view).run {
-            isAppearanceLightStatusBars = lightTheme
-            isAppearanceLightNavigationBars = lightTheme
-        }
-    }
-    val colors = if (lightTheme) {
-        lightColorScheme(
-            primary = Teal,
-            onPrimary = Color.White,
-            primaryContainer = Color(0xFFFFE2B5),
-            onPrimaryContainer = Color(0xFF3B2500),
-            secondary = Teal,
-            tertiary = Coral,
-            background = DarkBg,
-            surface = DarkSurface,
-            surfaceVariant = DarkCard,
-            onBackground = DarkInk,
-            onSurface = DarkInk,
-            onSurfaceVariant = DarkMuted,
-            outline = DarkStroke
-        )
-    } else {
-        darkColorScheme(
-            primary = Teal,
-            onPrimary = Color(0xFF031312),
-            primaryContainer = Color(0xFF493000),
-            onPrimaryContainer = Color(0xFFFFDFA2),
-            secondary = Teal,
-            tertiary = Coral,
-            background = DarkBg,
-            surface = DarkSurface,
-            surfaceVariant = DarkCard,
-            onBackground = DarkInk,
-            onSurface = DarkInk,
-            onSurfaceVariant = DarkMuted,
-            outline = DarkStroke
-        )
-    }
-    MaterialTheme(
-        colorScheme = colors,
-        typography = MaterialTheme.typography.copy(
-            displayLarge = MaterialTheme.typography.displayLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            displayMedium = MaterialTheme.typography.displayMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            displaySmall = MaterialTheme.typography.displaySmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            headlineLarge = MaterialTheme.typography.headlineLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            headlineMedium = MaterialTheme.typography.headlineMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            headlineSmall = MaterialTheme.typography.headlineSmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            titleLarge = MaterialTheme.typography.titleLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            titleMedium = MaterialTheme.typography.titleMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            titleSmall = MaterialTheme.typography.titleSmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            bodyLarge = MaterialTheme.typography.bodyLarge.copy(fontFamily = GoogleSans),
-            bodyMedium = MaterialTheme.typography.bodyMedium.copy(fontFamily = GoogleSans),
-            bodySmall = MaterialTheme.typography.bodySmall.copy(fontFamily = GoogleSans),
-            labelLarge = MaterialTheme.typography.labelLarge.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            labelMedium = MaterialTheme.typography.labelMedium.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold),
-            labelSmall = MaterialTheme.typography.labelSmall.copy(fontFamily = GoogleSans, fontWeight = FontWeight.Bold)
-        ),
-        shapes = AppShapes,
-        content = content
-    )
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun RadioApp(
@@ -549,16 +353,26 @@ private fun RadioApp(
     themeName: String,
     accentName: String,
     permissionRefresh: Int,
+    pendingAlarm: AlarmLaunchRequest?,
+    onAlarmHandled: () -> Unit,
     onTheme: (String) -> Unit,
     onAccent: (String) -> Unit,
     onShowMenu: (MenuAction) -> Unit
 ) {
+    val palette = LocalGlzPalette.current
     val context = LocalContext.current
     val activity = context as Activity
-    val retryScope = rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
+
     var stations by remember { mutableStateOf(StationStore.load(context)) }
+    var catalogSource by remember { mutableStateOf(StationStore.catalogSourceLabel(context)) }
+    var presets by remember { mutableStateOf(StationStore.loadPresets(context)) }
+    var recentStations by remember { mutableStateOf(StationStore.getRecentStations(context)) }
+    var alarmConfig by remember { mutableStateOf(RadioAlarm.load(context)) }
+
     var query by rememberSaveable { mutableStateOf("") }
     var filter by rememberSaveable { mutableStateOf("All") }
+    var selectedCity by rememberSaveable { mutableStateOf("All Cities") }
     var current by remember { mutableStateOf(StationStore.getLastStation(context) ?: stations.firstOrNull()) }
     var expanded by rememberSaveable { mutableStateOf(false) }
     var menuOpen by rememberSaveable { mutableStateOf(false) }
@@ -568,12 +382,15 @@ private fun RadioApp(
     var editorOpen by rememberSaveable { mutableStateOf(false) }
     var historyOpen by rememberSaveable { mutableStateOf(false) }
     var scheduleDVROpen by rememberSaveable { mutableStateOf(false) }
+    var sleepTimerSheetOpen by rememberSaveable { mutableStateOf(false) }
+    var alarmSheetOpen by rememberSaveable { mutableStateOf(false) }
+    var searchOpen by rememberSaveable { mutableStateOf(false) }
+
     var liveTrackTitle by remember { mutableStateOf<String?>(null) }
+    var streamTelemetry by remember { mutableStateOf(RadioPlayback.currentTelemetry) }
     var trackHistory by remember { mutableStateOf<List<Pair<String, String>>>(emptyList()) }
     var activeScheduledInfo by remember { mutableStateOf(RecordingScheduler.activeScheduledInfo) }
-    var searchOpen by rememberSaveable { mutableStateOf(false) }
-    var filterOpen by rememberSaveable { mutableStateOf(false) }
-    var weatherRefresh by remember { mutableStateOf(0) }
+    var weatherRefresh by remember { mutableIntStateOf(0) }
     var weather by remember { mutableStateOf<WeatherState>(WeatherState.Loading) }
     var isPlaying by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf("Ready") }
@@ -582,21 +399,30 @@ private fun RadioApp(
     var layoutMode by remember { mutableStateOf(loadSetting(context, LAYOUT_PREF, LayoutChoices.first().name)) }
     var playerSize by remember { mutableStateOf(loadSetting(context, PLAYER_SIZE_PREF, PlayerSizeChoices.first().name)) }
     var stationHealth by remember { mutableStateOf<Map<String, StationHealth>>(emptyMap()) }
+    var probeResults by remember { mutableStateOf<Map<String, StreamProbeResult>>(emptyMap()) }
+    var probingStreams by remember { mutableStateOf(false) }
     var pendingExport by remember { mutableStateOf<RecordingExport?>(null) }
-    var retryCount by remember { mutableStateOf(0) }
+    var retryCount by remember { mutableIntStateOf(0) }
     var reconnectEnabled by remember { mutableStateOf(false) }
     var elapsedMs by remember { mutableLongStateOf(0L) }
     var accumulatedMs by remember { mutableLongStateOf(0L) }
     var playStartedAtMs by remember { mutableLongStateOf(0L) }
-    var rdsIndex by remember { mutableStateOf(0) }
+    var rdsIndex by remember { mutableIntStateOf(0) }
     var intentionallyStopped by remember { mutableStateOf(false) }
     var sleepTimerMinutes by remember { mutableStateOf(SleepTimer.remainingMinutes()) }
     var sleepTimerDuration by remember { mutableStateOf(SleepTimer.durationMinutes) }
-    var updateCheckRequest by remember { mutableStateOf(0) }
+    var updateCheckRequest by remember { mutableIntStateOf(0) }
     var seekPosition by remember { mutableLongStateOf(0L) }
     var seekDuration by remember { mutableLongStateOf(0L) }
     var canSeek by remember { mutableStateOf(false) }
     var updateStatus by remember { mutableStateOf("Automatic checks every 12 hours") }
+    var targetAmbientColor by remember { mutableStateOf(palette.accent) }
+
+    val ambientColor by animateColorAsState(
+        targetValue = targetAmbientColor,
+        animationSpec = tween(550),
+        label = "ambientGlow"
+    )
 
     val configuration = LocalConfiguration.current
     val autoCompact = configuration.screenWidthDp < 390 || configuration.screenHeightDp < 720
@@ -605,34 +431,50 @@ private fun RadioApp(
         "Comfortable", "Large" -> false
         else -> autoCompact
     }
+
+    val cities = remember(stations) {
+        listOf("All Cities") + stations.map(::stationCityName).distinct().sorted()
+    }
+    if (selectedCity !in cities) {
+        selectedCity = "All Cities"
+    }
+
+    val visibleStations = remember(stations, query, filter, selectedCity, favorites) {
+        stations.filter { station ->
+            val filterMatches = filter == "All" ||
+                station.band() == filter ||
+                (filter == "Saved" && favorites.contains(station.name))
+            val cityMatches = selectedCity == "All Cities" || stationCityName(station) == selectedCity
+            filterMatches && cityMatches && station.matches(query)
+        }
+    }
+
     val locationLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
         weatherRefresh += 1
     }
     val exportMp3Launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.Mp3.mimeType)) { uri ->
         val export = pendingExport
         pendingExport = null
-        if (uri != null && export != null) {
-            exportRecordingToUri(context, export.file, uri, export.format)
-        }
+        if (uri != null && export != null) exportRecordingToUri(context, export.file, uri, export.format)
     }
     val exportAacLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(ExportFormat.Aac.mimeType)) { uri ->
         val export = pendingExport
         pendingExport = null
-        if (uri != null && export != null) {
-            exportRecordingToUri(context, export.file, uri, export.format)
-        }
-    }
-    val visibleStations = remember(stations, query, filter, favorites) {
-        stations.filter { station ->
-            val filterMatches = filter == "All" ||
-                station.band() == filter ||
-                (filter == "Saved" && favorites.contains(station.name))
-            filterMatches && station.matches(query)
-        }
+        if (uri != null && export != null) exportRecordingToUri(context, export.file, uri, export.format)
     }
 
+    // Smart Back navigation: close full-screen overlays before minimizing app.
     BackHandler {
-        activity.moveTaskToBack(true)
+        when {
+            settingsOpen -> settingsOpen = false
+            weatherOpen -> weatherOpen = false
+            expanded -> expanded = false
+            searchOpen -> {
+                searchOpen = false
+                query = ""
+            }
+            else -> activity.moveTaskToBack(true)
+        }
     }
 
     fun syncElapsed(playing: Boolean) {
@@ -645,13 +487,14 @@ private fun RadioApp(
         }
     }
 
-    fun setStation(station: Station, autoplay: Boolean) {
+    fun setStation(station: Station, autoplay: Boolean, fadeIn: Boolean = false) {
         if (recording && current != station) {
             recorder.stop()
             recording = false
         }
         current = station
         StationStore.setLastStation(context, station)
+        recentStations = StationStore.getRecentStations(context)
         Log.i("MainActivity", "Selected station ${station.name}, audioSessionId=${RadioPlayback.audioSessionId}")
         accumulatedMs = 0L
         playStartedAtMs = 0L
@@ -663,9 +506,18 @@ private fun RadioApp(
         player.setMediaItem(RadioPlayback.stationItem(station))
         player.prepare()
         if (autoplay) {
+            if (fadeIn) RadioPlayback.fadeInVolume(15_000L)
             player.play()
         }
         status = if (autoplay) "Loading ${station.name}" else "Selected ${station.name}"
+    }
+
+    fun skipStation(direction: Int) {
+        val list = visibleStations.ifEmpty { stations }
+        if (list.isEmpty()) return
+        val idx = list.indexOfFirst { it.name == current?.name }
+        val nextIdx = if (idx < 0) 0 else ((idx + direction) % list.size + list.size) % list.size
+        setStation(list[nextIdx], autoplay = true)
     }
 
     fun togglePlayback() {
@@ -708,6 +560,71 @@ private fun RadioApp(
         saveFavorites(context, favorites)
     }
 
+    fun shareStation(station: Station?) {
+        if (station == null) return
+        val url = "https://radio.glztech.com/?station=${stationSlug(station.name)}"
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, "${station.name} · Glz Radio")
+            putExtra(Intent.EXTRA_TEXT, "Listen live to ${station.name} (${station.meta()}) on Glz Radio:\n$url")
+        }
+        runCatching {
+            context.startActivity(Intent.createChooser(shareIntent, "Share ${station.name}"))
+        }
+    }
+
+    fun syncFromGlzHub(showFeedback: Boolean) {
+        StationStore.syncRemoteCatalog(context) { success ->
+            activity.runOnUiThread {
+                stations = StationStore.load(context)
+                catalogSource = StationStore.catalogSourceLabel(context)
+                recentStations = StationStore.getRecentStations(context)
+                if (showFeedback) {
+                    Toast.makeText(
+                        context,
+                        if (success) "Synced ${stations.size} stations ($catalogSource)" else "Could not reach GlzHub; using cached catalog",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+    }
+
+    fun handlePresetTap(slotIndex: Int) {
+        val savedName = presets.getOrNull(slotIndex)
+        val station = savedName?.let { n -> stations.firstOrNull { it.name.equals(n, true) } }
+        if (station != null) {
+            setStation(station, true)
+        } else {
+            val active = current
+            if (active == null) {
+                Toast.makeText(context, "Select a station first to save Preset ${slotIndex + 1}", Toast.LENGTH_SHORT).show()
+            } else {
+                presets = StationStore.savePreset(context, slotIndex, active.name)
+                Toast.makeText(context, "Saved ${active.name} to Preset ${slotIndex + 1}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    fun handlePresetLongPress(slotIndex: Int) {
+        val active = current
+        val existing = presets.getOrNull(slotIndex)
+        if (active == null) {
+            if (existing != null) {
+                presets = StationStore.savePreset(context, slotIndex, null)
+                Toast.makeText(context, "Cleared Preset ${slotIndex + 1}", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+        if (existing.equals(active.name, ignoreCase = true)) {
+            presets = StationStore.savePreset(context, slotIndex, null)
+            Toast.makeText(context, "Cleared Preset ${slotIndex + 1}", Toast.LENGTH_SHORT).show()
+        } else {
+            presets = StationStore.savePreset(context, slotIndex, active.name)
+            Toast.makeText(context, "Assigned ${active.name} to Preset ${slotIndex + 1}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     fun toggleRecording() {
         val station = current ?: return
         if (recording) {
@@ -741,6 +658,24 @@ private fun RadioApp(
         })
     }
 
+    // Extract dynamic logo ambient accent whenever the station changes.
+    LaunchedEffect(current?.logoUrl, palette.accent) {
+        targetAmbientColor = extractLogoAmbientColor(context, current?.logoUrl, palette.accent)
+    }
+
+    // Handle Wake-Up Radio Alarm trigger.
+    LaunchedEffect(pendingAlarm, stations) {
+        val alarm = pendingAlarm ?: return@LaunchedEffect
+        val target = stations.firstOrNull { it.name.equals(alarm.stationName, ignoreCase = true) }
+            ?: stations.firstOrNull()
+        if (target != null) {
+            setStation(target, autoplay = true, fadeIn = alarm.fadeIn)
+            expanded = true
+            Toast.makeText(context, "Good morning! Tuning ${target.name}", Toast.LENGTH_LONG).show()
+        }
+        onAlarmHandled()
+    }
+
     DisposableEffect(player) {
         val listener = object : Player.Listener {
             override fun onIsPlayingChanged(nextPlaying: Boolean) {
@@ -768,9 +703,9 @@ private fun RadioApp(
 
             override fun onPlayerError(error: PlaybackException) {
                 val station = current ?: return
-                // RadioPlayback switches failed local buffers back to the original station URL.
                 if (RadioPlayback.rewindStatus(station) == "No rewind" &&
-                    player.currentMediaItem?.localConfiguration?.uri?.host != "127.0.0.1") {
+                    player.currentMediaItem?.localConfiguration?.uri?.host != "127.0.0.1"
+                ) {
                     status = "Live / ${station.name} / rewind unavailable"
                     return
                 }
@@ -781,7 +716,7 @@ private fun RadioApp(
                 val attempt = retryCount
                 val retryStation = station
                 status = "Reconnecting ${station.name} / attempt $attempt"
-                retryScope.launch {
+                scope.launch {
                     delay(streamRetryDelayMs(attempt))
                     if (current?.name == retryStation.name && !intentionallyStopped && reconnectEnabled) {
                         stationHealth = stationHealth + (retryStation.name to StationHealth.Retrying)
@@ -847,19 +782,17 @@ private fun RadioApp(
                 trackHistory = (listOf("$timeStr ($stationName)" to title) + trackHistory).take(30)
             }
         }
+        RadioPlayback.setTelemetryListener { info ->
+            streamTelemetry = info
+        }
         onDispose {
             RadioPlayback.setTrackListener(null)
+            RadioPlayback.setTelemetryListener(null)
         }
     }
 
     LaunchedEffect(Unit) {
-        StationStore.syncRemoteCatalog(context) { success ->
-            if (success) {
-                activity.runOnUiThread {
-                    stations = StationStore.load(context)
-                }
-            }
-        }
+        syncFromGlzHub(showFeedback = false)
     }
 
     if (current != null && player.mediaItemCount == 0 && !intentionallyStopped) {
@@ -867,7 +800,7 @@ private fun RadioApp(
     }
 
     Scaffold(
-        containerColor = DarkBg,
+        containerColor = palette.bg,
         bottomBar = {
             AnimatedVisibility(!expanded) {
                 MiniPlayerBar(
@@ -875,9 +808,11 @@ private fun RadioApp(
                     isPlaying = isPlaying,
                     elapsed = elapsedMs,
                     liveTrackTitle = liveTrackTitle,
+                    playerSize = playerSize,
                     onExpand = { expanded = true },
+                    onPrev = { skipStation(-1) },
                     onPlayPause = { togglePlayback() },
-                    onStop = { stopPlayback() }
+                    onNext = { skipStation(1) }
                 )
             }
         }
@@ -886,38 +821,92 @@ private fun RadioApp(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = if (compact) 12.dp else 18.dp)
-                    .padding(top = if (compact) 10.dp else 18.dp)
+                    .padding(horizontal = if (compact) 12.dp else 16.dp)
+                    .padding(top = if (compact) 8.dp else 14.dp)
             ) {
                 AppBar(
                     searching = searchOpen,
                     query = query,
-                    activeFilter = filter,
                     weather = weather,
+                    compact = compact,
                     onQueryChange = { query = it },
                     onToggleSearch = {
                         searchOpen = !searchOpen
                         if (!searchOpen) query = ""
                     },
-                    onToggleFilter = { filterOpen = true },
                     onWeather = { weatherOpen = true },
                     onMenu = { menuOpen = true }
                 )
+
+                Spacer(Modifier.height(10.dp))
+
+                // Inline Band + City Filters
+                InlineFilterBar(
+                    activeBand = filter,
+                    savedCount = favorites.size,
+                    cities = cities,
+                    selectedCity = selectedCity,
+                    onBand = { filter = it },
+                    onCity = { selectedCity = it }
+                )
+
+                Spacer(Modifier.height(10.dp))
+
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(bottom = 14.dp)
+                    contentPadding = PaddingValues(bottom = 16.dp)
                 ) {
-                    items(visibleStations, key = { it.name }) { station ->
-                        StationCard(
-                            station = station,
-                            active = current?.name == station.name,
-                            saved = favorites.contains(station.name),
-                            health = stationHealth[station.name],
-                            rewindStatus = RadioPlayback.rewindStatus(station),
-                            compact = compact,
-                            onClick = { setStation(station, true) },
-                            onFavorite = { toggleFavorite(station) }
-                        )
+                    if (query.isBlank()) {
+                        item(key = "presets") {
+                            PresetsBar(
+                                presets = presets,
+                                stations = stations,
+                                current = current,
+                                onTapSlot = { handlePresetTap(it) },
+                                onLongPressSlot = { handlePresetLongPress(it) }
+                            )
+                        }
+                        if (recentStations.isNotEmpty() && filter == "All" && selectedCity == "All Cities") {
+                            item(key = "recent") {
+                                RecentlyPlayedShelf(
+                                    recentStations = recentStations,
+                                    current = current,
+                                    onSelect = { setStation(it, true) }
+                                )
+                            }
+                        }
+                    }
+
+                    if (visibleStations.isEmpty()) {
+                        item(key = "empty") {
+                            Surface(
+                                color = palette.card,
+                                shape = RoundedCornerShape(18.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    "No stations match your current filter.",
+                                    color = palette.muted,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(24.dp)
+                                )
+                            }
+                        }
+                    } else {
+                        items(visibleStations, key = { it.name }) { station ->
+                            StationCard(
+                                station = station,
+                                active = current?.name == station.name,
+                                isPlaying = isPlaying && current?.name == station.name,
+                                saved = favorites.contains(station.name),
+                                health = stationHealth[station.name],
+                                probeResult = probeResults[station.name],
+                                rewindAvailable = RadioPlayback.rewindStatus(station) == "Rewind available",
+                                compact = compact,
+                                onClick = { setStation(station, true) },
+                                onFavorite = { toggleFavorite(station) }
+                            )
+                        }
                     }
                 }
             }
@@ -925,25 +914,37 @@ private fun RadioApp(
             if (expanded) {
                 FullPlayer(
                     station = current,
+                    stations = stations,
                     isPlaying = isPlaying,
                     elapsed = elapsedMs,
                     status = status,
                     weather = weather,
                     rds = rdsText(current, status, rdsIndex, isPlaying),
                     liveTrackTitle = liveTrackTitle,
+                    telemetry = streamTelemetry,
+                    ambientColor = ambientColor,
                     recording = recording,
                     saved = current?.let { favorites.contains(it.name) } == true,
+                    sleepTimerMinutes = sleepTimerMinutes,
+                    alarmConfig = alarmConfig,
                     compact = compact,
+                    playerSize = playerSize,
                     canSeek = canSeek,
                     seekPosition = seekPosition,
                     seekDuration = seekDuration,
                     rewindStatus = current?.let(RadioPlayback::rewindStatus) ?: "Rewind not checked",
                     onSeek = { if (canSeek) player.seekTo(it.coerceIn(0L, seekDuration)) },
                     onDismiss = { expanded = false },
+                    onPrev = { skipStation(-1) },
                     onPlayPause = { togglePlayback() },
+                    onNext = { skipStation(1) },
                     onStop = { stopPlayback() },
+                    onSelectStation = { setStation(it, true) },
                     onRecord = { toggleRecording() },
                     onScheduleDVR = { scheduleDVROpen = true },
+                    onSleepTimer = { sleepTimerSheetOpen = true },
+                    onAlarm = { alarmSheetOpen = true },
+                    onShare = { shareStation(current) },
                     onFavorite = { current?.let { toggleFavorite(it) } }
                 )
             }
@@ -966,8 +967,10 @@ private fun RadioApp(
                     compact = compact,
                     stationCount = stations.size,
                     savedCount = favorites.size,
+                    catalogSource = catalogSource,
                     sleepTimerMinutes = sleepTimerMinutes,
                     sleepTimerDuration = sleepTimerDuration,
+                    alarmConfig = alarmConfig,
                     updateStatus = updateStatus,
                     onClose = { settingsOpen = false },
                     onTheme = onTheme,
@@ -989,97 +992,127 @@ private fun RadioApp(
                         sleepTimerMinutes = SleepTimer.remainingMinutes()
                         sleepTimerDuration = SleepTimer.durationMinutes
                     },
+                    onOpenAlarm = { alarmSheetOpen = true },
+                    onSyncGlzHub = { syncFromGlzHub(showFeedback = true) },
                     onCheckForUpdates = { updateCheckRequest += 1 }
                 )
             }
         }
     }
 
-    if (filterOpen) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    if (sleepTimerSheetOpen) {
         ModalBottomSheet(
-            onDismissRequest = { filterOpen = false },
-            sheetState = sheetState,
-            containerColor = DarkSurface
+            onDismissRequest = { sleepTimerSheetOpen = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = palette.surface
         ) {
-            FilterSheet(
-                active = filter,
-                onFilter = {
-                    filter = it
-                    filterOpen = false
+            SleepTimerQuickSheet(
+                sleepTimerMinutes = sleepTimerMinutes,
+                sleepTimerDuration = sleepTimerDuration,
+                onSelect = { minutes ->
+                    if (minutes == null) {
+                        SleepTimer.cancel()
+                        Toast.makeText(context, "Sleep timer turned off", Toast.LENGTH_SHORT).show()
+                    } else {
+                        SleepTimer.schedule(player, minutes)
+                        Toast.makeText(context, "Sleep timer set for $minutes min", Toast.LENGTH_SHORT).show()
+                    }
+                    sleepTimerMinutes = SleepTimer.remainingMinutes()
+                    sleepTimerDuration = SleepTimer.durationMinutes
+                    sleepTimerSheetOpen = false
+                }
+            )
+        }
+    }
+
+    if (alarmSheetOpen) {
+        ModalBottomSheet(
+            onDismissRequest = { alarmSheetOpen = false },
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = palette.surface
+        ) {
+            WakeUpAlarmSheet(
+                config = alarmConfig,
+                stations = stations,
+                currentStation = current,
+                onSave = { next ->
+                    RadioAlarm.saveAndSchedule(context, next)
+                    alarmConfig = next
+                    alarmSheetOpen = false
+                    Toast.makeText(
+                        context,
+                        "Wake-Up Alarm set for ${next.formattedTime()} (${next.stationName ?: "Glz Radio"})",
+                        Toast.LENGTH_LONG
+                    ).show()
+                },
+                onCancelAlarm = {
+                    RadioAlarm.cancelAlarm(context)
+                    alarmConfig = RadioAlarm.load(context)
+                    alarmSheetOpen = false
+                    Toast.makeText(context, "Wake-Up Alarm turned off", Toast.LENGTH_SHORT).show()
                 }
             )
         }
     }
 
     if (menuOpen) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
             onDismissRequest = { menuOpen = false },
-            sheetState = sheetState,
-            containerColor = DarkSurface
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = palette.surface
         ) {
             MenuSheet(
-                onSettings = {
-                    menuOpen = false
-                    settingsOpen = true
-                },
-                onRecordings = {
-                    menuOpen = false
-                    recordingsOpen = true
-                },
-                onTrackHistory = {
-                    menuOpen = false
-                    historyOpen = true
-                },
-                onScheduleDVR = {
-                    menuOpen = false
-                    scheduleDVROpen = true
-                },
-                onWeather = {
-                    menuOpen = false
-                    weatherOpen = true
-                },
-                onStationEditor = {
-                    menuOpen = false
-                    editorOpen = true
-                },
-                onStop = {
-                    menuOpen = false
-                    stopPlayback()
-                },
+                alarmConfig = alarmConfig,
+                sleepTimerMinutes = sleepTimerMinutes,
+                catalogSource = catalogSource,
+                onSettings = { menuOpen = false; settingsOpen = true },
+                onWakeAlarm = { menuOpen = false; alarmSheetOpen = true },
+                onSleepTimer = { menuOpen = false; sleepTimerSheetOpen = true },
+                onRecordings = { menuOpen = false; recordingsOpen = true },
+                onTrackHistory = { menuOpen = false; historyOpen = true },
+                onScheduleDVR = { menuOpen = false; scheduleDVROpen = true },
+                onWeather = { menuOpen = false; weatherOpen = true },
+                onStationEditor = { menuOpen = false; editorOpen = true },
+                onSyncGlzHub = { menuOpen = false; syncFromGlzHub(showFeedback = true) },
+                onStop = { menuOpen = false; stopPlayback() },
                 onClearSaved = {
                     menuOpen = false
                     favorites = emptySet()
                     saveFavorites(context, favorites)
                 },
-                onAbout = {
-                    menuOpen = false
-                    onShowMenu(MenuAction.About)
-                }
+                onAbout = { menuOpen = false; onShowMenu(MenuAction.About) }
             )
         }
     }
 
     if (editorOpen) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
             onDismissRequest = { editorOpen = false },
-            sheetState = sheetState,
-            containerColor = DarkSurface
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = palette.surface
         ) {
             StationEditorSheet(
                 stations = stations,
-                onSave = { originalName, station ->
-                    val next = stations.toMutableList()
-                    val index = originalName?.let { name -> next.indexOfFirst { it.name == name } } ?: -1
-                    if (index >= 0) {
-                        next[index] = station
-                    } else {
-                        next.add(station)
+                catalogSource = catalogSource,
+                probeResults = probeResults,
+                probing = probingStreams,
+                onSyncGlzHub = { syncFromGlzHub(showFeedback = true) },
+                onTestAllStreams = {
+                    if (!probingStreams) {
+                        probingStreams = true
+                        Toast.makeText(context, "Testing ${stations.size} streams…", Toast.LENGTH_SHORT).show()
+                        scope.launch {
+                            StreamHealthChecker.probeAll(stations) { result ->
+                                probeResults = probeResults + (result.stationName to result)
+                            }
+                            probingStreams = false
+                            Toast.makeText(context, "Stream health check finished", Toast.LENGTH_SHORT).show()
+                        }
                     }
-                    stations = next
-                    StationStore.save(context, stations)
+                },
+                onSave = { originalName, station ->
+                    StationStore.saveCustomOrEdit(context, originalName, station)
+                    stations = StationStore.load(context)
                     if (current?.name == originalName || current == null) {
                         current = station
                         if (player.mediaItemCount > 0) {
@@ -1088,21 +1121,21 @@ private fun RadioApp(
                             if (isPlaying) player.play()
                         }
                     }
-                    Toast.makeText(context, "Station saved", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Saved safely (preserved across GlzHub syncs)", Toast.LENGTH_SHORT).show()
                 },
                 onDelete = { station ->
                     if (stations.size <= 1) {
                         Toast.makeText(context, "Keep at least one station", Toast.LENGTH_SHORT).show()
                     } else {
-                        stations = stations.filterNot { it.name == station.name }
-                        StationStore.save(context, stations)
+                        StationStore.deleteStation(context, station)
+                        stations = StationStore.load(context)
                         favorites = favorites - station.name
                         saveFavorites(context, favorites)
                         if (current?.name == station.name) {
                             stopPlayback()
                             current = stations.firstOrNull()
                         }
-                        Toast.makeText(context, "Station deleted", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Station removed", Toast.LENGTH_SHORT).show()
                     }
                 },
                 onRestoreDefaults = {
@@ -1111,6 +1144,7 @@ private fun RadioApp(
                     saveFavorites(context, favorites)
                     current = stations.firstOrNull()
                     stopPlayback()
+                    syncFromGlzHub(showFeedback = false)
                     Toast.makeText(context, "Default stations restored", Toast.LENGTH_SHORT).show()
                 }
             )
@@ -1118,12 +1152,11 @@ private fun RadioApp(
     }
 
     if (recordingsOpen) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         var recordings by remember { mutableStateOf(listRecordings(context)) }
         ModalBottomSheet(
             onDismissRequest = { recordingsOpen = false },
-            sheetState = sheetState,
-            containerColor = DarkSurface
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = palette.surface
         ) {
             RecordingsSheet(
                 recordings = recordings,
@@ -1150,34 +1183,29 @@ private fun RadioApp(
                         ExportFormat.Aac -> exportAacLauncher.launch(name)
                     }
                 },
-                onShare = { file, format ->
-                    shareRecording(context, file, format)
-                }
+                onShare = { file, format -> shareRecording(context, file, format) }
             )
         }
     }
 
     if (historyOpen) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
             onDismissRequest = { historyOpen = false },
-            sheetState = sheetState,
-            containerColor = DarkSurface
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = palette.surface
         ) {
             TrackHistorySheet(
                 history = trackHistory,
-                onClear = { trackHistory = emptyList() },
-                onClose = { historyOpen = false }
+                onClear = { trackHistory = emptyList() }
             )
         }
     }
 
     if (scheduleDVROpen) {
-        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
         ModalBottomSheet(
             onDismissRequest = { scheduleDVROpen = false },
-            sheetState = sheetState,
-            containerColor = DarkSurface
+            sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+            containerColor = palette.surface
         ) {
             ScheduleDVRSheet(
                 station = current,
@@ -1198,6 +1226,7 @@ private fun RadioApp(
                                     activeScheduledInfo = RecordingScheduler.activeScheduledInfo
                                 }
                             }
+
                             override fun onStopped(file: File) {
                                 activity.runOnUiThread {
                                     recording = false
@@ -1206,6 +1235,7 @@ private fun RadioApp(
                                     Toast.makeText(context, "DVR Recording saved!", Toast.LENGTH_SHORT).show()
                                 }
                             }
+
                             override fun onFailed(exception: Exception) {
                                 activity.runOnUiThread {
                                     recording = false
@@ -1224,8 +1254,7 @@ private fun RadioApp(
                     activeScheduledInfo = null
                     scheduleDVROpen = false
                     Toast.makeText(context, "Scheduled DVR cancelled", Toast.LENGTH_SHORT).show()
-                },
-                onClose = { scheduleDVROpen = false }
+                }
             )
         }
     }
@@ -1241,14 +1270,14 @@ private fun RadioApp(
 private fun AppBar(
     searching: Boolean,
     query: String,
-    activeFilter: String,
     weather: WeatherState,
+    compact: Boolean,
     onQueryChange: (String) -> Unit,
     onToggleSearch: () -> Unit,
-    onToggleFilter: () -> Unit,
     onWeather: () -> Unit,
     onMenu: () -> Unit
 ) {
+    val palette = LocalGlzPalette.current
     Column {
         Image(
             painter = painterResource(R.drawable.header_banner),
@@ -1256,11 +1285,11 @@ private fun AppBar(
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(132.dp)
-                .clip(RoundedCornerShape(22.dp))
-                .border(1.dp, DarkStroke, RoundedCornerShape(22.dp))
+                .height(if (compact) 86.dp else 108.dp)
+                .clip(RoundedCornerShape(20.dp))
+                .border(1.dp, palette.stroke, RoundedCornerShape(20.dp))
         )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             HeaderClock()
             Spacer(Modifier.width(10.dp))
@@ -1273,21 +1302,14 @@ private fun AppBar(
                 Icon(
                     imageVector = if (searching) Icons.Filled.Close else Icons.Filled.Search,
                     contentDescription = if (searching) "Close search" else "Search",
-                    tint = Teal
-                )
-            }
-            IconButton(onClick = onToggleFilter) {
-                Icon(
-                    imageVector = Icons.Filled.FilterList,
-                    contentDescription = "Filter stations: $activeFilter",
-                    tint = if (activeFilter == "All") Teal else Gold
+                    tint = palette.accent
                 )
             }
             IconButton(onClick = onMenu) {
                 Icon(
                     imageVector = Icons.Filled.Menu,
                     contentDescription = "Menu",
-                    tint = Teal
+                    tint = palette.accent
                 )
             }
         }
@@ -1297,17 +1319,113 @@ private fun AppBar(
                 onValueChange = onQueryChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 12.dp),
+                    .padding(top = 8.dp),
                 singleLine = true,
-                placeholder = { Text("Search stations") },
-                shape = RoundedCornerShape(18.dp)
+                placeholder = { Text("Search stations, dial, or city") },
+                shape = RoundedCornerShape(16.dp)
             )
         }
     }
 }
 
 @Composable
+private fun InlineFilterBar(
+    activeBand: String,
+    savedCount: Int,
+    cities: List<String>,
+    selectedCity: String,
+    onBand: (String) -> Unit,
+    onCity: (String) -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    var cityMenuExpanded by remember { mutableStateOf(false) }
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            modifier = Modifier.weight(1f)
+        ) {
+            items(listOf("All", "Saved", "FM", "AM", "Satellite")) { band ->
+                val label = if (band == "Saved" && savedCount > 0) "Saved ($savedCount)" else band
+                FilterChip(
+                    selected = activeBand == band,
+                    onClick = { onBand(band) },
+                    label = { Text(label, fontSize = 12.sp) }
+                )
+            }
+        }
+
+        Box {
+            Surface(
+                color = if (selectedCity != "All Cities") palette.accent.copy(alpha = 0.16f) else palette.field,
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier
+                    .height(34.dp)
+                    .border(
+                        1.dp,
+                        if (selectedCity != "All Cities") palette.accent else palette.stroke,
+                        RoundedCornerShape(12.dp)
+                    )
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { cityMenuExpanded = true }
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 9.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.LocationCity,
+                        contentDescription = null,
+                        tint = if (selectedCity != "All Cities") palette.accent else palette.muted,
+                        modifier = Modifier.size(15.dp)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        if (selectedCity == "All Cities") "City" else selectedCity,
+                        color = palette.ink,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                    Icon(
+                        Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = palette.muted,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+            DropdownMenu(
+                expanded = cityMenuExpanded,
+                onDismissRequest = { cityMenuExpanded = false }
+            ) {
+                cities.forEach { city ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                city,
+                                fontWeight = if (city == selectedCity) FontWeight.Bold else FontWeight.Normal,
+                                color = if (city == selectedCity) palette.accent else palette.ink
+                            )
+                        },
+                        onClick = {
+                            onCity(city)
+                            cityMenuExpanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun HeaderClock() {
+    val palette = LocalGlzPalette.current
     var clock by remember { mutableStateOf(formatHeaderClock()) }
     LaunchedEffect(Unit) {
         while (true) {
@@ -1317,47 +1435,698 @@ private fun HeaderClock() {
     }
     Text(
         text = clock,
-        color = DarkInk,
+        color = palette.ink,
         fontWeight = FontWeight.Bold,
-        fontSize = 18.sp,
+        fontSize = 17.sp,
         maxLines = 1
     )
 }
 
 @Composable
-private fun MiniWeatherChip(
-    weather: WeatherState,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val label = when (weather) {
-        WeatherState.Loading -> "Weather updating"
-        is WeatherState.Ready -> "${weather.temperature.roundToInt()}°F / ${weather.description}"
-        is WeatherState.Error -> "Weather unavailable"
+private fun LoadingApp() {
+    val palette = LocalGlzPalette.current
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(palette.bg),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Image(
+                painter = painterResource(R.drawable.app_icon),
+                contentDescription = "Glz Radio",
+                modifier = Modifier.size(72.dp).clip(RoundedCornerShape(18.dp))
+            )
+            Text("Glz Radio", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+        }
     }
-    Surface(
-        color = DarkField,
-        shape = RoundedCornerShape(50),
-        modifier = modifier
-            .height(38.dp)
-            .clickable(onClick = onClick)
-            .border(1.dp, DarkStroke, RoundedCornerShape(50))
+}
+
+@Composable
+private fun StationCard(
+    station: Station,
+    active: Boolean,
+    isPlaying: Boolean,
+    saved: Boolean,
+    health: StationHealth?,
+    probeResult: StreamProbeResult?,
+    rewindAvailable: Boolean,
+    compact: Boolean,
+    onClick: () -> Unit,
+    onFavorite: () -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    val logoSize = if (compact) 48 else 56
+
+    ElevatedCard(
+        onClick = onClick,
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = if (active) palette.accent.copy(alpha = 0.11f) else palette.card
+        ),
+        elevation = CardDefaults.elevatedCardElevation(
+            defaultElevation = if (active) 5.dp else 1.dp,
+            pressedElevation = 0.dp
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                width = if (active) 1.5.dp else 1.dp,
+                color = if (active) palette.accent else palette.stroke.copy(alpha = 0.7f),
+                shape = RoundedCornerShape(18.dp)
+            )
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp)
+            modifier = Modifier.padding(if (compact) 10.dp else 12.dp)
         ) {
-            Icon(Icons.Filled.Cloud, contentDescription = null, tint = Teal, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
+            Box(
+                modifier = Modifier
+                    .size(logoSize.dp)
+                    .clip(RoundedCornerShape(14.dp))
+            ) {
+                StationLogo(station.logoUrl, logoSize)
+                if (isPlaying) {
+                    ActiveEqualizerOverlay(modifier = Modifier.fillMaxSize())
+                }
+            }
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(
+                        station.name,
+                        color = palette.ink,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = if (compact) 15.sp else 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (rewindAvailable && active) {
+                        Surface(
+                            color = palette.accent.copy(alpha = 0.18f),
+                            shape = RoundedCornerShape(6.dp)
+                        ) {
+                            Text(
+                                "REW",
+                                color = palette.accent,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    if (probeResult != null) {
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(if (probeResult.online) palette.ok else palette.coral)
+                        )
+                    }
+                }
+                val statusTag = when (health) {
+                    StationHealth.Buffering -> " · Buffering"
+                    StationHealth.Retrying -> " · Reconnecting"
+                    StationHealth.Offline -> " · Offline"
+                    else -> ""
+                }
+                Text(
+                    "${station.meta()}$statusTag",
+                    color = when (health) {
+                        StationHealth.Retrying -> palette.gold
+                        StationHealth.Offline -> palette.coral
+                        else -> palette.accent
+                    },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    listOfNotNull(
+                        station.location?.takeIf { it.isNotBlank() },
+                        station.tagline?.takeIf { it.isNotBlank() && !it.equals(station.name, true) }
+                    ).joinToString(" · ").ifBlank { station.band() },
+                    color = palette.muted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    fontSize = 12.sp
+                )
+            }
+            IconButton(onClick = onFavorite) {
+                Icon(
+                    imageVector = if (saved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                    contentDescription = if (saved) "Remove favorite" else "Save favorite",
+                    tint = if (saved) palette.accent else palette.muted
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MiniPlayerBar(
+    station: Station?,
+    isPlaying: Boolean,
+    elapsed: Long,
+    liveTrackTitle: String?,
+    playerSize: String,
+    onExpand: () -> Unit,
+    onPrev: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    val heightDp = when (playerSize) {
+        "Compact" -> 68.dp
+        "Expanded" -> 86.dp
+        else -> 76.dp
+    }
+    val logoSize = if (playerSize == "Compact") 44 else 50
+
+    Surface(
+        color = palette.surface,
+        tonalElevation = 6.dp,
+        shadowElevation = 12.dp,
+        shape = RoundedCornerShape(22.dp),
+        modifier = Modifier
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .height(heightDp)
+            .fillMaxWidth()
+            .clickable(onClick = onExpand)
+            .border(1.dp, palette.accent.copy(alpha = 0.7f), RoundedCornerShape(22.dp))
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp)
+        ) {
+            StationLogo(station?.logoUrl, logoSize)
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    station?.name ?: "Choose a station",
+                    color = palette.ink,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        liveTrackTitle?.takeIf { it.isNotBlank() } ?: (station?.meta() ?: "Ready"),
+                        color = if (!liveTrackTitle.isNullOrBlank()) palette.accent else palette.muted,
+                        fontSize = 12.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(formatElapsed(elapsed), color = palette.muted, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                }
+            }
+            if (playerSize != "Compact") {
+                IconButton(onClick = onPrev, modifier = Modifier.size(36.dp)) {
+                    Icon(Icons.Filled.SkipPrevious, contentDescription = "Previous station", tint = palette.ink)
+                }
+            }
+            FilledIconButton(
+                onClick = onPlayPause,
+                colors = IconButtonDefaults.filledIconButtonColors(
+                    containerColor = palette.accent,
+                    contentColor = palette.onAccent
+                ),
+                modifier = Modifier.size(42.dp)
+            ) {
+                Icon(
+                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                    contentDescription = if (isPlaying) "Pause" else "Play"
+                )
+            }
+            IconButton(onClick = onNext, modifier = Modifier.size(36.dp)) {
+                Icon(Icons.Filled.SkipNext, contentDescription = "Next station", tint = palette.ink)
+            }
+        }
+    }
+}
+
+@Composable
+private fun FullPlayer(
+    station: Station?,
+    stations: List<Station>,
+    isPlaying: Boolean,
+    elapsed: Long,
+    status: String,
+    weather: WeatherState,
+    rds: String,
+    liveTrackTitle: String?,
+    telemetry: StreamTelemetry,
+    ambientColor: Color,
+    recording: Boolean,
+    saved: Boolean,
+    sleepTimerMinutes: Int?,
+    alarmConfig: WakeUpAlarmConfig,
+    compact: Boolean,
+    playerSize: String,
+    canSeek: Boolean,
+    seekPosition: Long,
+    seekDuration: Long,
+    rewindStatus: String,
+    onSeek: (Long) -> Unit,
+    onDismiss: () -> Unit,
+    onPrev: () -> Unit,
+    onPlayPause: () -> Unit,
+    onNext: () -> Unit,
+    onStop: () -> Unit,
+    onSelectStation: (Station) -> Unit,
+    onRecord: () -> Unit,
+    onScheduleDVR: () -> Unit,
+    onSleepTimer: () -> Unit,
+    onAlarm: () -> Unit,
+    onShare: () -> Unit,
+    onFavorite: () -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    val artSize = when (playerSize) {
+        "Compact" -> 136
+        "Expanded" -> if (compact) 196 else 236
+        else -> if (compact) 160 else 196
+    }
+
+    val backdropBrush = Brush.verticalGradient(
+        colors = listOf(
+            ambientColor.copy(alpha = if (palette.isLight) 0.16f else 0.24f),
+            palette.bg,
+            palette.bg
+        )
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(backdropBrush)
+            .padding(horizontal = if (compact) 16.dp else 20.dp, vertical = 14.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = onDismiss) {
+                    Icon(Icons.Filled.KeyboardArrowDown, contentDescription = null, modifier = Modifier.size(22.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Back")
+                }
+                Text(
+                    "Studio Player",
+                    color = palette.muted,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                )
+                IconButton(onClick = onShare) {
+                    Icon(Icons.Filled.Share, contentDescription = "Share station", tint = palette.ink)
+                }
+                IconButton(onClick = onFavorite) {
+                    Icon(
+                        imageVector = if (saved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                        contentDescription = if (saved) "Remove favorite" else "Save favorite",
+                        tint = if (saved) palette.accent else palette.ink
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(if (playerSize == "Compact") 10.dp else 18.dp))
+            StationLogo(station?.logoUrl, artSize)
+            Spacer(Modifier.height(14.dp))
+
             Text(
-                label,
-                color = DarkInk,
+                station?.name ?: "Choose a station",
+                color = palette.ink,
                 fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
+                fontSize = if (compact) 26.sp else 30.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
+            Text(
+                station?.let { "${it.meta()} · ${it.location}" } ?: "Ready",
+                color = palette.muted,
+                fontSize = 13.sp,
+                textAlign = TextAlign.Center
+            )
+
+            // Telemetry badges
+            val telemetryParts = buildList {
+                telemetry.codec?.let { add(it) }
+                telemetry.bitrateKbps?.takeIf { it > 0 }?.let { add("$it kbps") }
+                if (canSeek) add("Rewind ready")
+            }
+            if (telemetryParts.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                Surface(
+                    color = palette.field,
+                    shape = RoundedCornerShape(50),
+                    modifier = Modifier.border(1.dp, palette.stroke, RoundedCornerShape(50))
+                ) {
+                    Text(
+                        telemetryParts.joinToString(" · "),
+                        color = palette.accent,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+            LiveCounter(elapsed = elapsed, isPlaying = isPlaying)
+            Spacer(Modifier.height(12.dp))
+
+            LiveSpectrumVisualizer(isPlaying = isPlaying, ambientColor = ambientColor)
+
+            if (playerSize != "Compact") {
+                Spacer(Modifier.height(10.dp))
+                AnalogFrequencyDial(
+                    stations = stations,
+                    current = station,
+                    onSelect = onSelectStation
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+            Surface(
+                color = palette.card,
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth().border(1.dp, palette.stroke.copy(alpha = 0.65f), RoundedCornerShape(18.dp))
+            ) {
+                Column(Modifier.padding(14.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    if (!liveTrackTitle.isNullOrBlank()) {
+                        Text(
+                            liveTrackTitle,
+                            color = palette.accent,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            fontSize = 15.sp,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(Modifier.height(4.dp))
+                    }
+                    Text(rds, color = palette.ink, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, fontSize = 13.sp)
+                    Spacer(Modifier.height(4.dp))
+                    Text(weatherDashboardText(weather), color = palette.muted, textAlign = TextAlign.Center, fontSize = 12.sp)
+                }
+            }
+
+            if (canSeek) {
+                Spacer(Modifier.height(6.dp))
+                Slider(
+                    value = seekPosition.toFloat().coerceIn(0f, seekDuration.toFloat()),
+                    onValueChange = { onSeek(it.toLong()) },
+                    valueRange = 0f..seekDuration.toFloat(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                    TextButton(onClick = { onSeek(seekPosition - 30_000L) }) { Text("−30s") }
+                    TextButton(onClick = { onSeek(seekPosition + 15_000L) }) { Text("+15s") }
+                    TextButton(onClick = { onSeek(seekDuration) }, enabled = seekDuration - seekPosition >= 2_000L) {
+                        Text("● LIVE")
+                    }
+                }
+                Text(
+                    if (seekDuration - seekPosition < 2_000L) "At live edge" else "${(seekDuration - seekPosition) / 1000}s behind live",
+                    color = palette.muted,
+                    fontSize = 12.sp
+                )
+            } else if (rewindStatus == "No rewind") {
+                Text(
+                    "Live rewind unavailable for this station",
+                    color = palette.muted,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            Text(status, color = palette.muted, fontWeight = FontWeight.Bold, fontSize = 12.sp, modifier = Modifier.padding(top = 10.dp))
+            Spacer(Modifier.height(12.dp))
+
+            // Primary Transport Row (Prev · Play/Pause · Next · Stop)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FilledIconButton(
+                    onClick = onPrev,
+                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = palette.card, contentColor = palette.ink),
+                    modifier = Modifier.size(50.dp)
+                ) {
+                    Icon(Icons.Filled.SkipPrevious, contentDescription = "Previous station")
+                }
+                FilledIconButton(
+                    onClick = onPlayPause,
+                    colors = IconButtonDefaults.filledIconButtonColors(
+                        containerColor = palette.accent,
+                        contentColor = palette.onAccent
+                    ),
+                    modifier = Modifier.size(66.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        modifier = Modifier.size(34.dp)
+                    )
+                }
+                FilledIconButton(
+                    onClick = onNext,
+                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = palette.card, contentColor = palette.ink),
+                    modifier = Modifier.size(50.dp)
+                ) {
+                    Icon(Icons.Filled.SkipNext, contentDescription = "Next station")
+                }
+                FilledIconButton(
+                    onClick = onStop,
+                    colors = IconButtonDefaults.filledIconButtonColors(containerColor = palette.card, contentColor = palette.coral),
+                    modifier = Modifier.size(50.dp)
+                ) {
+                    Icon(Icons.Filled.Stop, contentDescription = "Stop")
+                }
+            }
+
+            Spacer(Modifier.height(14.dp))
+
+            // Utility Row: Sleep Timer + Wake Alarm
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                FilledTonalButton(
+                    onClick = onSleepTimer,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (sleepTimerMinutes != null) palette.accent.copy(alpha = 0.22f) else palette.card,
+                        contentColor = if (sleepTimerMinutes != null) palette.accent else palette.ink
+                    ),
+                    modifier = Modifier.weight(1f).height(46.dp)
+                ) {
+                    Icon(Icons.Filled.Bedtime, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(sleepTimerMinutes?.let { "Sleep ${it}m" } ?: "Sleep Timer", maxLines = 1)
+                }
+                FilledTonalButton(
+                    onClick = onAlarm,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (alarmConfig.enabled) palette.accent.copy(alpha = 0.22f) else palette.card,
+                        contentColor = if (alarmConfig.enabled) palette.accent else palette.ink
+                    ),
+                    modifier = Modifier.weight(1f).height(46.dp)
+                ) {
+                    Icon(Icons.Filled.Alarm, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (alarmConfig.enabled) alarmConfig.formattedTime() else "Wake Alarm", maxLines = 1)
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            // Recording Row: Record Now + Schedule DVR
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                FilledTonalButton(
+                    onClick = onRecord,
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (recording) palette.gold else palette.coral,
+                        contentColor = Color.White
+                    ),
+                    modifier = Modifier.weight(1f).height(46.dp)
+                ) {
+                    Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (recording) "Stop Rec" else "Record")
+                }
+                FilledTonalButton(
+                    onClick = onScheduleDVR,
+                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = palette.card, contentColor = palette.ink),
+                    modifier = Modifier.weight(1f).height(46.dp)
+                ) {
+                    Icon(Icons.Filled.Schedule, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Schedule DVR")
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun LiveCounter(elapsed: Long, isPlaying: Boolean) {
+    val palette = LocalGlzPalette.current
+    val transition = rememberInfiniteTransition(label = "livePulse")
+    val alpha by transition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
+        label = "liveAlpha"
+    )
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(10.dp)
+                .graphicsLayer { this.alpha = if (isPlaying) alpha else 0.35f }
+                .background(if (isPlaying) palette.accent else palette.muted, CircleShape)
+        )
+        Spacer(Modifier.width(10.dp))
+        Text(formatElapsed(elapsed), color = palette.accent, fontSize = 36.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun StationLogo(url: String?, sizeDp: Int) {
+    val palette = LocalGlzPalette.current
+    val corner = if (sizeDp > 100) 26.dp else 14.dp
+    AsyncImage(
+        model = url ?: R.drawable.app_icon,
+        contentDescription = null,
+        contentScale = ContentScale.Fit,
+        modifier = Modifier
+            .size(sizeDp.dp)
+            .clip(RoundedCornerShape(corner))
+            .background(Color.White)
+            .padding(if (sizeDp > 100) 10.dp else 4.dp)
+            .border(0.5.dp, palette.stroke.copy(alpha = 0.35f), RoundedCornerShape(corner))
+    )
+}
+
+@Composable
+private fun SleepTimerQuickSheet(
+    sleepTimerMinutes: Int?,
+    sleepTimerDuration: Int?,
+    onSelect: (Int?) -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 28.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("Sleep Timer", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+        Text(
+            sleepTimerMinutes?.let { "About $it minutes remaining" } ?: "Stop playback automatically after a set time.",
+            color = palette.muted,
+            fontSize = 13.sp
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            listOf(15, 30, 45, 60).forEach { mins ->
+                val selected = sleepTimerDuration == mins
+                FilledTonalButton(
+                    onClick = { onSelect(mins) },
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (selected) palette.accent else palette.card,
+                        contentColor = if (selected) palette.onAccent else palette.ink
+                    ),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("${mins}m", fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        if (sleepTimerMinutes != null) {
+            TextButton(onClick = { onSelect(null) }, modifier = Modifier.fillMaxWidth()) {
+                Text("Turn off sleep timer", color = palette.coral, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+@Composable
+private fun MenuSheet(
+    alarmConfig: WakeUpAlarmConfig,
+    sleepTimerMinutes: Int?,
+    catalogSource: String,
+    onSettings: () -> Unit,
+    onWakeAlarm: () -> Unit,
+    onSleepTimer: () -> Unit,
+    onRecordings: () -> Unit,
+    onTrackHistory: () -> Unit,
+    onScheduleDVR: () -> Unit,
+    onWeather: () -> Unit,
+    onStationEditor: () -> Unit,
+    onSyncGlzHub: () -> Unit,
+    onStop: () -> Unit,
+    onClearSaved: () -> Unit,
+    onAbout: () -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 20.dp)
+            .padding(bottom = 24.dp)
+            .fillMaxWidth()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text("Glz Radio", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+        Text("v${BuildConfig.VERSION_NAME} · $catalogSource", color = palette.muted, fontSize = 12.sp)
+        Spacer(Modifier.height(4.dp))
+
+        MenuRowButton(Icons.Filled.Settings, "Appearance & Settings", onSettings)
+        MenuRowButton(
+            Icons.Filled.Alarm,
+            if (alarmConfig.enabled) "Wake-Up Alarm (${alarmConfig.formattedTime()})" else "Wake-Up Radio Alarm",
+            onWakeAlarm
+        )
+        MenuRowButton(
+            Icons.Filled.Bedtime,
+            sleepTimerMinutes?.let { "Sleep Timer (${it}m left)" } ?: "Sleep Timer",
+            onSleepTimer
+        )
+        MenuRowButton(Icons.Filled.Radio, "Station Editor & Health Check", onStationEditor)
+        MenuRowButton(Icons.Filled.Refresh, "Sync Stations from GlzHub", onSyncGlzHub)
+        MenuRowButton(Icons.Filled.FiberManualRecord, "Recordings", onRecordings)
+        MenuRowButton(Icons.Filled.History, "Live Track History", onTrackHistory)
+        MenuRowButton(Icons.Filled.Schedule, "Schedule DVR Recording", onScheduleDVR)
+        MenuRowButton(Icons.Filled.Cloud, "Weather Forecast", onWeather)
+        MenuRowButton(Icons.Filled.Stop, "Stop Playback", onStop)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            TextButton(onClick = onClearSaved, modifier = Modifier.weight(1f)) {
+                Text("Clear Saved", color = palette.coral)
+            }
+            TextButton(onClick = onAbout, modifier = Modifier.weight(1f)) {
+                Icon(Icons.Filled.Info, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("About")
+            }
+        }
+    }
+}
+
+@Composable
+private fun MenuRowButton(icon: ImageVector, label: String, onClick: () -> Unit) {
+    val palette = LocalGlzPalette.current
+    FilledTonalButton(
+        onClick = onClick,
+        colors = ButtonDefaults.filledTonalButtonColors(containerColor = palette.card, contentColor = palette.ink),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(icon, contentDescription = null, tint = palette.accent, modifier = Modifier.size(19.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(label, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold)
     }
 }
 
@@ -1370,8 +2139,10 @@ private fun SettingsFlyout(
     compact: Boolean,
     stationCount: Int,
     savedCount: Int,
+    catalogSource: String,
     sleepTimerMinutes: Int?,
     sleepTimerDuration: Int?,
+    alarmConfig: WakeUpAlarmConfig,
     updateStatus: String,
     onClose: () -> Unit,
     onTheme: (String) -> Unit,
@@ -1379,13 +2150,16 @@ private fun SettingsFlyout(
     onLayout: (String) -> Unit,
     onPlayerSize: (String) -> Unit,
     onSleepTimer: (Int?) -> Unit,
+    onOpenAlarm: () -> Unit,
+    onSyncGlzHub: () -> Unit,
     onCheckForUpdates: () -> Unit
 ) {
-    Surface(color = DarkBg, modifier = Modifier.fillMaxSize()) {
+    val palette = LocalGlzPalette.current
+    Surface(color = palette.bg, modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 16.dp)
+                .padding(horizontal = 18.dp, vertical = 14.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 TextButton(onClick = onClose) {
@@ -1395,9 +2169,9 @@ private fun SettingsFlyout(
                 }
                 Text(
                     "Settings",
-                    color = DarkInk,
+                    color = palette.ink,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
+                    fontSize = 22.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.weight(1f)
                 )
@@ -1408,79 +2182,74 @@ private fun SettingsFlyout(
                 contentPadding = PaddingValues(bottom = 28.dp)
             ) {
                 item {
-                    SettingsSummaryCard(
-                        themeName = themeName,
-                        accentName = accentName,
-                        layoutMode = layoutMode,
-                        playerSize = playerSize,
-                        compact = compact
-                    )
+                    SettingsSummaryCard(themeName, accentName, layoutMode, playerSize, compact)
                 }
                 item {
-                    SettingsChoiceSection(
-                        title = "Theme",
-                        subtitle = "Dark presets for different listening moods",
-                        choices = ThemeChoices,
-                        selected = themeName,
-                        onSelect = onTheme
-                    )
+                    SettingsChoiceSection("Theme", "Studio presets for day and night listening", ThemeChoices, themeName, onTheme)
                 }
                 item {
-                    SettingsChoiceSection(
-                        title = "Accent",
-                        subtitle = "Signal color used by controls and highlights",
-                        choices = AccentChoices,
-                        selected = accentName,
-                        onSelect = onAccent
-                    )
+                    SettingsChoiceSection("Accent", "Signal color used by controls and highlights", AccentChoices, accentName, onAccent)
                 }
                 item {
-                    SettingsChoiceSection(
-                        title = "Layout",
-                        subtitle = "Controls how aggressively the app resizes",
-                        choices = LayoutChoices,
-                        selected = layoutMode,
-                        onSelect = onLayout
-                    )
+                    SettingsChoiceSection("Layout", "Controls station card density", LayoutChoices, layoutMode, onLayout)
                 }
                 item {
-                    SettingsChoiceSection(
-                        title = "Player",
-                        subtitle = "Keeps the player useful without taking over",
-                        choices = PlayerSizeChoices,
-                        selected = playerSize,
-                        onSelect = onPlayerSize
-                    )
+                    SettingsChoiceSection("Player", "Controls Studio Player artwork, dial, and mini bar size", PlayerSizeChoices, playerSize, onPlayerSize)
                 }
                 item {
                     SettingsChoiceSection(
                         title = "Sleep timer",
-                        subtitle = if (sleepTimerMinutes == null) {
-                            "Stop playback automatically"
-                        } else {
-                            "About $sleepTimerMinutes minutes remaining"
-                        },
+                        subtitle = sleepTimerMinutes?.let { "About $it minutes remaining" } ?: "Stop playback automatically",
                         choices = SleepTimerChoices,
                         selected = sleepTimerDuration?.let { "$it minutes" } ?: "Off",
-                        onSelect = { value ->
-                            onSleepTimer(value.substringBefore(" ").toIntOrNull())
+                        onSelect = { value -> onSleepTimer(value.substringBefore(" ").toIntOrNull()) }
+                    )
+                }
+                item {
+                    SectionCard("Wake-Up Alarm & GlzHub") {
+                        Text(
+                            if (alarmConfig.enabled) "Active alarm: ${alarmConfig.formattedTime()} (${alarmConfig.stationName ?: "Glz Radio"})"
+                            else "No wake-up alarm scheduled.",
+                            color = palette.muted,
+                            fontSize = 13.sp
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                            FilledTonalButton(onClick = onOpenAlarm, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Filled.Alarm, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("Configure Alarm")
+                            }
+                            FilledTonalButton(onClick = onSyncGlzHub, modifier = Modifier.weight(1f)) {
+                                Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(6.dp))
+                                Text("Sync GlzHub")
+                            }
                         }
-                    )
+                    }
                 }
                 item {
-                    UpdateSettingsSection(
-                        status = updateStatus,
-                        onCheckForUpdates = onCheckForUpdates
-                    )
+                    SectionCard("App updates") {
+                        Text(updateStatus, color = palette.muted, fontSize = 13.sp)
+                        Text(
+                            "Release APKs are verified via SHA-256 through GitHub. Android always asks before installation.",
+                            color = palette.ink,
+                            fontSize = 13.sp
+                        )
+                        FilledTonalButton(onClick = onCheckForUpdates, modifier = Modifier.fillMaxWidth()) {
+                            Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Check for updates")
+                        }
+                    }
                 }
                 item {
-                    SettingsInfoSection(
-                        stationCount = stationCount,
-                        savedCount = savedCount
-                    )
-                }
-                item {
-                    AboutSection()
+                    SectionCard("System") {
+                        SettingsInfoRow("Version", BuildConfig.VERSION_NAME)
+                        SettingsInfoRow("Catalog", catalogSource)
+                        SettingsInfoRow("Stations", stationCount.toString())
+                        SettingsInfoRow("Saved stations", savedCount.toString())
+                        SettingsInfoRow("Playback", "Media3 + ICY Timeshift + Android Auto")
+                    }
                 }
             }
         }
@@ -1495,10 +2264,11 @@ private fun SettingsSummaryCard(
     playerSize: String,
     compact: Boolean
 ) {
-    Surface(color = DarkCard, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
+    val palette = LocalGlzPalette.current
+    Surface(color = palette.card, shape = RoundedCornerShape(24.dp), modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Text("Glz Radio", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 26.sp)
-            Text("Theme $themeName / Accent $accentName", color = DarkMuted)
+            Text("Glz Radio", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Text("Theme $themeName · Accent $accentName", color = palette.muted)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                 SettingsPill("Layout", layoutMode, Modifier.weight(1f))
                 SettingsPill("Sizing", if (compact) "Compact" else "Comfortable", Modifier.weight(1f))
@@ -1510,10 +2280,11 @@ private fun SettingsSummaryCard(
 
 @Composable
 private fun SettingsPill(label: String, value: String, modifier: Modifier = Modifier) {
-    Surface(color = DarkField, shape = RoundedCornerShape(18.dp), modifier = modifier) {
+    val palette = LocalGlzPalette.current
+    Surface(color = palette.field, shape = RoundedCornerShape(16.dp), modifier = modifier) {
         Column(Modifier.padding(horizontal = 10.dp, vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(label, color = DarkMuted, fontSize = 11.sp, maxLines = 1)
-            Text(value, color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label, color = palette.muted, fontSize = 11.sp, maxLines = 1)
+            Text(value, color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }
@@ -1526,8 +2297,9 @@ private fun SettingsChoiceSection(
     selected: String,
     onSelect: (String) -> Unit
 ) {
-    WeatherSection(title) {
-        Text(subtitle, color = DarkMuted, fontSize = 13.sp)
+    val palette = LocalGlzPalette.current
+    SectionCard(title) {
+        Text(subtitle, color = palette.muted, fontSize = 13.sp)
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             items(choices, key = { it.name }) { choice ->
                 FilterChip(
@@ -1552,7 +2324,7 @@ private fun SettingsChoiceSection(
         }
         Text(
             choices.firstOrNull { it.name == selected }?.description.orEmpty(),
-            color = DarkInk,
+            color = palette.ink,
             fontWeight = FontWeight.Bold,
             fontSize = 13.sp
         )
@@ -1560,665 +2332,27 @@ private fun SettingsChoiceSection(
 }
 
 @Composable
-private fun SettingsInfoSection(stationCount: Int, savedCount: Int) {
-    WeatherSection("System") {
-        SettingsInfoRow("Stations", stationCount.toString())
-        SettingsInfoRow("Saved stations", savedCount.toString())
-        SettingsInfoRow("Font", "Google Sans / bundled")
-        SettingsInfoRow("Recordings", "Private app storage / export anytime")
-        SettingsInfoRow("Playback", "Media3 with Android Auto")
-    }
-}
-
-@Composable
-private fun UpdateSettingsSection(status: String, onCheckForUpdates: () -> Unit) {
-    WeatherSection("App updates") {
-        Text(status, color = DarkMuted, fontSize = 13.sp)
-        Text(
-            "Release APKs are checked securely through GitHub. Android always asks before installation.",
-            color = DarkInk,
-            fontSize = 13.sp
-        )
-        FilledTonalButton(onClick = onCheckForUpdates, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Check for updates")
-        }
-    }
-}
-
-@Composable
 private fun SettingsInfoRow(label: String, value: String) {
+    val palette = LocalGlzPalette.current
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-        Text(label, color = DarkMuted, modifier = Modifier.weight(1f))
-        Text(value, color = DarkInk, fontWeight = FontWeight.Bold, textAlign = TextAlign.End)
-    }
-}
-
-@Composable
-private fun AboutSection() {
-    WeatherSection("About") {
-        Text("Glz Radio", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-        Text("Version ${BuildConfig.VERSION_NAME}", color = Teal, fontWeight = FontWeight.Bold)
-        Text("© 2012 Glz Technical Services | © 2024 Glz Tech", color = DarkMuted)
-        Text("mailto: service@glztech.com", color = DarkInk, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-private fun SplashScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBg),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(R.drawable.splash),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Composable
-private fun LoadingApp() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBg),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Starting Glz Radio…", color = DarkInk, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-private fun FilterSheet(active: String, onFilter: (String) -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .padding(bottom = 28.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("Station filter", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 24.sp)
-        Text("Show a station group in the main list.", color = DarkMuted, fontSize = 13.sp)
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(listOf("All", "FM", "AM", "Satellite", "Saved")) { filter ->
-                FilterChip(
-                    selected = active == filter,
-                    onClick = { onFilter(filter) },
-                    label = { Text(filter) }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun WeatherCard(
-    weather: WeatherState,
-    compact: Boolean,
-    onRefresh: () -> Unit,
-    onRequestLocation: () -> Unit
-) {
-    Surface(
-        color = DarkCard,
-        shape = RoundedCornerShape(20.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 12.dp)
-            .border(1.dp, DarkStroke, RoundedCornerShape(20.dp))
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = if (compact) 10.dp else 12.dp)
-        ) {
-                Icon(Icons.Filled.Cloud, contentDescription = null, tint = Teal, modifier = Modifier.size(if (compact) 24.dp else 28.dp))
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                when (weather) {
-                    WeatherState.Loading -> {
-                        Text("Weather", color = DarkInk, fontWeight = FontWeight.Bold)
-                        Text("Updating forecast", color = DarkMuted, fontSize = 12.sp)
-                    }
-
-                    is WeatherState.Ready -> {
-                        Text("${weather.temperature.roundToInt()}°F / ${weather.description}", color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text("${weather.place} / wind ${weather.wind.roundToInt()} mph", color = DarkMuted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-
-                    is WeatherState.Error -> {
-                        Text("Weather unavailable", color = DarkInk, fontWeight = FontWeight.Bold)
-                        Text(weather.message, color = DarkMuted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    }
-                }
-            }
-            TextButton(onClick = onRefresh) { Text("Refresh") }
-            TextButton(onClick = onRequestLocation) { Text("Local") }
-        }
-    }
-}
-
-@Composable
-private fun WeatherFlyout(
-    weather: WeatherState,
-    onClose: () -> Unit,
-    onRefresh: () -> Unit,
-    onRequestLocation: () -> Unit
-) {
-    Surface(
-        color = DarkBg,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 18.dp, vertical = 16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = onClose) {
-                    Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Close")
-                }
-                Text(
-                    "Weather",
-                    color = DarkInk,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
-            TextButton(onClick = onRefresh) {
-                Icon(Icons.Filled.Cloud, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.width(6.dp))
-                Text("Refresh")
-            }
-            }
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 24.dp)
-            ) {
-                item {
-                    when (weather) {
-                        WeatherState.Loading -> WeatherLoadingPanel()
-                        is WeatherState.Error -> WeatherErrorPanel(weather.message, onRequestLocation)
-                        is WeatherState.Ready -> WeatherReadyPanel(weather, onRequestLocation)
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun WeatherReadyPanel(weather: WeatherState.Ready, onRequestLocation: () -> Unit) {
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Surface(color = DarkCard, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
-            Column(
-                modifier = Modifier.padding(22.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(weather.description, color = DarkMuted, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                Text("${weather.temperature.roundToInt()}°F", color = Teal, fontWeight = FontWeight.Bold, fontSize = 60.sp)
-                Text("Feels like ${weather.feelsLike.roundToInt()}°F", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-                Spacer(Modifier.height(6.dp))
-                Text(weather.place, color = DarkMuted, textAlign = TextAlign.Center)
-            }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            WeatherMetric("Wind", "${weather.wind.roundToInt()} mph", Modifier.weight(1f))
-            WeatherMetric("Humidity", "${weather.humidity.roundToInt()}%", Modifier.weight(1f))
-            WeatherMetric("Rain", "${weather.precipitation.roundToInt()} in", Modifier.weight(1f))
-        }
-        WeatherSection("Outlook") {
-            if (weather.outlook.isEmpty()) {
-                Text("No hourly outlook available.", color = DarkMuted)
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    weather.outlook.forEach { item ->
-                        WeatherOutlookRow(item)
-                    }
-                }
-            }
-        }
-        WeatherSection("Forecast") {
-            if (weather.forecast.isEmpty()) {
-                Text("No forecast available.", color = DarkMuted)
-            } else {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    weather.forecast.forEach { day ->
-                        WeatherForecastRow(day)
-                    }
-                }
-            }
-        }
-        FilledTonalButton(onClick = onRequestLocation, modifier = Modifier.fillMaxWidth().height(50.dp)) {
-            Text("Use local conditions")
-        }
-    }
-}
-
-@Composable
-private fun WeatherLoadingPanel() {
-    Surface(color = DarkCard, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(28.dp)
-        ) {
-            Icon(Icons.Filled.Cloud, contentDescription = null, tint = Teal, modifier = Modifier.size(54.dp))
-            Spacer(Modifier.height(8.dp))
-            Text("Updating forecast", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-            Text("Checking current conditions", color = DarkMuted, textAlign = TextAlign.Center)
-        }
-    }
-}
-
-@Composable
-private fun WeatherErrorPanel(message: String, onRequestLocation: () -> Unit) {
-    Surface(color = DarkCard, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(24.dp)
-        ) {
-            Text("Weather unavailable", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-            Spacer(Modifier.height(8.dp))
-            Text(message, color = DarkMuted, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(14.dp))
-            FilledTonalButton(onClick = onRequestLocation, modifier = Modifier.fillMaxWidth()) {
-                Text("Use local conditions")
-            }
-        }
-    }
-}
-
-@Composable
-private fun WeatherMetric(label: String, value: String, modifier: Modifier = Modifier) {
-    Surface(color = DarkCard, shape = RoundedCornerShape(20.dp), modifier = modifier) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 14.dp)
-        ) {
-            Text(label, color = DarkMuted, fontSize = 12.sp, maxLines = 1)
-            Text(value, color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 17.sp, maxLines = 1)
-        }
-    }
-}
-
-@Composable
-private fun WeatherSection(title: String, content: @Composable () -> Unit) {
-    Surface(color = DarkSurface, shape = RoundedCornerShape(24.dp), modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(title, color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-            content()
-        }
-    }
-}
-
-@Composable
-private fun WeatherOutlookRow(item: WeatherOutlook) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(DarkCard, RoundedCornerShape(18.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp)
-    ) {
-        Text(item.timeLabel, color = Teal, fontWeight = FontWeight.Bold, modifier = Modifier.width(68.dp))
-        Column(Modifier.weight(1f)) {
-            Text(item.description, color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text("Feels ${item.feelsLike.roundToInt()}°F / rain ${item.rainChance}%", color = DarkMuted, fontSize = 12.sp)
-        }
-        Text("${item.temperature.roundToInt()}°", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-    }
-}
-
-@Composable
-private fun WeatherForecastRow(day: WeatherForecastDay) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(DarkCard, RoundedCornerShape(18.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp)
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text(day.dayLabel, color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1)
-            Text(day.description, color = DarkMuted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
-        Text("${day.low.roundToInt()}°", color = DarkMuted, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.width(10.dp))
-        Text("${day.high.roundToInt()}°", color = Teal, fontWeight = FontWeight.Bold, fontSize = 20.sp)
-        Spacer(Modifier.width(12.dp))
-        Text("${day.rainChance}%", color = DarkMuted, fontSize = 12.sp)
-    }
-}
-
-@Composable
-private fun StationCard(
-    station: Station,
-    active: Boolean,
-    saved: Boolean,
-    health: StationHealth?,
-    rewindStatus: String,
-    compact: Boolean,
-    onClick: () -> Unit,
-    onFavorite: () -> Unit
-) {
-    ElevatedCard(
-        onClick = onClick,
-        colors = CardDefaults.elevatedCardColors(containerColor = DarkCard),
-        elevation = CardDefaults.elevatedCardElevation(
-            defaultElevation = if (active) 6.dp else 2.dp,
-            pressedElevation = 1.dp
-        ),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(
-                width = if (active) 2.dp else 1.dp,
-                color = if (active) Teal else DarkStroke,
-                shape = RoundedCornerShape(20.dp)
-            )
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(if (compact) 10.dp else 12.dp)
-        ) {
-            StationLogo(station.logoUrl, if (compact) 50 else 64)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(station.name, color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("${station.meta()}${healthLabel(health)}", color = healthColor(health), fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                Text(rewindStatus, color = if (rewindStatus == "Rewind available") Teal else DarkMuted, fontSize = 12.sp)
-                Text("${station.location} / ${station.tagline}", color = DarkMuted, maxLines = 1, overflow = TextOverflow.Ellipsis, fontSize = 13.sp)
-            }
-            IconButton(onClick = onFavorite) {
-                Icon(
-                    imageVector = if (saved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                    contentDescription = if (saved) "Remove favorite" else "Save favorite",
-                    tint = if (saved) Teal else DarkInk
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun MiniPlayerBar(
-    station: Station?,
-    isPlaying: Boolean,
-    elapsed: Long,
-    liveTrackTitle: String?,
-    onExpand: () -> Unit,
-    onPlayPause: () -> Unit,
-    onStop: () -> Unit
-) {
-    Surface(
-        color = DarkSurface,
-        tonalElevation = 6.dp,
-        shadowElevation = 12.dp,
-        shape = RoundedCornerShape(24.dp),
-        modifier = Modifier
-            .padding(12.dp)
-            .height(82.dp)
-            .fillMaxWidth()
-            .clickable(onClick = onExpand)
-            .border(1.dp, Teal, RoundedCornerShape(24.dp))
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(horizontal = 12.dp)
-        ) {
-            StationLogo(station?.logoUrl, 54)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(station?.name ?: "Choose a station", color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        if (!liveTrackTitle.isNullOrBlank()) "🎵 $liveTrackTitle" else (station?.meta() ?: "Ready"),
-                        color = if (!liveTrackTitle.isNullOrBlank()) Teal else DarkMuted,
-                        fontSize = 12.sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(formatElapsed(elapsed), color = Teal, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                }
-            }
-            IconButton(onClick = onPlayPause) {
-                Icon(
-                    imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                    contentDescription = if (isPlaying) "Pause" else "Play",
-                    tint = Teal
-                )
-            }
-            IconButton(onClick = onStop) {
-                Icon(Icons.Filled.Stop, contentDescription = "Stop", tint = DarkInk)
-            }
-        }
-    }
-}
-
-@Composable
-private fun FullPlayer(
-    station: Station?,
-    isPlaying: Boolean,
-    elapsed: Long,
-    status: String,
-    weather: WeatherState,
-    rds: String,
-    liveTrackTitle: String?,
-    recording: Boolean,
-    saved: Boolean,
-    compact: Boolean,
-    canSeek: Boolean,
-    seekPosition: Long,
-    seekDuration: Long,
-    rewindStatus: String,
-    onSeek: (Long) -> Unit,
-    onDismiss: () -> Unit,
-    onPlayPause: () -> Unit,
-    onStop: () -> Unit,
-    onRecord: () -> Unit,
-    onScheduleDVR: () -> Unit,
-    onFavorite: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(DarkBg)
-            .padding(horizontal = if (compact) 16.dp else 22.dp, vertical = 18.dp)
-    ) {
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                TextButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Close")
-                }
-                Text(
-                    "Now Playing",
-                    color = DarkMuted,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = onFavorite) {
-                    Icon(
-                        imageVector = if (saved) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                        contentDescription = if (saved) "Remove favorite" else "Save favorite",
-                        tint = if (saved) Teal else DarkInk
-                    )
-                }
-            }
-            Spacer(Modifier.height(if (compact) 22.dp else 30.dp))
-            StationLogo(station?.logoUrl, if (compact) 164 else 220)
-            Spacer(Modifier.height(18.dp))
-            Text(station?.name ?: "Choose a station", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = if (compact) 28.sp else 34.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            Text(station?.let { "${it.meta()} / ${it.location}" } ?: "Ready", color = DarkMuted, textAlign = TextAlign.Center)
-            Spacer(Modifier.height(if (compact) 18.dp else 26.dp))
-            LiveCounter(elapsed = elapsed, isPlaying = isPlaying)
-            Spacer(Modifier.height(if (compact) 16.dp else 22.dp))
-            Surface(color = DarkCard, shape = RoundedCornerShape(22.dp), modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (!liveTrackTitle.isNullOrBlank()) {
-                        Text("🎵 $liveTrackTitle", color = Teal, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center, fontSize = 15.sp)
-                        Spacer(Modifier.height(6.dp))
-                    }
-                    Text(rds, color = DarkInk, fontWeight = FontWeight.Bold, textAlign = TextAlign.Center)
-                    Spacer(Modifier.height(8.dp))
-                    Text(weatherDashboardText(weather), color = DarkMuted, textAlign = TextAlign.Center, fontSize = 13.sp)
-                }
-            }
-            if (canSeek) {
-                Slider(
-                    value = seekPosition.toFloat().coerceIn(0f, seekDuration.toFloat()),
-                    onValueChange = { onSeek(it.toLong()) },
-                    valueRange = 0f..seekDuration.toFloat(),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    TextButton(onClick = { onSeek(seekPosition - 30_000L) }) { Text("−30s") }
-                    TextButton(onClick = { onSeek(seekPosition + 15_000L) }) { Text("+15s") }
-                    TextButton(onClick = { onSeek(seekDuration) }, enabled = seekDuration - seekPosition >= 2_000L) { Text("● LIVE") }
-                }
-                Text(
-                    if (seekDuration - seekPosition < 2_000L) "At live" else "${(seekDuration - seekPosition) / 1000}s behind live",
-                    color = DarkMuted, fontSize = 12.sp
-                )
-            } else {
-                Text(
-                    if (rewindStatus == "No rewind") "Live rewind unavailable for this station" else "Preparing rewind buffer…",
-                    color = DarkMuted, fontSize = 12.sp, modifier = Modifier.padding(top = 12.dp)
-                )
-            }
-            Text(status, color = DarkMuted, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 14.dp))
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                FilledTonalButton(onClick = onPlayPause, modifier = Modifier.size(width = 88.dp, height = 56.dp)) {
-                    Icon(
-                        imageVector = if (isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-                        contentDescription = if (isPlaying) "Pause" else "Play"
-                    )
-                }
-                FilledTonalButton(onClick = onStop, modifier = Modifier.size(width = 88.dp, height = 56.dp)) {
-                    Icon(Icons.Filled.Stop, contentDescription = "Stop")
-                }
-            }
-            Spacer(Modifier.height(14.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                FilledTonalButton(
-                    onClick = onRecord,
-                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = if (recording) Gold else Coral, contentColor = Color.White),
-                    modifier = Modifier.weight(1f).height(48.dp)
-                ) {
-                    Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(if (recording) "Stop" else "Record")
-                }
-                FilledTonalButton(
-                    onClick = onScheduleDVR,
-                    colors = ButtonDefaults.filledTonalButtonColors(containerColor = DarkCard, contentColor = DarkInk),
-                    modifier = Modifier.weight(1f).height(48.dp)
-                ) {
-                    Text("Schedule DVR")
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun LiveCounter(elapsed: Long, isPlaying: Boolean) {
-    val transition = rememberInfiniteTransition(label = "livePulse")
-    val alpha by transition.animateFloat(
-        initialValue = 0.45f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(tween(900), RepeatMode.Reverse),
-        label = "liveAlpha"
-    )
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(10.dp)
-                .graphicsLayer { this.alpha = if (isPlaying) alpha else 0.35f }
-                .background(if (isPlaying) Teal else DarkMuted, CircleShape)
-        )
-        Spacer(Modifier.width(10.dp))
-        Text(formatElapsed(elapsed), color = Teal, fontSize = 44.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
-private fun StationLogo(url: String?, sizeDp: Int) {
-    AsyncImage(
-        model = url ?: R.drawable.app_icon,
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .size(sizeDp.dp)
-            .clip(RoundedCornerShape(if (sizeDp > 100) 28.dp else 16.dp))
-            .background(DarkField)
-            .border(1.dp, DarkStroke, RoundedCornerShape(if (sizeDp > 100) 28.dp else 16.dp))
-    )
-}
-
-@Composable
-private fun MenuSheet(
-    onSettings: () -> Unit,
-    onRecordings: () -> Unit,
-    onTrackHistory: () -> Unit,
-    onScheduleDVR: () -> Unit,
-    onWeather: () -> Unit,
-    onStationEditor: () -> Unit,
-    onStop: () -> Unit,
-    onClearSaved: () -> Unit,
-    onAbout: () -> Unit
-) {
-    Column(Modifier.padding(20.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text("Glz Radio", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 24.sp)
-        FilledTonalButton(onClick = onSettings, modifier = Modifier.fillMaxWidth()) { Text("Settings") }
-        FilledTonalButton(onClick = onRecordings, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.FiberManualRecord, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Recordings")
-        }
-        FilledTonalButton(onClick = onTrackHistory, modifier = Modifier.fillMaxWidth()) {
-            Text("🎵 Live Track History")
-        }
-        FilledTonalButton(onClick = onScheduleDVR, modifier = Modifier.fillMaxWidth()) {
-            Text("⏱️ Schedule DVR Recording")
-        }
-        FilledTonalButton(onClick = onWeather, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Cloud, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Weather")
-        }
-        FilledTonalButton(onClick = onStationEditor, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Radio, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Station editor")
-        }
-        FilledTonalButton(onClick = onStop, modifier = Modifier.fillMaxWidth()) {
-            Icon(Icons.Filled.Stop, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(8.dp))
-            Text("Stop playback")
-        }
-        FilledTonalButton(onClick = onClearSaved, modifier = Modifier.fillMaxWidth()) { Text("Clear saved stations") }
-        FilledTonalButton(onClick = onAbout, modifier = Modifier.fillMaxWidth()) { Text("About") }
-        Spacer(Modifier.height(18.dp))
+        Text(label, color = palette.muted, modifier = Modifier.weight(1f))
+        Text(value, color = palette.ink, fontWeight = FontWeight.Bold, textAlign = TextAlign.End)
     }
 }
 
 @Composable
 private fun StationEditorSheet(
     stations: List<Station>,
+    catalogSource: String,
+    probeResults: Map<String, StreamProbeResult>,
+    probing: Boolean,
+    onSyncGlzHub: () -> Unit,
+    onTestAllStreams: () -> Unit,
     onSave: (String?, Station) -> Unit,
     onDelete: (Station) -> Unit,
     onRestoreDefaults: () -> Unit
 ) {
+    val palette = LocalGlzPalette.current
     var selectedName by remember(stations) { mutableStateOf(stations.firstOrNull()?.name) }
     val selected = stations.firstOrNull { it.name == selectedName }
     var originalName by remember { mutableStateOf(selected?.name) }
@@ -2282,97 +2416,105 @@ private fun StationEditorSheet(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Station editor", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 26.sp)
+        Text("Station Editor & Health", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 24.sp)
         Text(
-            "Edit the station name, stream, logo image, and display details used across Glz Radio.",
-            color = DarkMuted,
-            fontSize = 13.sp
+            "Source: $catalogSource. Custom additions and edits are stored separately so GlzHub syncs never overwrite them.",
+            color = palette.muted,
+            fontSize = 12.sp
         )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+            FilledTonalButton(onClick = onSyncGlzHub, modifier = Modifier.weight(1f)) {
+                Icon(Icons.Filled.Refresh, contentDescription = null, modifier = Modifier.size(17.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Sync GlzHub")
+            }
+            FilledTonalButton(
+                onClick = onTestAllStreams,
+                enabled = !probing,
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(Icons.Filled.NetworkCheck, contentDescription = null, modifier = Modifier.size(17.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(if (probing) "Testing…" else "Test Streams")
+            }
+        }
+
         LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             item {
                 FilterChip(
                     selected = originalName == null,
                     onClick = { loadStation(null) },
-                    label = { Text("New") }
+                    label = { Text("+ New") }
                 )
             }
             items(stations, key = { it.name }) { station ->
+                val probe = probeResults[station.name]
                 FilterChip(
                     selected = selectedName == station.name,
                     onClick = { loadStation(station) },
-                    label = { Text(station.name, maxLines = 1, overflow = TextOverflow.Ellipsis) }
+                    label = {
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
+                            if (probe != null) {
+                                Box(
+                                    Modifier
+                                        .size(8.dp)
+                                        .clip(CircleShape)
+                                        .background(if (probe.online) palette.ok else palette.coral)
+                                )
+                            }
+                            Text(station.name, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
                 )
             }
         }
-        if (logoUrl.isNotBlank()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                StationLogo(logoUrl, 58)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(name.ifBlank { "Station preview" }, color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(frequency.ifBlank { "Live" }, color = DarkMuted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+
+        selected?.let { currentSel ->
+            probeResults[currentSel.name]?.let { probe ->
+                Surface(
+                    color = if (probe.online) palette.ok.copy(alpha = 0.14f) else palette.coral.copy(alpha = 0.14f),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        if (probe.online) "Stream Online · ${probe.detail}" else "Stream Unreachable · ${probe.detail}",
+                        color = if (probe.online) palette.ok else palette.coral,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    )
                 }
             }
         }
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            label = { Text("Name") }
-        )
-        OutlinedTextField(
-            value = streamUrl,
-            onValueChange = { streamUrl = it },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            label = { Text("Stream URL") }
-        )
-        OutlinedTextField(
-            value = logoUrl,
-            onValueChange = { logoUrl = it },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            label = { Text("Logo image URL") }
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            OutlinedTextField(
-                value = frequency,
-                onValueChange = { frequency = it },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                label = { Text("Frequency") }
-            )
-            OutlinedTextField(
-                value = callSign,
-                onValueChange = { callSign = it },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                label = { Text("Call sign") }
-            )
+
+        if (logoUrl.isNotBlank()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                StationLogo(logoUrl, 54)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(name.ifBlank { "Station preview" }, color = palette.ink, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(frequency.ifBlank { "Live" }, color = palette.muted, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
         }
-        OutlinedTextField(
-            value = tagline,
-            onValueChange = { tagline = it },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            label = { Text("Tagline") }
-        )
-        OutlinedTextField(
-            value = location,
-            onValueChange = { location = it },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            label = { Text("Location") }
-        )
-        error?.let { Text(it, color = Coral, fontWeight = FontWeight.Bold, fontSize = 13.sp) }
+        OutlinedTextField(value = name, onValueChange = { name = it }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text("Name") })
+        OutlinedTextField(value = streamUrl, onValueChange = { streamUrl = it }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text("Stream URL") })
+        OutlinedTextField(value = logoUrl, onValueChange = { logoUrl = it }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text("Logo image URL") })
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            FilledTonalButton(onClick = { saveStation() }, modifier = Modifier.weight(1f)) {
-                Text("Save")
-            }
-            FilledTonalButton(onClick = { loadStation(null) }, modifier = Modifier.weight(1f)) {
-                Text("New")
-            }
+            OutlinedTextField(value = frequency, onValueChange = { frequency = it }, modifier = Modifier.weight(1f), singleLine = true, label = { Text("Frequency") })
+            OutlinedTextField(value = callSign, onValueChange = { callSign = it }, modifier = Modifier.weight(1f), singleLine = true, label = { Text("Call sign") })
+        }
+        OutlinedTextField(value = tagline, onValueChange = { tagline = it }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text("Tagline") })
+        OutlinedTextField(value = location, onValueChange = { location = it }, modifier = Modifier.fillMaxWidth(), singleLine = true, label = { Text("Location / City") })
+        error?.let { Text(it, color = palette.coral, fontWeight = FontWeight.Bold, fontSize = 13.sp) }
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            FilledTonalButton(
+                onClick = { saveStation() },
+                colors = ButtonDefaults.filledTonalButtonColors(containerColor = palette.accent, contentColor = palette.onAccent),
+                modifier = Modifier.weight(1f)
+            ) { Text("Save", fontWeight = FontWeight.Bold) }
+            FilledTonalButton(onClick = { loadStation(null) }, modifier = Modifier.weight(1f)) { Text("New") }
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
             TextButton(
@@ -2380,13 +2522,12 @@ private fun StationEditorSheet(
                 enabled = selected != null,
                 modifier = Modifier.weight(1f)
             ) {
-                Text("Delete", color = if (selected != null) Coral else DarkMuted)
+                Text("Delete", color = if (selected != null) palette.coral else palette.muted)
             }
             TextButton(onClick = { onRestoreDefaults(); loadStation(StationCatalog.all().firstOrNull()) }, modifier = Modifier.weight(1f)) {
                 Text("Restore defaults")
             }
         }
-        Spacer(Modifier.height(10.dp))
     }
 }
 
@@ -2398,22 +2539,15 @@ private fun RecordingsSheet(
     onExport: (File, ExportFormat) -> Unit,
     onShare: (File, ExportFormat) -> Unit
 ) {
+    val palette = LocalGlzPalette.current
     Column(
-        Modifier
-            .padding(20.dp)
-            .fillMaxWidth()
-            .heightIn(max = 520.dp),
+        Modifier.padding(20.dp).fillMaxWidth().heightIn(max = 520.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Text("Recordings", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 24.sp)
+        Text("Recordings", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 24.sp)
         if (recordings.isEmpty()) {
-            Surface(color = DarkCard, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    "No recordings yet.",
-                    color = DarkMuted,
-                    modifier = Modifier.padding(18.dp),
-                    textAlign = TextAlign.Center
-                )
+            Surface(color = palette.card, shape = RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) {
+                Text("No recordings yet.", color = palette.muted, modifier = Modifier.padding(18.dp), textAlign = TextAlign.Center)
             }
         } else {
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -2440,46 +2574,47 @@ private fun RecordingRow(
     onExport: (ExportFormat) -> Unit,
     onShare: (ExportFormat) -> Unit
 ) {
-    Surface(color = DarkCard, shape = RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) {
+    val palette = LocalGlzPalette.current
+    Surface(color = palette.card, shape = RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text(recordingTitle(file), color = DarkInk, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text("${fileExtension(file)} / ${formatFileSize(file.length())}", color = DarkMuted, fontSize = 12.sp)
+                    Text(recordingTitle(file), color = palette.ink, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text("${fileExtension(file)} · ${formatFileSize(file.length())}", color = palette.muted, fontSize = 12.sp)
                 }
                 IconButton(onClick = onPlay) {
-                    Icon(Icons.Filled.PlayArrow, contentDescription = "Play recording", tint = Teal)
+                    Icon(Icons.Filled.PlayArrow, contentDescription = "Play recording", tint = palette.accent)
                 }
                 IconButton(onClick = onDelete) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete recording", tint = Coral)
+                    Icon(Icons.Filled.Delete, contentDescription = "Delete recording", tint = palette.coral)
                 }
             }
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 item {
                     FilledTonalButton(onClick = { onExport(ExportFormat.Mp3) }) {
-                        Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text("Export MP3")
                     }
                 }
                 item {
                     FilledTonalButton(onClick = { onExport(ExportFormat.Aac) }) {
-                        Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.Download, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text("Export AAC")
                     }
                 }
                 item {
                     TextButton(onClick = { onShare(ExportFormat.Mp3) }) {
-                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text("Share MP3")
                     }
                 }
                 item {
                     TextButton(onClick = { onShare(ExportFormat.Aac) }) {
-                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Filled.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
                         Text("Share AAC")
                     }
                 }
@@ -2488,9 +2623,107 @@ private fun RecordingRow(
     }
 }
 
+@Composable
+private fun TrackHistorySheet(
+    history: List<Pair<String, String>>,
+    onClear: () -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Text("Live Track History", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 22.sp, modifier = Modifier.weight(1f))
+            if (history.isNotEmpty()) {
+                TextButton(onClick = onClear) { Text("Clear", color = palette.coral) }
+            }
+        }
+        if (history.isEmpty()) {
+            Text(
+                "No song tracks detected yet. Tune into stations like Z 93 or Magic 97.3 to capture live ICY/SHOUTcast track names — now preserved even during local timeshift.",
+                color = palette.muted,
+                fontSize = 14.sp
+            )
+        } else {
+            LazyColumn(
+                modifier = Modifier.heightIn(max = 360.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(history) { (timeAndStation, songTitle) ->
+                    Surface(color = palette.card, shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.padding(12.dp)) {
+                            Text(songTitle, color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                            Text(timeAndStation, color = palette.accent, fontSize = 12.sp)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScheduleDVRSheet(
+    station: Station?,
+    activeInfo: ScheduledTaskInfo?,
+    onSchedule: (delayMin: Int, durationMin: Int) -> Unit,
+    onCancel: () -> Unit
+) {
+    val palette = LocalGlzPalette.current
+    var selectedDelay by remember { mutableIntStateOf(0) }
+    var selectedDuration by remember { mutableIntStateOf(30) }
+
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Text("Schedule Stream DVR", color = palette.ink, fontWeight = FontWeight.Bold, fontSize = 22.sp)
+        Text("Record ${station?.name ?: "selected station"} automatically to local storage.", color = palette.muted, fontSize = 14.sp)
+
+        if (activeInfo != null) {
+            Surface(color = palette.card, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp)) {
+                    Text("Active DVR Schedule", color = palette.gold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("Station: ${activeInfo.stationName}", color = palette.ink)
+                    Text("Duration: ${activeInfo.durationMinutes} min", color = palette.muted, fontSize = 13.sp)
+                    Spacer(Modifier.height(8.dp))
+                    FilledTonalButton(
+                        onClick = onCancel,
+                        colors = ButtonDefaults.filledTonalButtonColors(containerColor = palette.coral, contentColor = Color.White),
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Cancel Scheduled DVR") }
+                }
+            }
+        } else {
+            Text("Start Recording In:", color = palette.ink, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(0 to "Now", 5 to "5 min", 15 to "15 min", 30 to "30 min").forEach { (min, label) ->
+                    FilterChip(selected = selectedDelay == min, onClick = { selectedDelay = min }, label = { Text(label) })
+                }
+            }
+            Text("Recording Duration:", color = palette.ink, fontWeight = FontWeight.Bold)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(15 to "15m", 30 to "30m", 60 to "60m", 120 to "2 hrs").forEach { (min, label) ->
+                    FilterChip(selected = selectedDuration == min, onClick = { selectedDuration = min }, label = { Text(label) })
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+            FilledTonalButton(
+                onClick = { onSchedule(selectedDelay, selectedDuration) },
+                colors = ButtonDefaults.filledTonalButtonColors(containerColor = palette.accent, contentColor = palette.onAccent),
+                modifier = Modifier.fillMaxWidth().height(48.dp)
+            ) {
+                Text("Confirm DVR Schedule", fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
 private fun rdsText(station: Station?, status: String, index: Int, playing: Boolean): String {
     if (station == null) return "RDS / Waiting for station"
     val parts = listOf(station.name, station.tagline, station.location, station.meta(), status)
+        .filter { !it.isNullOrBlank() }
     val prefix = if (playing) "LIVE / " else "RDS / "
     return prefix + parts[index.floorMod(parts.size)]
 }
@@ -2510,7 +2743,7 @@ private fun exportRecordingToUri(context: Context, file: File, uri: Uri, format:
             FileInputStream(file).use { input -> input.copyTo(output) }
         } ?: throw IllegalStateException("Could not open export destination")
         Toast.makeText(context, "Exported ${format.extension.uppercase(Locale.US)}", Toast.LENGTH_SHORT).show()
-    } catch (exception: Exception) {
+    } catch (_: Exception) {
         Toast.makeText(context, "Could not export recording", Toast.LENGTH_SHORT).show()
     }
 }
@@ -2528,7 +2761,7 @@ private fun shareRecording(context: Context, file: File, format: ExportFormat) {
             .putExtra(Intent.EXTRA_TITLE, sharedFile.name)
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         context.startActivity(Intent.createChooser(intent, "Share recording"))
-    } catch (exception: Exception) {
+    } catch (_: Exception) {
         Toast.makeText(context, "Could not share recording", Toast.LENGTH_SHORT).show()
     }
 }
@@ -2580,297 +2813,9 @@ private fun formatFileSize(bytes: Long): String {
     return String.format(Locale.US, "%.1f MB", kb / 1024.0)
 }
 
-private sealed interface WeatherState {
-    data object Loading : WeatherState
-    data class Ready(
-        val temperature: Double,
-        val feelsLike: Double,
-        val wind: Double,
-        val humidity: Double,
-        val precipitation: Double,
-        val description: String,
-        val place: String,
-        val outlook: List<WeatherOutlook>,
-        val forecast: List<WeatherForecastDay>
-    ) : WeatherState
-
-    data class Error(val message: String) : WeatherState
-}
-
-private data class WeatherOutlook(
-    val timeLabel: String,
-    val temperature: Double,
-    val feelsLike: Double,
-    val rainChance: Int,
-    val description: String
-)
-
-private data class WeatherForecastDay(
-    val dayLabel: String,
-    val high: Double,
-    val low: Double,
-    val rainChance: Int,
-    val description: String
-)
-
-private suspend fun loadWeather(context: Context): WeatherState {
-    return withContext(Dispatchers.IO) {
-        try {
-            val location = localWeatherLocation(context)
-            val lat = location?.latitude ?: SAN_JUAN_LAT
-            val lon = location?.longitude ?: SAN_JUAN_LON
-            val place = resolveWeatherPlace(context, location)
-            val url = "https://api.open-meteo.com/v1/forecast" +
-                "?latitude=$lat&longitude=$lon" +
-                "&current=temperature_2m,relative_humidity_2m,apparent_temperature,precipitation,weather_code,wind_speed_10m" +
-                "&hourly=temperature_2m,apparent_temperature,precipitation_probability,weather_code" +
-                "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
-                "&temperature_unit=fahrenheit&windspeed_unit=mph&precipitation_unit=inch&timezone=auto&forecast_days=5"
-            val connection = (URL(url).openConnection() as HttpURLConnection).apply {
-                connectTimeout = 12_000
-                readTimeout = 12_000
-                setRequestProperty("User-Agent", "GlzRadio/${BuildConfig.VERSION_NAME}")
-            }
-            val body = try {
-                require(connection.responseCode in 200..299) { "Weather request failed" }
-                connection.inputStream.bufferedReader().use { it.readText() }
-            } finally {
-                connection.disconnect()
-            }
-            val root = JSONObject(body)
-            val current = root.getJSONObject("current")
-            WeatherState.Ready(
-                temperature = current.getDouble("temperature_2m"),
-                feelsLike = current.getDouble("apparent_temperature"),
-                wind = current.getDouble("wind_speed_10m"),
-                humidity = current.getDouble("relative_humidity_2m"),
-                precipitation = current.getDouble("precipitation"),
-                description = weatherDescription(current.getInt("weather_code")),
-                place = place,
-                outlook = parseHourlyOutlook(root.optJSONObject("hourly")),
-                forecast = parseDailyForecast(root.optJSONObject("daily"))
-            )
-        } catch (exception: Exception) {
-            WeatherState.Error("Tap Refresh to try again")
-        }
-    }
-}
-
-@Suppress("DEPRECATION")
-private fun resolveWeatherPlace(context: Context, location: Location?): String {
-    if (location == null) return "San Juan, PR"
-    if (!Geocoder.isPresent()) return "Local area"
-
-    return runCatching {
-        val address = Geocoder(context, Locale.getDefault())
-            .getFromLocation(location.latitude, location.longitude, 1)
-            ?.firstOrNull()
-            ?: return@runCatching "Local area"
-        val city = address.locality
-            ?: address.subLocality
-            ?: address.subAdminArea
-        val region = when (address.adminArea) {
-            "Puerto Rico" -> "PR"
-            "Florida" -> "FL"
-            else -> address.adminArea
-        }
-        listOfNotNull(city, region)
-            .filter { it.isNotBlank() }
-            .distinct()
-            .joinToString(", ")
-            .ifBlank { "Local area" }
-    }.getOrDefault("Local area")
-}
-
-private fun parseHourlyOutlook(hourly: JSONObject?): List<WeatherOutlook> {
-    if (hourly == null) return emptyList()
-    val times = hourly.optJSONArray("time") ?: return emptyList()
-    val temperatures = hourly.optJSONArray("temperature_2m") ?: return emptyList()
-    val feelsLike = hourly.optJSONArray("apparent_temperature") ?: return emptyList()
-    val rain = hourly.optJSONArray("precipitation_probability") ?: return emptyList()
-    val codes = hourly.optJSONArray("weather_code") ?: return emptyList()
-    val start = findNextHourlyIndex(times)
-    return listOf(start, start + 3, start + 6, start + 9)
-        .filter { it in 0 until times.length() }
-        .map { index ->
-            WeatherOutlook(
-                timeLabel = formatHourLabel(times.optString(index)),
-                temperature = temperatures.optDouble(index),
-                feelsLike = feelsLike.optDouble(index),
-                rainChance = rain.optInt(index),
-                description = weatherDescription(codes.optInt(index))
-            )
-        }
-}
-
-private fun parseDailyForecast(daily: JSONObject?): List<WeatherForecastDay> {
-    if (daily == null) return emptyList()
-    val times = daily.optJSONArray("time") ?: return emptyList()
-    val codes = daily.optJSONArray("weather_code") ?: return emptyList()
-    val highs = daily.optJSONArray("temperature_2m_max") ?: return emptyList()
-    val lows = daily.optJSONArray("temperature_2m_min") ?: return emptyList()
-    val rain = daily.optJSONArray("precipitation_probability_max") ?: return emptyList()
-    return (0 until times.length()).map { index ->
-        WeatherForecastDay(
-            dayLabel = formatDayLabel(times.optString(index)),
-            high = highs.optDouble(index),
-            low = lows.optDouble(index),
-            rainChance = rain.optInt(index),
-            description = weatherDescription(codes.optInt(index))
-        )
-    }
-}
-
-private fun findNextHourlyIndex(times: JSONArray): Int {
-    val currentHour = java.time.LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH"))
-    for (index in 0 until times.length()) {
-        if (times.optString(index).take(13) >= currentHour) return index
-    }
-    return 0
-}
-
-private fun formatHourLabel(value: String): String {
-    return runCatching {
-        val hour = value.substringAfter("T").take(2).toInt()
-        val suffix = if (hour < 12) "AM" else "PM"
-        val display = when (val adjusted = hour % 12) {
-            0 -> 12
-            else -> adjusted
-        }
-        "$display $suffix"
-    }.getOrDefault(value)
-}
-
-private fun formatDayLabel(value: String): String {
-    return runCatching {
-        val date = LocalDate.parse(value)
-        val today = LocalDate.now()
-        when (date) {
-            today -> "Today"
-            today.plusDays(1) -> "Tomorrow"
-            else -> date.format(DateTimeFormatter.ofPattern("EEE, MMM d", Locale.US))
-        }
-    }.getOrDefault(value)
-}
-
-private suspend fun localWeatherLocation(context: Context): Location? {
-    return lastKnownLocation(context) ?: currentLocation(context)
-}
-
-private fun lastKnownLocation(context: Context): Location? {
-    if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-        return null
-    }
-    val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return null
-    return locationManager.getProviders(true)
-        .mapNotNull { provider ->
-            try {
-                locationManager.getLastKnownLocation(provider)
-            } catch (exception: SecurityException) {
-                null
-            }
-        }
-        .maxByOrNull { it.time }
-}
-
-@Suppress("DEPRECATION")
-private suspend fun currentLocation(context: Context): Location? {
-    if (context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-        return null
-    }
-    return withContext(Dispatchers.Main) {
-        withTimeoutOrNull(6_000L) {
-            suspendCancellableCoroutine { continuation ->
-                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
-                if (locationManager == null) {
-                    continuation.resume(null)
-                    return@suspendCancellableCoroutine
-                }
-                val provider = listOf(
-                    LocationManager.NETWORK_PROVIDER,
-                    LocationManager.PASSIVE_PROVIDER,
-                    LocationManager.GPS_PROVIDER
-                ).firstOrNull { providerName ->
-                    runCatching { locationManager.isProviderEnabled(providerName) }.getOrDefault(false)
-                }
-                if (provider == null) {
-                    continuation.resume(null)
-                    return@suspendCancellableCoroutine
-                }
-                val listener = object : LocationListener {
-                    override fun onLocationChanged(location: Location) {
-                        if (continuation.isActive) {
-                            continuation.resume(location)
-                        }
-                        locationManager.removeUpdates(this)
-                    }
-
-                    override fun onProviderDisabled(provider: String) = Unit
-                    override fun onProviderEnabled(provider: String) = Unit
-                }
-                continuation.invokeOnCancellation {
-                    locationManager.removeUpdates(listener)
-                }
-                try {
-                    locationManager.requestSingleUpdate(provider, listener, Looper.getMainLooper())
-                } catch (exception: SecurityException) {
-                    if (continuation.isActive) continuation.resume(null)
-                } catch (exception: IllegalArgumentException) {
-                    if (continuation.isActive) continuation.resume(null)
-                }
-            }
-        }
-    }
-}
-
-private fun weatherDescription(code: Int): String {
-    return when (code) {
-        0 -> "Clear"
-        1, 2 -> "Partly cloudy"
-        3 -> "Cloudy"
-        45, 48 -> "Fog"
-        51, 53, 55 -> "Drizzle"
-        56, 57 -> "Freezing drizzle"
-        61, 63, 65 -> "Rain"
-        66, 67 -> "Freezing rain"
-        71, 73, 75, 77 -> "Snow"
-        80, 81, 82 -> "Rain showers"
-        85, 86 -> "Snow showers"
-        95 -> "Thunderstorms"
-        96, 99 -> "Storms with hail"
-        else -> "Current conditions"
-    }
-}
-
-private fun healthLabel(health: StationHealth?): String {
-    return when (health) {
-        StationHealth.Buffering -> " / buffering"
-        StationHealth.Online -> " / online"
-        StationHealth.Retrying -> " / retrying"
-        StationHealth.Offline -> " / offline"
-        null -> ""
-    }
-}
-
-private fun healthColor(health: StationHealth?): Color {
-    return when (health) {
-        StationHealth.Retrying -> Gold
-        StationHealth.Offline -> Coral
-        else -> Teal
-    }
-}
-
 private fun streamRetryDelayMs(attempt: Int): Long {
     return (STREAM_RETRY_BASE_DELAY_MS * attempt.coerceAtMost(15))
         .coerceAtMost(STREAM_RETRY_MAX_DELAY_MS)
-}
-
-private fun weatherDashboardText(weather: WeatherState): String {
-    return when (weather) {
-        WeatherState.Loading -> "Weather / updating"
-        is WeatherState.Ready -> "Weather / ${weather.temperature.roundToInt()}°F / feels ${weather.feelsLike.roundToInt()}°F / ${weather.description}"
-        is WeatherState.Error -> "Weather / unavailable"
-    }
 }
 
 private fun formatHeaderClock(): String {
@@ -2902,124 +2847,4 @@ private fun saveSetting(context: Context, key: String, value: String) {
         .edit()
         .putString(key, value)
         .apply()
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TrackHistorySheet(
-    history: List<Pair<String, String>>,
-    onClear: () -> Unit,
-    onClose: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Live Track History", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp, modifier = Modifier.weight(1f))
-            if (history.isNotEmpty()) {
-                TextButton(onClick = onClear) {
-                    Text("Clear", color = Coral)
-                }
-            }
-        }
-        if (history.isEmpty()) {
-            Text("No song tracks detected yet. Tune into stations like Z 93 or Magic 97.3 to capture live ICY/SHOUTcast track names.", color = DarkMuted, fontSize = 14.sp)
-        } else {
-            LazyColumn(
-                modifier = Modifier.heightIn(max = 350.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(history) { (timeAndStation, songTitle) ->
-                    Surface(
-                        color = DarkCard,
-                        shape = RoundedCornerShape(12.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(Modifier.padding(12.dp)) {
-                            Text(songTitle, color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 15.sp)
-                            Text(timeAndStation, color = Teal, fontSize = 12.sp)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun ScheduleDVRSheet(
-    station: Station?,
-    activeInfo: ScheduledTaskInfo?,
-    onSchedule: (delayMin: Int, durationMin: Int) -> Unit,
-    onCancel: () -> Unit,
-    onClose: () -> Unit
-) {
-    var selectedDelay by remember { mutableIntStateOf(0) }
-    var selectedDuration by remember { mutableIntStateOf(30) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
-    ) {
-        Text("Schedule Stream DVR", color = DarkInk, fontWeight = FontWeight.Bold, fontSize = 22.sp)
-        Text("Record ${station?.name ?: "selected station"} automatically to local storage.", color = DarkMuted, fontSize = 14.sp)
-
-        if (activeInfo != null) {
-            Surface(color = DarkCard, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(14.dp)) {
-                    Text("Active DVR Schedule", color = Gold, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text("Station: ${activeInfo.stationName}", color = DarkInk)
-                    Text("Duration: ${activeInfo.durationMinutes} min", color = DarkMuted, fontSize = 13.sp)
-                    Spacer(Modifier.height(8.dp))
-                    FilledTonalButton(
-                        onClick = onCancel,
-                        colors = ButtonDefaults.filledTonalButtonColors(containerColor = Coral, contentColor = Color.White),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Cancel Scheduled DVR")
-                    }
-                }
-            }
-        } else {
-            Text("Start Recording In:", color = DarkInk, fontWeight = FontWeight.Bold)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(0 to "Now", 5 to "5 min", 15 to "15 min", 30 to "30 min").forEach { (min, label) ->
-                    FilterChip(
-                        selected = selectedDelay == min,
-                        onClick = { selectedDelay = min },
-                        label = { Text(label) }
-                    )
-                }
-            }
-
-            Text("Recording Duration:", color = DarkInk, fontWeight = FontWeight.Bold)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(15 to "15m", 30 to "30m", 60 to "60m", 120 to "2 hrs").forEach { (min, label) ->
-                    FilterChip(
-                        selected = selectedDuration == min,
-                        onClick = { selectedDuration = min },
-                        label = { Text(label) }
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(10.dp))
-            FilledTonalButton(
-                onClick = { onSchedule(selectedDelay, selectedDuration) },
-                colors = ButtonDefaults.filledTonalButtonColors(containerColor = Teal, contentColor = DarkBg),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
-            ) {
-                Text("Confirm DVR Schedule", fontWeight = FontWeight.Bold)
-            }
-        }
-    }
 }

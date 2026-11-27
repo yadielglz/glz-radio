@@ -1,26 +1,29 @@
 # Glz Radio
 
-**Current Android release:** `26.924.0100`
+**Current Android release:** `26.1127.1550`
 
-Native Android radio streaming app for the curated Puerto Rico station list.
+Native Android radio streaming app and installable Web PWA for Puerto Rico live radio, synced live from GlzHub (`https://glzhub.glztech.com/api/v1/radio/stations`).
 
 An installable browser version is available in [`web/`](web/README.md). It is
 configured for deployment from GitHub to Vercel with `radio.glztech.com` as the
 custom domain.
 
-Glz Radio is a full native Android application. It uses Jetpack Compose and
-Media3 for an expressive dark UI, background radio playback, Android Auto media
-browsing, saved stations, stream recording, local weather, a sleep timer, and
-signed self-updates for the friends-and-family prerelease channel.
+Glz Radio is a full native Android application built with Jetpack Compose and
+Media3, featuring a Studio Now Playing experience with dynamic logo ambient glow,
+live spectrum visualizer, tactile analog frequency dial, car-style Quick Presets
+(1–6), Recently Played history (including Android Auto), inline Band & City
+filtering, ICY-preserving local timeshift rewind, Wake-Up Radio Alarm with gentle
+fade-in, Sleep Timer, stream health testing, scheduled DVR recording, local
+weather, and signed self-updates for the friends-and-family prerelease channel.
 
 The default visual preset is Signal Noir with an Amber accent. Playback
 continues when the app is backgrounded or the screen is locked. Swiping the
-task away from Android Recents is treated as an explicit exit and stops
-playback, recording activity, and timers.
+task away from Android Recents stops idle sessions while preserving active
+Android Auto playback.
 
 Google Sans is bundled with the APK and applied to all Compose and platform
 text styles. Signal Light provides a high-contrast daylight alternative to the
-dark studio themes.
+dark studio themes (available on both Android and Web).
 
 Permissions are intentionally narrow: Internet for streams/weather and approximate location for local weather. Recordings live in app-specific storage, so broad storage access is not requested.
 
@@ -28,9 +31,7 @@ On Android 10 and newer, Glz Radio does not request broad storage permission:
 Android does not require it for recordings created and owned by the app.
 Recordings can be exported or shared from the recordings screen.
 
-Playback is backed by a Media3 `MediaLibraryService` for background playback, notification controls, and Android Auto media browsing. Stations report simple stream health states and retry briefly before marking a stream offline.
-
-The app opens with a 3-second image-only Glz Radio splash screen.
+Playback is backed by a Media3 `MediaLibraryService` for background playback, notification controls, and Android Auto media browsing. Stations report live codec/bitrate telemetry, support local rewind while preserving ICY track titles, and auto-reconnect with exponential backoff.
 
 ## Build
 

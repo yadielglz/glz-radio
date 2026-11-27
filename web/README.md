@@ -1,8 +1,16 @@
 # Glz Radio Web
 
-Installable browser version of Glz Radio, designed for static deployment on
-Vercel. Station audio is requested directly from each broadcaster; Vercel does
-not relay the audio.
+Installable browser version of Glz Radio (`v26.1127.1550`), designed for static
+deployment on Vercel (`radio.glztech.com`). Stations sync live from GlzHub
+(`https://glzhub.glztech.com/api/v1/radio/stations`) with `/stations.json`
+metadata enrichment and offline caching. Station audio is requested directly
+from each broadcaster; Vercel does not relay the audio.
+
+Features include 6 studio themes & 5 accents, car-style Presets (1–6), Recently
+Played shelf, live spectrum visualizer, interactive FM/AM frequency dial,
+desktop & mobile player parity with volume/mute and sleep timer, deep-link
+station sharing (`?station=...`), keyboard shortcuts (`?`), auto-reconnect, and
+live stream health diagnostics.
 
 ## Local development
 

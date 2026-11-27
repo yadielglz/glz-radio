@@ -1,6 +1,7 @@
 package com.glztech.radiostream
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -87,5 +88,32 @@ class StationStoreTest {
         assertEquals("Radio Isla", stations[0].name)
         assertEquals("AM 1320", stations[0].frequency)
         assertEquals("WSKN AM", stations[0].callSign)
+    }
+
+    @Test
+    fun mergeStationsPreservesCustomAdditionsOverridesAndDeletionsAcrossSyncs() {
+        val base = listOf(
+            Station("Z 93", "", "https://example.com/z93", "FM 93.7", "WZNT", "Salsa", "San Juan"),
+            Station("KQ105", "", "https://example.com/kq105", "FM 104.7", "WKAQ", "Pop", "San Juan")
+        )
+        val custom = listOf(
+            Station("Z 93", "", "https://custom.example.com/z93-hd", "FM 93.7", "WZNT", "My HD Feed", "San Juan"),
+            Station("My Indie Radio", "", "https://indie.example.com/live.mp3", "Satellite", null, "Indie", "Ponce")
+        )
+        val hidden = setOf("kq105")
+
+        val merged = StationStore.mergeStations(base, custom, hidden)
+        assertEquals(2, merged.size)
+        assertEquals("https://custom.example.com/z93-hd", merged[0].streamUrl)
+        assertEquals("My Indie Radio", merged[1].name)
+        assertFalse(merged.any { it.name == "KQ105" })
+    }
+
+    @Test
+    fun wakeUpAlarmSchedulesFutureTriggerTime() {
+        val now = System.currentTimeMillis()
+        val next = RadioAlarm.nextTriggerTimeMs(7, 30, now)
+        assertTrue(next > now)
+        assertTrue(next - now <= 24L * 60L * 60L * 1000L)
     }
 }

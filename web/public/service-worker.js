@@ -1,8 +1,9 @@
-const CACHE = "glz-radio-v1";
+const CACHE = "glz-radio-v26-1127-1550";
 const SHELL = [
   "/",
   "/index.html",
   "/manifest.webmanifest",
+  "/stations.json",
   "/assets/app-icon.png",
   "/assets/header-banner.png",
   "/assets/google-sans-regular.ttf",
@@ -28,8 +29,10 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const copy = response.clone();
-        caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+        if (response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE).then((cache) => cache.put(event.request, copy));
+        }
         return response;
       })
       .catch(() => caches.match(event.request).then((cached) => cached || caches.match("/index.html")))

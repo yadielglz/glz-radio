@@ -45,12 +45,17 @@ internal object AutoLibrary {
                     favorites.any { it.equals(station.name, true) || it == station.streamUrl }
                 }.map(RadioPlayback::stationItem)
             }
-            RECENT -> listOfNotNull(StationStore.getLastAutoStation(context),
-                StationStore.getLastStation(context)).distinctBy { it.streamUrl }
+            RECENT -> StationStore.getRecentStations(context)
+                .ifEmpty {
+                    listOfNotNull(StationStore.getLastAutoStation(context), StationStore.getLastStation(context))
+                }
+                .distinctBy { it.streamUrl }
                 .map(RadioPlayback::stationItem)
-            LAST -> listOfNotNull(StationStore.getLastAutoStation(context)
-                ?: StationStore.getLastStation(context) ?: stations.firstOrNull())
-                .map(RadioPlayback::stationItem)
+            LAST -> listOfNotNull(
+                StationStore.getLastAutoStation(context)
+                    ?: StationStore.getLastStation(context)
+                    ?: stations.firstOrNull()
+            ).map(RadioPlayback::stationItem)
             else -> emptyList()
         }
     }

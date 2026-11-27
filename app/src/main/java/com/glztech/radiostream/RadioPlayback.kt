@@ -4,9 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.Format
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
@@ -15,20 +18,29 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultDataSource
 import androidx.media3.datasource.DefaultHttpDataSource
+import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultLoadControl
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 
+internal data class StreamTelemetry(
+    val codec: String? = null,
+    val bitrateKbps: Int? = null,
+    val sampleRateHz: Int? = null
+)
+
 @androidx.annotation.OptIn(UnstableApi::class)
 object RadioPlayback {
     private const val TAG = "RadioPlayback"
+    private val mainHandler = Handler(Looper.getMainLooper())
     private var player: ExoPlayer? = null
     private var activeContext: Context? = null
     private var activeAudioSessionId: Int = C.AUDIO_SESSION_ID_UNSET
     private var timeshift: TimeshiftServer? = null
     private val unavailable = mutableSetOf<String>()
     private val available = mutableSetOf<String>()
+    private var fadeRunnable: Runnable? = null
 
     internal fun markRewindAvailable(station: Station) {
         available.add(station.streamUrl)
@@ -49,9 +61,66 @@ object RadioPlayback {
         private set
     private var trackListener: ((String?) -> Unit)? = null
 
+    internal var currentTelemetry: StreamTelemetry = StreamTelemetry()
+        private set
+    private var telemetryListener: ((StreamTelemetry) -> Unit)? = null
+
     fun setTrackListener(listener: ((String?) -> Unit)?) {
         trackListener = listener
         listener?.invoke(currentTrackTitle)
+    }
+
+    internal fun setTelemetryListener(listener: ((StreamTelemetry) -> Unit)?) {
+        telemetryListener = listener
+        listener?.invoke(currentTelemetry)
+    }
+
+    private fun updateTrackTitle(title: String?) {
+        val cleaned = title?.trim()?.takeIf { it.isNotEmpty() } ?: return
+        if (cleaned != currentTrackTitle) {
+            currentTrackTitle = cleaned
+            mainHandler.post { trackListener?.invoke(cleaned) }
+        }
+    }
+
+    private fun updateTelemetry(transform: (StreamTelemetry) -> StreamTelemetry) {
+        val next = transform(currentTelemetry)
+        if (next != currentTelemetry) {
+            currentTelemetry = next
+            mainHandler.post { telemetryListener?.invoke(next) }
+        }
+    }
+
+    internal fun resetLiveMetadata() {
+        currentTrackTitle = null
+        currentTelemetry = StreamTelemetry()
+        mainHandler.post {
+            trackListener?.invoke(null)
+            telemetryListener?.invoke(currentTelemetry)
+        }
+    }
+
+    internal fun fadeInVolume(durationMs: Long = 15_000L) {
+        val activePlayer = player ?: return
+        fadeRunnable?.let(mainHandler::removeCallbacks)
+        val steps = 30
+        val intervalMs = (durationMs / steps).coerceAtLeast(100L)
+        var step = 0
+        activePlayer.volume = 0.12f
+        val task = object : Runnable {
+            override fun run() {
+                step += 1
+                val fraction = (step.toFloat() / steps.toFloat()).coerceIn(0f, 1f)
+                activePlayer.volume = 0.12f + 0.88f * fraction
+                if (step < steps) {
+                    mainHandler.postDelayed(this, intervalMs)
+                } else {
+                    fadeRunnable = null
+                }
+            }
+        }
+        fadeRunnable = task
+        mainHandler.postDelayed(task, intervalMs)
     }
 
     fun broadcastAudioSession(context: Context, sessionId: Int) {
@@ -87,7 +156,19 @@ object RadioPlayback {
         val appContext = context.applicationContext
         activeContext = appContext
         if (timeshift == null) {
-            timeshift = runCatching { TimeshiftServer() }
+            timeshift = runCatching {
+                TimeshiftServer().apply {
+                    setMetadataListener { _, title -> updateTrackTitle(title) }
+                    setStreamInfoListener { _, bitrateKbps, codec ->
+                        updateTelemetry { prev ->
+                            prev.copy(
+                                codec = codec,
+                                bitrateKbps = bitrateKbps.takeIf { it > 0 } ?: prev.bitrateKbps
+                            )
+                        }
+                    }
+                }
+            }
                 .onFailure { Log.w(TAG, "Local timeshift unavailable; direct radio remains available", it) }
                 .getOrNull()
         }
@@ -138,10 +219,34 @@ object RadioPlayback {
                             broadcastAudioSession(appContext, audioSessionId)
                         }
                     }
+
+                    override fun onAudioInputFormatChanged(
+                        eventTime: AnalyticsListener.EventTime,
+                        format: Format,
+                        decoderReuseEvaluation: DecoderReuseEvaluation?
+                    ) {
+                        val codec = when {
+                            format.sampleMimeType?.contains("aac", true) == true -> "AAC"
+                            format.sampleMimeType?.contains("mpeg", true) == true -> "MP3"
+                            format.sampleMimeType?.contains("opus", true) == true -> "OPUS"
+                            format.sampleMimeType?.contains("vorbis", true) == true -> "OGG"
+                            else -> format.codecs?.uppercase()?.take(6)
+                        }
+                        val kbps = format.bitrate.takeIf { it > 0 }?.div(1000)
+                        val sr = format.sampleRate.takeIf { it > 0 }
+                        updateTelemetry { prev ->
+                            StreamTelemetry(
+                                codec = codec ?: prev.codec,
+                                bitrateKbps = kbps ?: prev.bitrateKbps,
+                                sampleRateHz = sr ?: prev.sampleRateHz
+                            )
+                        }
+                    }
                 })
                 addListener(object : Player.Listener {
                     override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
                         if (mediaItem == null) timeshift?.stop()
+                        resetLiveMetadata()
                     }
 
                     override fun onPlayerError(error: PlaybackException) {
@@ -160,9 +265,9 @@ object RadioPlayback {
                     override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
                         val rawTitle = mediaMetadata.title?.toString()
                             ?: mediaMetadata.displayTitle?.toString()
-                        if (!rawTitle.isNullOrBlank() && rawTitle != currentTrackTitle) {
-                            currentTrackTitle = rawTitle
-                            trackListener?.invoke(rawTitle)
+                        val stationName = currentMediaItem?.mediaId
+                        if (!rawTitle.isNullOrBlank() && !rawTitle.equals(stationName, ignoreCase = true)) {
+                            updateTrackTitle(rawTitle)
                         }
                     }
 
@@ -250,6 +355,8 @@ object RadioPlayback {
     }
 
     internal fun release(context: Context? = null) {
+        fadeRunnable?.let(mainHandler::removeCallbacks)
+        fadeRunnable = null
         val ctx = context ?: activeContext
         if (ctx != null && activeAudioSessionId != C.AUDIO_SESSION_ID_UNSET && activeAudioSessionId > 0) {
             closeAudioSession(ctx, activeAudioSessionId)
@@ -259,6 +366,7 @@ object RadioPlayback {
         timeshift?.close()
         timeshift = null
         currentTrackTitle = null
+        currentTelemetry = StreamTelemetry()
         activeAudioSessionId = C.AUDIO_SESSION_ID_UNSET
         activeContext = null
     }

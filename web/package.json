@@ -1,7 +1,8 @@
 {
   "name": "glz-radio-web",
   "private": true,
-  "version": "1.0.0",
+  "type": "module",
+  "version": "26.1127.1550",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
